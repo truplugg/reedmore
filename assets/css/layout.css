@@ -183,7 +183,7 @@
   overflow-y: visible;
   scroll-snap-type: x proximity;
   scroll-padding-inline-start: var(--gutter);
-  padding-block: 0.5rem 1rem;
+  padding-block: 2.25rem 1.5rem;
   padding-inline: var(--gutter);
   margin-inline: calc(var(--gutter) * -1);
   scrollbar-width: none;

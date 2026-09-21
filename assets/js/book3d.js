@@ -100,10 +100,7 @@ export function bookHTML(book, { mode = 'turn' } = {}) {
           <div class="book__edge" aria-hidden="true"></div>
           <div class="book__block">${page}</div>
           <div class="book__cover">
-            <div class="book__face book__face--front">
-              ${coverHTML(book)}
-              <span class="book__gloss" aria-hidden="true"></span>
-            </div>
+            <div class="book__face book__face--front">${coverHTML(book)}</div>
             ${inside}
           </div>
         </div>
@@ -179,15 +176,18 @@ export function openOne(book) {
   active = book;
 }
 
+/* Only a book standing on its own — the hero, the record — follows the
+   cursor. On the shelf it would fight the turn and unsettle the grid. */
 function tilt(book, e) {
   if (calm() || !fine()) return;
+  if (!book.classList.contains('book--solo')) return;
   const stage = book.querySelector('.book__stage');
   if (!stage) return;
   const r = stage.getBoundingClientRect();
   const x = (e.clientX - r.left) / r.width - 0.5;
   const y = (e.clientY - r.top) / r.height - 0.5;
-  stage.style.setProperty('--ty', `${(x * 5).toFixed(2)}deg`);
-  stage.style.setProperty('--tx', `${(-y * 3.5).toFixed(2)}deg`);
+  stage.style.setProperty('--ty', `${(x * 17).toFixed(2)}deg`);
+  stage.style.setProperty('--tx', `${(-y * 10).toFixed(2)}deg`);
 }
 
 function untilt(book) {
