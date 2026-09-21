@@ -1,0 +1,177 @@
+/* ============================================================
+   READMORE — design tokens
+   Palette: Ukrainian press — printer's ink, unbleached stock,
+   cinnabar, buckram green. Light ground is the default;
+   dark is a full re-declaration of the same token set.
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* --- ground & surfaces --- */
+  --bg:            #e8e5da;   /* laid book stock */
+  --bg-sunk:       #ddd9cb;   /* recessed band  */
+  --bg-deep:       #121822;   /* ink block used on light ground */
+  --surface:       #f2efe6;
+  --surface-2:     #fbf9f3;
+  --surface-ink:   #141b26;
+
+  /* --- type --- */
+  --text:          #141b26;
+  --text-dim:      #4c5563;
+  --text-mute:     #7a818d;
+  --text-on-ink:   #e9e5da;
+  --text-on-accent:#fdf6ef;
+
+  /* --- lines --- */
+  --line:          rgb(20 27 38 / 0.14);
+  --line-soft:     rgb(20 27 38 / 0.08);
+  --line-strong:   rgb(20 27 38 / 0.34);
+
+  /* --- accents --- */
+  --accent:        #b23a24;   /* cinnabar, book cloth red */
+  --accent-hot:    #d2452b;
+  --accent-soft:   rgb(178 58 36 / 0.10);
+  --accent-line:   rgb(178 58 36 / 0.30);
+  --teal:          #2f5d52;   /* buckram green */
+  --teal-soft:     rgb(47 93 82 / 0.12);
+  --wheat:         #a8761c;   /* foil / ratings */
+  --wheat-soft:    rgb(168 118 28 / 0.14);
+
+  /* --- status --- */
+  --ok:            #2f6b45;
+  --warn:          #9a6510;
+  --crit:          #a33224;
+
+  /* --- shadow (warm, paper-like) --- */
+  --sh-color:      28 22 14;
+  --sh-1: 0 1px 2px rgb(var(--sh-color) / .08), 0 2px 6px rgb(var(--sh-color) / .05);
+  --sh-2: 0 2px 4px rgb(var(--sh-color) / .08), 0 10px 24px rgb(var(--sh-color) / .10);
+  --sh-3: 0 6px 14px rgb(var(--sh-color) / .12), 0 28px 60px rgb(var(--sh-color) / .18);
+  --sh-book: 0 18px 40px rgb(var(--sh-color) / .22);
+
+  /* --- type families --- */
+  --font-display: "Unbounded", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --font-text:    "Literata", "Georgia", "Times New Roman", serif;
+  --font-ui:      "Commissioner", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  /* --- fluid type scale (1.25 minor third, clamped) --- */
+  --step--2: clamp(0.69rem, 0.67rem + 0.10vw, 0.75rem);
+  --step--1: clamp(0.80rem, 0.77rem + 0.16vw, 0.89rem);
+  --step-0:  clamp(0.95rem, 0.91rem + 0.20vw, 1.05rem);
+  --step-1:  clamp(1.13rem, 1.06rem + 0.36vw, 1.36rem);
+  --step-2:  clamp(1.36rem, 1.22rem + 0.70vw, 1.85rem);
+  --step-3:  clamp(1.66rem, 1.38rem + 1.35vw, 2.55rem);
+  --step-4:  clamp(2.05rem, 1.52rem + 2.60vw, 3.70rem);
+  --step-5:  clamp(2.55rem, 1.55rem + 4.90vw, 5.60rem);
+
+  /* --- spacing --- */
+  --s-1: 0.25rem;  --s-2: 0.5rem;   --s-3: 0.75rem;  --s-4: 1rem;
+  --s-5: 1.5rem;   --s-6: 2rem;     --s-7: 3rem;     --s-8: 4rem;
+  --s-9: 6rem;     --s-10: 8rem;
+
+  /* --- geometry: printed matter, so radii stay tight --- */
+  --r-xs: 2px;  --r-sm: 4px;  --r-md: 8px;  --r-lg: 14px;  --r-pill: 999px;
+
+  /* --- layout --- */
+  --gutter: clamp(1rem, 4vw, 3.5rem);
+  --measure: 68ch;
+  --wrap: 1360px;
+  --wrap-narrow: 860px;
+  --header-h: 68px;
+
+  /* --- motion --- */
+  --ease-out:   cubic-bezier(0.22, 0.90, 0.24, 1);
+  --ease-inout: cubic-bezier(0.62, 0.02, 0.22, 1);
+  --ease-spring:cubic-bezier(0.34, 1.32, 0.48, 1);
+  --t-fast: 160ms;
+  --t-mid:  320ms;
+  --t-slow: 620ms;
+  --t-book: 900ms;
+
+  /* --- book geometry --- */
+  --cover-ratio: 0.655;       /* 130×200 mm, format 84×108/32 */
+  --book-open-angle: -154deg;
+}
+
+/* Dark: system default, unless an explicit light choice is stamped */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:            #121822;
+    --bg-sunk:       #0c1119;
+    --bg-deep:       #0a0e15;
+    --surface:       #19212d;
+    --surface-2:     #202a38;
+    --surface-ink:   #0a0e15;
+
+    --text:          #e9e5da;
+    --text-dim:      #a5aebb;
+    --text-mute:     #79828f;
+    --text-on-ink:   #e9e5da;
+    --text-on-accent:#fdf6ef;
+
+    --line:          rgb(233 229 218 / 0.14);
+    --line-soft:     rgb(233 229 218 / 0.07);
+    --line-strong:   rgb(233 229 218 / 0.34);
+
+    --accent:        #e0563c;
+    --accent-hot:    #f06a4d;
+    --accent-soft:   rgb(224 86 60 / 0.14);
+    --accent-line:   rgb(224 86 60 / 0.34);
+    --teal:          #5fae9e;
+    --teal-soft:     rgb(95 174 158 / 0.14);
+    --wheat:         #e0a93b;
+    --wheat-soft:    rgb(224 169 59 / 0.16);
+
+    --ok:            #5cbd86;
+    --warn:          #e0a93b;
+    --crit:          #f06a4d;
+
+    --sh-color:      0 0 0;
+    --sh-1: 0 1px 2px rgb(0 0 0 / .30), 0 2px 6px rgb(0 0 0 / .24);
+    --sh-2: 0 2px 4px rgb(0 0 0 / .34), 0 10px 24px rgb(0 0 0 / .38);
+    --sh-3: 0 6px 14px rgb(0 0 0 / .40), 0 28px 60px rgb(0 0 0 / .52);
+    --sh-book: 0 18px 44px rgb(0 0 0 / .60);
+  }
+}
+
+/* Dark: explicit choice wins over a light OS */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:            #121822;
+  --bg-sunk:       #0c1119;
+  --bg-deep:       #0a0e15;
+  --surface:       #19212d;
+  --surface-2:     #202a38;
+  --surface-ink:   #0a0e15;
+
+  --text:          #e9e5da;
+  --text-dim:      #a5aebb;
+  --text-mute:     #79828f;
+  --text-on-ink:   #e9e5da;
+  --text-on-accent:#fdf6ef;
+
+  --line:          rgb(233 229 218 / 0.14);
+  --line-soft:     rgb(233 229 218 / 0.07);
+  --line-strong:   rgb(233 229 218 / 0.34);
+
+  --accent:        #e0563c;
+  --accent-hot:    #f06a4d;
+  --accent-soft:   rgb(224 86 60 / 0.14);
+  --accent-line:   rgb(224 86 60 / 0.34);
+  --teal:          #5fae9e;
+  --teal-soft:     rgb(95 174 158 / 0.14);
+  --wheat:         #e0a93b;
+  --wheat-soft:    rgb(224 169 59 / 0.16);
+
+  --ok:            #5cbd86;
+  --warn:          #e0a93b;
+  --crit:          #f06a4d;
+
+  --sh-color:      0 0 0;
+  --sh-1: 0 1px 2px rgb(0 0 0 / .30), 0 2px 6px rgb(0 0 0 / .24);
+  --sh-2: 0 2px 4px rgb(0 0 0 / .34), 0 10px 24px rgb(0 0 0 / .38);
+  --sh-3: 0 6px 14px rgb(0 0 0 / .40), 0 28px 60px rgb(0 0 0 / .52);
+  --sh-book: 0 18px 44px rgb(0 0 0 / .60);
+}

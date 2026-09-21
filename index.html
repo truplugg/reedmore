@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>READMORE — українська книгарня з доставкою по ЄС</title>
+<meta name="description" content="Оригінальні наклади українських видавництв із доставкою в 27 країн Євросоюзу та по Україні. Сучасна проза, класика, поезія, нонфікшн і дитячі книжки.">
+<meta name="theme-color" content="#e8e5da" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121822" media="(prefers-color-scheme: dark)">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="READMORE — українська книгарня з доставкою по ЄС">
+<meta property="og:description" content="Книжки, які перетинають кордон. Оригінальні наклади українських видавництв — у 27 країн ЄС.">
+<meta property="og:locale" content="uk_UA">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23121822'/%3E%3Cpath d='M8 7h9a5 5 0 0 1 0 10h-3l6 8h-4l-6-8v8H8z' fill='%23e0563c'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@300..700&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..600&family=Unbounded:wght@500..800&display=swap">
+
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/layout.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/book.css">
+<link rel="stylesheet" href="assets/css/sections.css">
+<link rel="stylesheet" href="assets/css/overlays.css">
+</head>
+<body>
+
+<a class="skip" href="#main" data-i18n="skip">До основного вмісту</a>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ============ header ============ -->
+<header class="header">
+  <div class="wrap header__bar">
+    <a class="logo" href="#top" aria-label="READMORE">
+      <span class="logo__mark">READ</span><span>MORE</span><span class="logo__dot" aria-hidden="true"></span>
+    </a>
+
+    <nav class="nav" aria-label="Основна навігація">
+      <a href="#catalog" data-i18n="nav.catalog">Каталог</a>
+      <a href="#collections" data-i18n="nav.collections">Добірки</a>
+      <a href="#delivery" data-i18n="nav.delivery">Доставка</a>
+      <a href="#journal" data-i18n="nav.journal">Журнал</a>
+      <a href="#club" data-i18n="nav.club">Клуб</a>
+    </nav>
+
+    <div class="header__switches">
+      <select class="switch switch--cur" data-switch="currency" aria-label="Валюта"></select>
+      <select class="switch switch--lang" data-switch="lang" aria-label="Мова / Language"></select>
+    </div>
+
+    <div class="header__tools">
+      <button class="iconbtn" data-act="search" data-i18n-attr="aria-label:a11y.search;title:a11y.search" aria-label="Пошук">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      </button>
+
+      <button class="iconbtn" id="theme-toggle" data-mode="system" data-i18n-attr="aria-label:a11y.theme;title:a11y.theme" aria-label="Тема">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8.2"/><path d="M12 3.8a8.2 8.2 0 0 0 0 16.4z" fill="currentColor" stroke="none"/></svg>
+      </button>
+
+      <button class="iconbtn" data-act="wishlist" data-i18n-attr="aria-label:a11y.wishlist;title:a11y.wishlist" aria-label="Бажане">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 20s-7-4.6-7-9.4A4 4 0 0 1 12 7a4 4 0 0 1 7 3.6C19 15.4 12 20 12 20Z"/></svg>
+        <span class="iconbtn__count" data-count="wish" hidden>0</span>
+      </button>
+
+      <button class="iconbtn" data-act="cart" data-i18n-attr="aria-label:a11y.cart;title:a11y.cart" aria-label="Кошик">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 5.5v15"/><path d="M9 3v8l2.5-1.8L14 11V3"/></svg>
+        <span class="iconbtn__count" data-count="cart" hidden>0</span>
+      </button>
+
+      <button class="iconbtn burger" id="burger" aria-expanded="false" aria-controls="mobilenav" data-i18n-attr="aria-label:a11y.menu" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+</header>
+
+<nav class="mobilenav" id="mobilenav" aria-label="Мобільна навігація">
+  <a href="#catalog" data-i18n="nav.catalog">Каталог</a>
+  <a href="#collections" data-i18n="nav.collections">Добірки</a>
+  <a href="#delivery" data-i18n="nav.delivery">Доставка</a>
+  <a href="#journal" data-i18n="nav.journal">Журнал</a>
+  <a href="#club" data-i18n="nav.club">Клуб</a>
+  <div class="mobilenav__foot">
+    <select class="switch" data-switch="currency" aria-label="Валюта"></select>
+    <select class="switch" data-switch="lang" aria-label="Мова / Language"></select>
+  </div>
+</nav>
+
+<main id="main">
+<span id="top"></span>
+
+<!-- ============ hero ============ -->
+<section class="hero">
+  <div class="wrap hero__grid">
+    <div class="hero__copy">
+      <p class="eyebrow" data-i18n="hero.eyebrow">Українська книгарня · доставка в 27 країн ЄС</p>
+      <h1 class="hero__title">
+        <span data-i18n="hero.title1">Книжки, які</span><br>
+        <em data-i18n="hero.title2">перетинають</em><br>
+        <span data-i18n="hero.title3">кордон</span>
+      </h1>
+      <p class="lede" data-i18n="hero.lede">Ми відправляємо українські видання туди, де тепер живуть українці. Оригінальні наклади від українських видавництв — у Берлін, Варшаву, Прагу, Мадрид і ще двадцять три столиці.</p>
+
+      <div class="hero__actions">
+        <a class="btn btn--ink btn--lg" href="#catalog" data-i18n="hero.cta">Відкрити каталог</a>
+        <a class="btn btn--ghost btn--lg" href="#delivery" data-i18n="hero.cta2">Порахувати доставку</a>
+      </div>
+
+      <dl class="figures">
+        <div><dt class="figure__n num">2 486</dt><dd class="figure__l" data-i18n="fig.titles">назв у наявності</dd></div>
+        <div><dt class="figure__n num">27</dt><dd class="figure__l" data-i18n="fig.countries">країни ЄС</dd></div>
+        <div><dt class="figure__n num">3–7</dt><dd class="figure__l" data-i18n="fig.days">дні доставки</dd></div>
+        <div><dt class="figure__n num">50 €</dt><dd class="figure__l" data-i18n="fig.free">безкоштовно від</dd></div>
+      </dl>
+    </div>
+
+    <div class="hero__stage">
+      <div class="hero__book"></div>
+      <div class="hero__ledge" aria-hidden="true"></div>
+      <p class="hero__caption">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 3.5 18.5 11 13 12.5 16 19l-2.6 1.2L10.4 14 6 17.5Z"/></svg>
+        <span id="hero-hint">Наведіть курсор на обкладинку</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ marquee ============ -->
+<div class="band" aria-hidden="true">
+  <div class="band__track">
+    <div class="band__group">
+      <span class="band__item" data-i18n="band.1">Оригінальні наклади</span>
+      <span class="band__item" data-i18n="band.2">Відправка з Києва та Варшави</span>
+      <span class="band__item" data-i18n="band.3">Пакування в жорсткий бокс</span>
+      <span class="band__item" data-i18n="band.4">Оплата в євро, злотих, кронах</span>
+      <span class="band__item" data-i18n="band.5">Повернення 30 днів</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ new arrivals ============ -->
+<section class="section section--tight" id="new">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow" data-i18n="new.eyebrow">Нове на полиці</p>
+        <h2 class="section-head__title" data-i18n="new.title">Щойно з друку</h2>
+      </div>
+      <div class="section-head__side">
+        <span class="book__author" data-i18n="new.note">Наклади, що приїхали цього тижня</span>
+        <a class="btn btn--ghost btn--sm" href="#catalog" data-filter data-i18n="new.all">Усі новинки</a>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="rail" id="rail"></div>
+  </div>
+</section>
+
+<!-- ============ catalogue ============ -->
+<section class="section" id="catalog">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow" data-i18n="cat.eyebrow">Каталог</p>
+        <h2 class="section-head__title" data-i18n="cat.title">Уся полиця</h2>
+      </div>
+      <div class="section-head__side">
+        <div class="seg" id="catalog-view" role="group" aria-label="Вигляд">
+          <button type="button" data-value="grid" aria-pressed="true" data-i18n="cat.grid">Сітка</button>
+          <button type="button" data-value="list" aria-pressed="false" data-i18n="cat.list">Список</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar__row">
+        <div class="search toolbar__search">
+          <svg class="search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+          <input class="input" id="catalog-search" type="search" autocomplete="off"
+                 data-i18n-attr="placeholder:cat.search;aria-label:a11y.search" placeholder="Назва, автор, ISBN…">
+          <button class="search__clear" id="catalog-search-clear" type="button" hidden data-i18n-attr="aria-label:a11y.close" aria-label="Очистити">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+        <select class="select" id="catalog-sort" style="flex:0 1 220px" data-i18n-attr="aria-label:cat.sort">
+          <option value="pop" data-i18n="cat.sort.pop">За популярністю</option>
+          <option value="new" data-i18n="cat.sort.new">Спочатку нові</option>
+          <option value="priceUp" data-i18n="cat.sort.priceUp">Ціна: від нижчої</option>
+          <option value="priceDown" data-i18n="cat.sort.priceDown">Ціна: від вищої</option>
+          <option value="title" data-i18n="cat.sort.title">За назвою</option>
+        </select>
+      </div>
+
+      <div class="toolbar__row">
+        <div class="filters" id="filter-genres" role="group" data-i18n-attr="aria-label:cat.genre"></div>
+      </div>
+      <div class="toolbar__row">
+        <span class="filters__label" data-i18n="cat.format">Формат</span>
+        <div class="filters" id="filter-formats" role="group" data-i18n-attr="aria-label:cat.format"></div>
+        <button class="chip" id="filter-wish" type="button" aria-pressed="false">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20s-7-4.6-7-9.4A4 4 0 0 1 12 7a4 4 0 0 1 7 3.6C19 15.4 12 20 12 20Z"/></svg>
+          <span data-i18n="book.wish">До бажаного</span> <span class="chip__n num">0</span>
+        </button>
+        <span class="toolbar__spacer"></span>
+        <button class="btn btn--quiet btn--sm" id="catalog-clear" hidden data-i18n="cat.clear">Скинути фільтри</button>
+      </div>
+
+      <p class="results" id="catalog-count"></p>
+    </div>
+
+    <div class="shelf shelf--wide" id="shelf"></div>
+
+    <div style="display:flex;justify-content:center;margin-block-start:3rem">
+      <button class="btn btn--ghost btn--lg" id="catalog-more" data-i18n="cat.more">Показати ще</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ collections ============ -->
+<section class="section section--sunk" id="collections">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow" data-i18n="coll.eyebrow">Добірки</p>
+        <h2 class="section-head__title" data-i18n="coll.title">Зібрано редакцією</h2>
+      </div>
+      <span class="book__author" data-i18n="coll.note">Не алгоритм, а люди, які це прочитали</span>
+    </div>
+
+    <div class="collections">
+      <article class="collection reveal" style="background:#1d3b5c">
+        <div class="collection__art" aria-hidden="true">
+          <svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice"><rect width="400" height="400" fill="#1d3b5c"/><g stroke="#e0563c" stroke-width="10" opacity=".8">
+            <line x1="-40" y1="420" x2="240" y2="-20"/><line x1="60" y1="420" x2="340" y2="-20"/><line x1="160" y1="420" x2="440" y2="-20"/></g>
+            <circle cx="300" cy="110" r="66" fill="#e8c15c" opacity=".92"/></svg>
+        </div>
+        <p class="collection__kicker" data-i18n="coll.1.kicker">12 книжок</p>
+        <h3 class="collection__title" data-i18n="coll.1.title">Розстріляне відродження</h3>
+        <p class="collection__note" data-i18n="coll.1.note">Покоління, яке зникло за десять років, і тексти, що лишилися.</p>
+        <span class="collection__go"><span data-i18n="coll.go">Дивитися добірку</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+        <a class="collection__link" href="#catalog" data-filter data-genre="klasyka" aria-label="Розстріляне відродження"></a>
+      </article>
+
+      <article class="collection reveal" style="background:#2f5d52">
+        <div class="collection__art" aria-hidden="true">
+          <svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice"><rect width="400" height="400" fill="#2f5d52"/>
+            <path d="M0 260 A200 200 0 0 1 400 260 Z" fill="#e8a13a" opacity=".9"/>
+            <g fill="none" stroke="#ede7d6" stroke-width="3" opacity=".5"><circle cx="200" cy="260" r="120"/><circle cx="200" cy="260" r="160"/></g></svg>
+        </div>
+        <p class="collection__kicker" data-i18n="coll.2.kicker">9 книжок</p>
+        <h3 class="collection__title" data-i18n="coll.2.title">Книжки, з яких починають</h3>
+        <p class="collection__note" data-i18n="coll.2.note">Якщо читаєте українською вперше за багато років.</p>
+        <span class="collection__go"><span data-i18n="coll.go">Дивитися добірку</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+        <a class="collection__link" href="#catalog" data-filter data-genre="proza" aria-label="Книжки, з яких починають"></a>
+      </article>
+
+      <article class="collection reveal" style="background:#a63a2e">
+        <div class="collection__art" aria-hidden="true">
+          <svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice"><rect width="400" height="400" fill="#a63a2e"/>
+            <g fill="#f3e9d9" opacity=".92">
+              <circle cx="90" cy="90" r="34"/><circle cx="200" cy="90" r="24"/><circle cx="310" cy="90" r="14"/>
+              <circle cx="90" cy="200" r="24"/><circle cx="200" cy="200" r="14"/><circle cx="310" cy="200" r="34"/>
+              <circle cx="90" cy="310" r="14"/><circle cx="200" cy="310" r="34"/><circle cx="310" cy="310" r="24"/></g></svg>
+        </div>
+        <p class="collection__kicker" data-i18n="coll.3.kicker">7 книжок</p>
+        <h3 class="collection__title" data-i18n="coll.3.title">Читати дітям уголос</h3>
+        <p class="collection__note" data-i18n="coll.3.note">Щоб мова лишилася вдома, навіть коли дім тимчасовий.</p>
+        <span class="collection__go"><span data-i18n="coll.go">Дивитися добірку</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+        <a class="collection__link" href="#catalog" data-filter data-genre="dytiacha" aria-label="Читати дітям уголос"></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ quote ============ -->
+<section class="section section--tight quote">
+  <div class="wrap quote__grid">
+    <div class="reveal">
+      <span class="quote__mark" aria-hidden="true">«</span>
+      <blockquote data-i18n="quote.text">Я замовила «Кобзар» у Берлін і плакала на пошті. Не через вірші — через те, що коробка була з Києва.</blockquote>
+      <p class="quote__by" data-i18n="quote.by">Олена, Берлін · замовлення #10482</p>
+    </div>
+    <dl class="figures reveal" style="border:0;padding:0">
+      <div><dt class="figure__n num">4,9</dt><dd class="figure__l">середня оцінка · 1 842 відгуки</dd></div>
+      <div><dt class="figure__n num">98%</dt><dd class="figure__l">посилок доїжджають у строк</dd></div>
+    </dl>
+  </div>
+</section>
+
+<!-- ============ delivery ============ -->
+<section class="section" id="delivery">
+  <div class="wrap delivery__grid">
+    <div class="reveal">
+      <p class="eyebrow" data-i18n="del.eyebrow">Доставка</p>
+      <h2 class="section-head__title" style="margin-block:1rem 1.2rem" data-i18n="del.title">Як книжка доїжджає до вас</h2>
+      <p class="lede" data-i18n="del.lede">Два склади — Київ і Варшава. Для адрес у ЄС посилка йде з Варшави, тож без митних декларацій і несподіваних зборів на порозі.</p>
+
+      <ol class="steps">
+        <li class="step"><span class="step__n">01</span><div>
+          <h4 data-i18n="del.step1.t">Замовлення та комплектація</h4>
+          <p data-i18n="del.step1.d">Збираємо в день оплати. Кожна книжка — у крафтовий конверт, стос — у жорсткий бокс із кутовим захистом.</p></div></li>
+        <li class="step"><span class="step__n">02</span><div>
+          <h4 data-i18n="del.step2.t">Відправка зі складу</h4>
+          <p data-i18n="del.step2.d">ЄС — з Варшави (InPost, DPD). Україна — Нова пошта з Києва. Трек-номер приходить того ж дня.</p></div></li>
+        <li class="step"><span class="step__n">03</span><div>
+          <h4 data-i18n="del.step3.t">Отримання</h4>
+          <p data-i18n="del.step3.d">Пачкомат, кур’єр або відділення. Якщо книжка приїхала пошкодженою — надсилаємо нову без повернення старої.</p></div></li>
+      </ol>
+    </div>
+
+    <form class="calc reveal" id="calc">
+      <div class="calc__head">
+        <h3 data-i18n="del.calcTitle">Порахувати доставку</h3>
+        <button class="btn btn--quiet btn--sm" type="button" id="calc-use-cart" data-i18n="del.toCart">З мого кошика</button>
+      </div>
+      <div class="calc__row">
+        <label class="field">
+          <span class="field__label" data-i18n="del.country">Країна</span>
+          <select class="select" id="calc-country"></select>
+        </label>
+        <label class="field">
+          <span class="field__label" data-i18n="del.books">Книжок у посилці</span>
+          <input class="input num" id="calc-qty" type="number" min="1" max="20" value="2" inputmode="numeric">
+        </label>
+      </div>
+      <dl class="calc__out" id="calc-out"></dl>
+      <p class="calc__note" data-i18n="del.note">Розрахунок орієнтовний: остаточна вартість залежить від фактичної ваги посилки та тарифу перевізника на день відправки.</p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ journal ============ -->
+<section class="section section--sunk" id="journal">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow" data-i18n="jour.eyebrow">Журнал</p>
+        <h2 class="section-head__title" data-i18n="jour.title">Що читати й чому</h2>
+      </div>
+    </div>
+    <div class="posts">
+      <article class="post reveal">
+        <p class="post__meta"><span class="is-cat" data-i18n="jour.1.cat">Списки</span><span>14.09.2026</span><span><span class="num">6</span> <span data-i18n="jour.min">хв</span></span></p>
+        <h3 class="post__title" data-i18n="jour.1.t">Десять українських книжок, які вже переклали вашою новою мовою</h3>
+        <p class="post__excerpt" data-i18n="jour.1.d">Щоб дати почитати колегам і не переказувати сюжет самому.</p>
+        <a class="post__link" href="#journal" aria-label="Читати"></a>
+      </article>
+      <article class="post reveal">
+        <p class="post__meta"><span class="is-cat" data-i18n="jour.2.cat">Видавництва</span><span>02.09.2026</span><span><span class="num">9</span> <span data-i18n="jour.min">хв</span></span></p>
+        <h3 class="post__title" data-i18n="jour.2.t">Як друкують книжки під час блекауту</h3>
+        <p class="post__excerpt" data-i18n="jour.2.d">Репортаж із харківської друкарні, яка працює на генераторі з 2022-го.</p>
+        <a class="post__link" href="#journal" aria-label="Читати"></a>
+      </article>
+      <article class="post reveal">
+        <p class="post__meta"><span class="is-cat" data-i18n="jour.3.cat">Розмова</span><span>21.08.2026</span><span><span class="num">12</span> <span data-i18n="jour.min">хв</span></span></p>
+        <h3 class="post__title" data-i18n="jour.3.t">Остап Сливинський: «Словник війни писали не я, а сорок людей»</h3>
+        <p class="post__excerpt" data-i18n="jour.3.d">Про свідчення, зібрані на вокзалі, і слова, що змінили значення.</p>
+        <a class="post__link" href="#journal" aria-label="Читати"></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ club ============ -->
+<section class="section" id="club">
+  <div class="wrap">
+    <div class="club reveal">
+      <div class="club__art" aria-hidden="true">
+        <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="#e9e5da" stroke-width="2">
+          <rect x="30" y="40" width="90" height="320" rx="3"/><rect x="130" y="70" width="70" height="290" rx="3"/><rect x="210" y="20" width="60" height="340" rx="3"/>
+          <line x1="30" y1="90" x2="120" y2="90"/><line x1="130" y1="120" x2="200" y2="120"/><line x1="210" y1="70" x2="270" y2="70"/></g></svg>
+      </div>
+      <div class="club__copy">
+        <p class="eyebrow" data-i18n="club.eyebrow">Читацький клуб</p>
+        <h2 data-i18n="club.title">Одна книжка на місяць, обрана вручну</h2>
+        <p class="lede" data-i18n="club.lede">Підписка для тих, хто хоче читати українською регулярно, але не має часу шукати. Ми обираємо, пакуємо й відправляємо — ви лише читаєте.</p>
+        <ul class="club__perks">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg><span data-i18n="club.p1">Книжка місяця з листом редакції — чому саме вона</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg><span data-i18n="club.p2">Безкоштовна доставка в будь-яку країну ЄС</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg><span data-i18n="club.p3">Знижка 15% на решту каталогу</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg><span data-i18n="club.p4">Онлайн-зустріч з автором раз на квартал</span></li>
+        </ul>
+      </div>
+      <form class="club__form" id="club-form">
+        <label class="field">
+          <span class="field__label" data-i18n="club.email">Ваш email</span>
+          <input class="input" id="club-email" type="email" required autocomplete="email" placeholder="olena@example.com">
+        </label>
+        <button class="btn btn--primary btn--lg btn--block" type="submit" data-i18n="club.join">Приєднатися</button>
+        <p class="club__fine" data-i18n="club.fine">Від 18 € на місяць. Скасувати можна будь-коли, без пояснень і дзвінків.</p>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ============ footer ============ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <a class="logo" href="#top" aria-label="READMORE">
+          <span class="logo__mark">READ</span><span>MORE</span><span class="logo__dot" aria-hidden="true"></span>
+        </a>
+        <p class="prose" style="font-size:var(--step--1)" data-i18n="foot.about">Незалежна книгарня української книжки. Працюємо з видавництвами напряму: кожен наклад — оригінальний, кожна гривня доходить до автора.</p>
+        <div class="socials">
+          <a href="#club" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1.1" fill="currentColor"/></svg></a>
+          <a href="#club" aria-label="Telegram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 4 3 11l5 2 2 6 3-4 5 4Z"/><path d="m8 13 9-6"/></svg></a>
+          <a href="#journal" aria-label="Newsletter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg></a>
+        </div>
+      </div>
+
+      <div class="footer__col">
+        <h4 data-i18n="foot.shop">Крамниця</h4>
+        <ul>
+          <li><a href="#catalog" data-filter data-i18n="foot.newBooks">Новинки</a></li>
+          <li><a href="#catalog" data-filter data-i18n="foot.best">Бестселери</a></li>
+          <li><a href="#catalog" data-filter data-genre="poeziia">Поезія</a></li>
+          <li><a href="#club" data-i18n="foot.gift">Подарункові сертифікати</a></li>
+          <li><a href="#club" data-i18n="foot.clubLink">Читацький клуб</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4 data-i18n="foot.help">Допомога</h4>
+        <ul>
+          <li><a href="#delivery" data-i18n="foot.shipping">Доставка й оплата</a></li>
+          <li><a href="#delivery" data-i18n="foot.returns">Повернення</a></li>
+          <li><a href="#delivery" data-i18n="foot.faq">Часті питання</a></li>
+          <li><a href="#club" data-i18n="foot.contact">Контакти</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4 data-i18n="foot.company">Компанія</h4>
+        <ul>
+          <li><a href="#journal" data-i18n="foot.aboutUs">Про нас</a></li>
+          <li><a href="#journal" data-i18n="foot.publishers">Видавництвам</a></li>
+          <li><a href="#journal" data-i18n="foot.jobs">Вакансії</a></li>
+          <li><a href="#journal" data-i18n="foot.press">Пресі</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <span>© <span class="num">2026</span> READMORE · <span data-i18n="foot.rights">Усі права захищено</span></span>
+      <div class="pay"><span>Visa</span><span>Mastercard</span><span>Apple Pay</span><span>Google Pay</span><span>BLIK</span><span>Klarna</span></div>
+      <div class="footer__legal">
+        <a href="#top" data-i18n="foot.terms">Умови</a>
+        <a href="#top" data-i18n="foot.privacy">Приватність</a>
+        <a href="#top" data-i18n="foot.cookies">Cookies</a>
+      </div>
+    </div>
+    <p class="demo-note" data-i18n="foot.demo">Демонстраційна збірка. Назви книжок, автори й видавництва — справжні; ціни, наявність, ISBN та відгуки — тестові дані. Обкладинки — оригінальний типографічний дизайн, а не репродукції видавничих.</p>
+  </div>
+</footer>
+
+<!-- ============ overlays ============ -->
+<div class="scrim" id="scrim" hidden></div>
+
+<aside class="drawer" id="cart" role="dialog" aria-modal="true" aria-labelledby="cart-title" hidden>
+  <div class="drawer__head">
+    <h2 id="cart-title" data-i18n="cart.title">Кошик</h2>
+    <button class="iconbtn" data-act="close" data-i18n-attr="aria-label:a11y.close" aria-label="Закрити">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <div class="drawer__body" id="cart-body"></div>
+  <div class="drawer__foot" id="cart-foot" hidden>
+    <div class="ship-goal" id="cart-goal"></div>
+    <div class="totals">
+      <div class="totals__row"><span data-i18n="cart.sub">Товари</span><span id="cart-sub">—</span></div>
+      <div class="totals__row"><span data-i18n="cart.ship">Доставка</span><span id="cart-ship">—</span></div>
+      <div class="totals__row totals__row--sum"><span data-i18n="cart.total">Разом</span><span id="cart-total">—</span></div>
+    </div>
+    <button class="btn btn--primary btn--lg btn--block" id="cart-checkout" data-i18n="cart.checkout">Оформити замовлення</button>
+  </div>
+</aside>
+
+<div class="dialog" id="book-dialog" role="dialog" aria-modal="true" aria-label="Книжка" hidden>
+  <div class="dialog__panel">
+    <button class="dialog__close" data-act="close" data-i18n-attr="aria-label:a11y.close" aria-label="Закрити">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+    <div class="dialog__visual"></div>
+    <div class="dialog__scroll"></div>
+  </div>
+</div>
+
+<div class="palette" id="palette" hidden>
+  <div class="palette__panel" role="dialog" aria-modal="true" aria-label="Пошук">
+    <div class="palette__field">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      <input type="search" autocomplete="off" role="combobox" aria-expanded="true" aria-controls="palette-list"
+             data-i18n-attr="placeholder:pal.placeholder" placeholder="Шукати книжку, автора або жанр…">
+      <kbd>ESC</kbd>
+    </div>
+    <div class="palette__list" id="palette-list" role="listbox"></div>
+    <div class="palette__hint">
+      <span><kbd>↑</kbd><kbd>↓</kbd> <span data-i18n="pal.hint1">навігація</span></span>
+      <span><kbd>↵</kbd> <span data-i18n="pal.hint2">відкрити</span></span>
+      <span><kbd>esc</kbd> <span data-i18n="pal.hint3">закрити</span></span>
+    </div>
+  </div>
+</div>
+
+<button class="totop" id="totop" data-i18n-attr="aria-label:a11y.top;title:a11y.top" aria-label="Нагору">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
+</button>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BookStore",
+  "name": "READMORE",
+  "description": "Українська книгарня з доставкою в 27 країн Євросоюзу та по Україні.",
+  "currenciesAccepted": "EUR, UAH, PLN, CZK, GBP",
+  "paymentAccepted": "Visa, Mastercard, Apple Pay, Google Pay, BLIK, Klarna",
+  "areaServed": ["UA", "EU"],
+  "knowsLanguage": ["uk", "en"]
+}
+</script>
+
+<script type="module" src="assets/js/main.js"></script>
+</body>
+</html>
