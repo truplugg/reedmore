@@ -63,10 +63,16 @@ export function renderCart() {
   foot.querySelector('#cart-ship').textContent = left > 0 ? t('cart.shipCalc') : money(0);
   foot.hidden = entries.length === 0;
 
+  const n = cartCount();
   document.querySelectorAll('[data-count="cart"]').forEach((el) => {
-    const n = cartCount();
+    const grew = n > (Number(el.textContent) || 0);
     el.textContent = n;
     el.hidden = n === 0;
+    if (grew) {
+      el.classList.remove('is-pop');
+      void el.offsetWidth;             /* restart the animation */
+      el.classList.add('is-pop');
+    }
   });
 }
 

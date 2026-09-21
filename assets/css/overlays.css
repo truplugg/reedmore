@@ -139,7 +139,7 @@
   inline-size: min(980px, 100%);
   max-block-size: min(86vh, 760px);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr);
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   background: var(--bg);
   border: 1px solid var(--line);
@@ -165,8 +165,10 @@
   background: var(--bg-sunk);
   border-inline-end: 1px solid var(--line);
 }
-.dialog__visual .book { inline-size: min(225px, 62%); }
-.dialog__scroll { min-block-size: 0; overflow-y: auto; padding: clamp(1.5rem, 3.5vw, 2.6rem); display: flex; flex-direction: column; gap: var(--s-4); }
+.dialog__visual .book { inline-size: min(262px, 70%); --open-scale: 0.86; }
+.dialog__scroll {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent 100%);
+  min-block-size: 0; overflow-y: auto; padding: clamp(1.5rem, 3.5vw, 2.6rem); display: flex; flex-direction: column; gap: var(--s-4); }
 .dialog__close {
   position: absolute;
   inset-block-start: 10px;

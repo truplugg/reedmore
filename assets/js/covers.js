@@ -6,6 +6,8 @@
    reproduced anywhere on this site.
    ============================================================ */
 
+import { STITCH } from './stitch.js';
+
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
 ));
@@ -148,4 +150,29 @@ export function thumbHTML(book) {
   return `<div class="line__thumb" style="background:${book.cover.pal.paper};color:${book.cover.pal.ink}">${
     coverHTML(book, { compact: true })
   }</div>`;
+}
+
+/**
+ * The endpaper. Each title gets a cross-stitch motif from the Ukrainian
+ * embroidery vocabulary — an eight-pointed star, a hooked rhombus, a
+ * counted cross, a running zigzag — tiled in the book's own accent and
+ * printed back, the way a real paste-down is.
+ */
+export function endpaperSVG(kind, uid) {
+  const m = STITCH[kind] || STITCH.star;
+  const id = `ep-${kind}-${uid}`;
+  const gap = 10;                       /* five stitches of plain ground */
+  const w = m.w + gap, h = m.h + gap;
+  return `<svg class="endpaper" viewBox="0 0 100 153" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs><pattern id="${id}" width="${w}" height="${h}" patternUnits="userSpaceOnUse" patternTransform="scale(.66)">
+      <g fill="currentColor" transform="translate(${gap / 2},${gap / 2})">${m.d}</g>
+    </pattern></defs>
+    <rect width="100" height="153" fill="url(#${id})"/>
+  </svg>`;
+}
+
+/** The shop's device: one embroidered rhombus, set on the title page. */
+export function deviceSVG() {
+  const m = STITCH.rhomb;
+  return `<svg class="book__device" viewBox="0 0 ${m.w} ${m.h}" aria-hidden="true"><g fill="currentColor">${m.d}</g></svg>`;
 }

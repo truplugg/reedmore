@@ -1,97 +1,336 @@
 /* ============================================================
-   READMORE — the opening book
-   The signature object. A cover hinged on the spine swings open
-   to reveal the book's endpaper (paste-down) and its first page
-   with the colophon. Hover on fine pointers, tap on coarse ones.
+   READMORE — the book object
+   A real 3D volume: front board, page block, fore-edge, spine.
+   On the shelf it turns toward the reader and takes on colour
+   while its neighbours fall to grey. In the hero and the record
+   it goes further: the cover swings open on its spine to show
+   the endpaper and the first page.
    ============================================================ */
 
 .book {
   --cv-paper: #1d3b5c;
   --cv-ink:   #efe9db;
   --cv-accent:#e0563c;
-  --thick: 11px;
-  --open-scale: 0.9;      /* how much the spread is resized when open */
-  --open-x: 45%;          /* set by book3d.js so the spread stays in frame */
+  --depth: 18px;
+  --open-scale: 0.9;
+  --open-x: 45%;
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--s-4);
+  min-inline-size: 0;
 }
+
+/* The head holds the 3D stage plus the flat things that must sit above
+   it. z-index does not order children of a preserve-3d parent — depth
+   does — so the hit target and the hint stay out of that scene. */
+.book__head { position: relative; }
 
 /* ---------- stage ---------- */
 .book__stage {
   position: relative;
   aspect-ratio: var(--cover-ratio);
-  perspective: 2000px;
-  perspective-origin: 62% 46%;
+  margin-inline: 6%;
+  perspective: 1700px;
+  perspective-origin: 54% 44%;
   transform-style: preserve-3d;
-  isolation: isolate;
-  /* pointer parallax: fast, so the cover keeps its own slow swing */
+  z-index: 2;
   transform: rotateY(var(--ty, 0deg)) rotateX(var(--tx, 0deg));
-  transition: transform 280ms var(--ease-out);
+  transition: transform 300ms var(--ease-out);
 }
 
 .book__body {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
-  transform: rotateY(-13deg) rotateX(2deg);
-  transition: transform var(--t-book) var(--ease-out);
+  transform: rotateY(var(--turn-rest)) rotateX(1.4deg);
+  transition: transform 620ms var(--ease-turn);
   will-change: transform;
 }
 
-.book.is-open .book__body {
-  transform: translateX(var(--open-x)) scale(var(--open-scale)) rotateX(1deg);
+.book.is-active .book__body {
+  transform: translateY(-14px) scale(1.055) rotateY(var(--turn-focus)) rotateX(0.4deg);
 }
-/* a book standing alone (hero, dialog) has room, so it opens wider */
-.book--solo { --open-scale: 0.94; --open-x: 46%; }
 
-/* ---------- page block (the body of the book) ---------- */
-.book__block {
+/* ---------- the six faces of the volume ---------- */
+.book__face,
+.book__block,
+.book__back,
+.book__edge,
+.book__spine {
+  position: absolute;
+  border-radius: 1px;
+}
+
+/* front board carries the artwork */
+.book__cover {
   position: absolute;
   inset: 0;
-  background: var(--surface-2);
-  border-radius: 1px var(--r-sm) var(--r-sm) 1px;
-  box-shadow:
-    inset -1px 0 0 rgb(0 0 0 / .06),
-    inset 1px 0 0 rgb(0 0 0 / .10);
-  overflow: hidden;
-  transform: translateZ(0px);
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  transform: translateZ(calc(var(--depth) / 2));
+  transition: transform var(--t-book) var(--ease-inout);
+  will-change: transform;
+  z-index: 3;
 }
-
-/* fore-edge: the stack of page edges, right side */
-.book__block::after {
+.book__face {
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 1px var(--r-sm) var(--r-sm) 1px;
+  overflow: hidden;
+}
+.book__face--front {
+  background: var(--cv-paper);
+  color: var(--cv-ink);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / .16);
+}
+/* light raking across the board, strongest in the gutter */
+.book__face--front::after {
   content: "";
   position: absolute;
-  inset-block: 1.5%;
-  inset-inline-end: 0;
-  inline-size: var(--thick);
-  background:
-    repeating-linear-gradient(90deg,
-      rgb(20 18 12 / .16) 0 1px,
-      rgb(255 253 246 / .95) 1px 2px,
-      rgb(232 227 214 / .9) 2px 3px);
-  box-shadow: inset 2px 0 4px rgb(20 18 12 / .18);
-  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    rgb(0 0 0 / .30) 0%,
+    rgb(0 0 0 / .10) 5%,
+    rgb(0 0 0 / 0) 16%,
+    rgb(255 255 255 / .05) 88%,
+    rgb(255 255 255 / .14) 100%);
+  transition: opacity var(--t-book) var(--ease-out);
+}
+.book.is-active .book__face--front::after { opacity: 0.72; }
+
+/* back board */
+.book__back {
+  inset: 0;
+  transform: translateZ(calc(var(--depth) / -2)) rotateY(180deg);
+  background: color-mix(in srgb, var(--cv-paper) 86%, #000);
+  border-radius: var(--r-sm) 1px 1px var(--r-sm);
 }
 
-/* gutter shadow, deepest at the spine */
+/* fore-edge: the stack of page edges on the right */
+.book__edge {
+  inset-block: 1.2%;
+  inset-inline-end: 0;
+  inline-size: var(--depth);
+  transform-origin: right center;
+  transform: translateZ(calc(var(--depth) / -2)) rotateY(90deg);
+  background:
+    linear-gradient(90deg, rgb(20 18 12 / .16), rgb(20 18 12 / 0) 22%),
+    repeating-linear-gradient(90deg,
+      rgb(28 24 16 / .13) 0 1px,
+      #fffdf7 1px 2.5px,
+      #efe9db 2.5px 4px);
+  box-shadow: inset 0 0 0 1px rgb(20 18 12 / .10);
+}
+
+/* spine */
+.book__spine {
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--depth);
+  transform-origin: left center;
+  transform: translateZ(calc(var(--depth) / -2)) rotateY(-90deg);
+  background: color-mix(in srgb, var(--cv-paper) 80%, #000);
+  box-shadow: inset -2px 0 5px rgb(0 0 0 / .35);
+}
+
+/* the block of pages, whose top sheet is the right page of the spread */
+.book__block {
+  inset: 1.2% 1.5% 1.2% 0;
+  transform: translateZ(calc(var(--depth) / 2 - 1px));
+  background: var(--surface-2);
+  border-radius: 1px var(--r-sm) var(--r-sm) 1px;
+  overflow: hidden;
+  box-shadow: inset 1px 0 0 rgb(0 0 0 / .08);
+}
 .book__block::before {
   content: "";
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
-  inline-size: 26%;
+  inline-size: 24%;
   background: linear-gradient(90deg,
-    rgb(20 18 12 / .26) 0%,
-    rgb(20 18 12 / .10) 42%,
-    transparent 100%);
+    rgb(20 18 12 / .24) 0%, rgb(20 18 12 / .08) 44%, transparent 100%);
   z-index: 2;
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--t-book) var(--ease-out);
 }
-.book.is-open .book__block::before { opacity: 1; }
+.book--open.is-open .book__block::before { opacity: 1; }
+
+/* ---------- contact shadow ---------- */
+.book__shadow {
+  position: absolute;
+  inset-inline: 2%;
+  inset-block-end: -4%;
+  block-size: 8%;
+  background: radial-gradient(ellipse at 50% 50%,
+    rgb(var(--sh-color) / .38) 0%, rgb(var(--sh-color) / .14) 46%, transparent 72%);
+  filter: blur(8px);
+  transform: translateZ(calc(var(--depth) / -2 - 14px)) scaleX(0.92);
+  transition: transform 620ms var(--ease-turn), opacity 620ms var(--ease-turn);
+  pointer-events: none;
+  opacity: 0.85;
+}
+.book.is-active .book__shadow {
+  transform: translateZ(calc(var(--depth) / -2 - 14px)) translateY(10px) scale(1.1, 1.3);
+  opacity: 1;
+}
+
+/* ---------- colour focus: one book in colour, the rest in grey ---------- */
+.cv, .book__card { transition: filter 420ms var(--ease-out), background 260ms var(--ease-out); }
+.shelf.is-browsing .book:not(.is-active) .cv,
+.shelf.is-browsing .book:not(.is-active) .book__card,
+.rail.is-browsing .book:not(.is-active) .cv,
+.rail.is-browsing .book:not(.is-active) .book__card {
+  filter: grayscale(1);
+}
+.shelf .book.is-active, .rail .book.is-active { z-index: 20; }
+
+/* ---------- the product card the book stands on ---------- */
+.book__card {
+  position: relative;
+  margin-block-start: -30%;
+  padding: calc(30% + 1.15rem) 1.05rem 1.05rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.34rem;
+  flex: 1 1 auto;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+}
+.book.is-active .book__card {
+  background: var(--surface-2);
+  border-color: var(--line);
+  box-shadow: var(--sh-2);
+}
+.book.is-active .book__actions .btn--ink {
+  --btn-bg: var(--accent);
+  --btn-bd: var(--accent);
+  --btn-fg: var(--text-on-accent);
+}
+
+.book__title {
+  font-family: var(--font-text);
+  font-size: var(--step-0);
+  font-weight: 700;
+  line-height: 1.26;
+  letter-spacing: -0.012em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.book__author {
+  font-size: var(--step--1);
+  color: var(--text-mute);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
+}
+.book__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-block-start: auto;
+  padding-block-start: 0.55rem;
+}
+.book__price {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--step-0);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+.book__price s {
+  color: var(--text-mute);
+  font-weight: 500;
+  font-size: 0.78em;
+  margin-inline-end: 0.45em;
+  text-decoration-thickness: 1px;
+}
+.book__price .is-now { color: var(--accent); }
+
+.book__actions { display: flex; gap: 0.4rem; align-items: center; margin-block-start: 0.65rem; }
+.book__actions .btn { flex: 1; }
+
+/* prompt on the focused book, naming the next step */
+.book__hint {
+  position: absolute;
+  inset-block-start: 4%;
+  inset-inline-end: 3%;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.34em 0.75em;
+  border-radius: var(--r-pill);
+  background: var(--navy-900);
+  color: #f2efe6;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.94);
+  transition: opacity 240ms var(--ease-out), transform 300ms var(--ease-spring);
+  pointer-events: none;
+}
+.book.is-active:not(.book--solo) .book__hint,
+.book--open.is-open:not(.book--solo) .book__hint {
+  opacity: 0.94;
+  transform: none;
+}
+
+.book__trigger {
+  position: absolute;
+  inset: -2% 0;
+  z-index: 6;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+/* an open cover swings a full width to the left, and that area is part
+   of the same object */
+.book--open.is-open .book__trigger { inset: -2% 0 -2% -100%; }
+.book__trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ============================================================
+   OPEN MODE — hero and record only, where there is room
+   ============================================================ */
+.book--open .book__cover { transform-origin: left center; }
+.book--open.is-open .book__cover {
+  transform: translateZ(calc(var(--depth) / 2)) rotateY(var(--book-open-angle));
+}
+.book--open.is-open .book__body {
+  transform: translateX(var(--open-x)) scale(var(--open-scale)) rotateY(0deg) rotateX(0.6deg);
+}
+.book--open.is-open .book__shadow {
+  transform: translateZ(calc(var(--depth) / -2 - 14px)) translateX(-6%) scale(1.8, 1.15);
+}
+.book--solo { --open-scale: 0.94; --open-x: 46%; --depth: 24px; }
+
+/* back of the cover: the paste-down endpaper */
+.book__face--inside {
+  transform: rotateY(180deg);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / .10);
+}
+.book__face--inside::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(270deg,
+    rgb(20 18 12 / .22) 0%, rgb(20 18 12 / .05) 16%, transparent 38%);
+  pointer-events: none;
+}
 
 /* ---------- the right-hand page ---------- */
 .book__page {
@@ -103,9 +342,9 @@
   gap: 0.7em;
   container-type: inline-size;
   opacity: 0;
-  transition: opacity 260ms linear 60ms;
+  transition: opacity 240ms linear;
 }
-.book.is-open .book__page { opacity: 1; transition-delay: 380ms; }
+.book--open.is-open .book__page { opacity: 1; transition-delay: 400ms; }
 
 .book__folio {
   font-family: var(--font-display);
@@ -122,9 +361,9 @@
 
 .book__excerpt {
   font-family: var(--font-text);
-  font-size: clamp(8px, 4.1cqi, 13px);
-  line-height: 1.55;
-  color: color-mix(in srgb, var(--text) 78%, transparent);
+  font-size: clamp(9px, 4.1cqi, 13px);
+  line-height: 1.58;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
   hyphens: auto;
   overflow: hidden;
   display: -webkit-box;
@@ -142,14 +381,13 @@
   color: var(--cv-accent);
 }
 
-/* colophon — the publisher's spec block, set as a real one is */
 .colophon {
   margin: auto 0 0;
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.25em 0.8em;
-  font-size: clamp(7px, 3.3cqi, 11px);
-  line-height: 1.35;
+  font-size: clamp(8px, 3.3cqi, 11px);
+  line-height: 1.38;
   border-block-start: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
   padding-block-start: 0.7em;
 }
@@ -172,325 +410,162 @@
   .book__excerpt { -webkit-line-clamp: 5; line-clamp: 5; }
 }
 
-/* ---------- the cover ---------- */
-.book__cover {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  transform-origin: left center;
-  transform: translateZ(var(--thick)) rotateY(0deg);
-  transition: transform var(--t-book) var(--ease-out);
-  will-change: transform;
-  z-index: 3;
-}
-.book.is-open .book__cover {
-  transform: translateZ(var(--thick)) rotateY(var(--book-open-angle));
+/* printer's device, centred in the open space of the page */
+.book__device {
+  inline-size: 14%;
+  block-size: auto;
+  margin: auto auto;
+  color: color-mix(in srgb, var(--cv-accent) 55%, transparent);
+  flex: none;
 }
 
-.book__face {
+/* the embroidered endpaper itself */
+.endpaper {
   position: absolute;
   inset: 0;
-  backface-visibility: hidden;
-  border-radius: 1px var(--r-sm) var(--r-sm) 1px;
-  overflow: hidden;
-}
-
-/* front: generated cover art */
-.book__face--front {
-  background: var(--cv-paper);
-  color: var(--cv-ink);
-  box-shadow:
-    inset -1px 0 0 rgb(255 255 255 / .10),
-    inset 0 0 0 1px rgb(0 0 0 / .18);
-}
-/* light falling into the gutter as the cover turns */
-.book__face--front::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg,
-    rgb(0 0 0 / .42) 0%,
-    rgb(0 0 0 / .12) 7%,
-    rgb(0 0 0 / 0) 18%,
-    rgb(255 255 255 / .06) 92%,
-    rgb(255 255 255 / .12) 100%);
+  inline-size: 100%;
+  block-size: 100%;
+  color: var(--cv-accent);
+  opacity: 0.22;
   pointer-events: none;
 }
 
-/* back of the cover: the paste-down endpaper */
-.book__face--inside {
-  transform: rotateY(180deg);
-  background: var(--surface-2);
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / .10);
-}
-.book__face--inside::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(270deg,
-    rgb(20 18 12 / .24) 0%,
-    rgb(20 18 12 / .06) 16%,
-    transparent 38%);
-  pointer-events: none;
-}
-
-/* bookplate on the endpaper — the shop's mark, as a real ex-libris */
+/* ex-libris at the head of the endpaper */
 .book__plate {
   position: absolute;
   inset-block-start: 9%;
-  inset-inline-start: 10%;
-  inset-inline-end: 14%;
+  inset-inline-start: 11%;
+  inset-inline-end: 13%;
   display: flex;
   flex-direction: column;
   gap: 0.35em;
+  padding: 6% 7%;
+  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+  box-shadow: 0 1px 3px rgb(20 18 12 / .10), inset 0 0 0 1px color-mix(in srgb, var(--text) 12%, transparent);
   font-family: var(--font-display);
   font-size: clamp(6px, 3cqi, 10px);
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--text) 40%, transparent);
+  color: color-mix(in srgb, var(--text) 42%, transparent);
   container-type: inline-size;
 }
 .book__plate span:first-child { color: var(--cv-accent); }
 
-/* ---------- endpaper patterns ---------- */
-[data-endpaper] { background-color: var(--surface-2); }
-[data-endpaper="weave"] {
-  background-image:
-    repeating-linear-gradient(45deg, var(--cv-accent) 0 1px, transparent 1px 9px),
-    repeating-linear-gradient(-45deg, var(--cv-accent) 0 1px, transparent 1px 9px);
-  background-blend-mode: normal;
-  opacity: 1;
-}
-[data-endpaper="rays"] {
-  background-image: repeating-conic-gradient(from 0deg at 50% 118%,
-    var(--cv-accent) 0deg 1.4deg, transparent 1.4deg 9deg);
-}
-[data-endpaper="wave"] {
-  background-image:
-    repeating-radial-gradient(circle at 12% 88%,
-      transparent 0 14px, var(--cv-accent) 14px 15px, transparent 15px 30px);
-}
-[data-endpaper="grid"] {
-  background-image:
-    repeating-linear-gradient(0deg, var(--cv-accent) 0 1px, transparent 1px 14px),
-    repeating-linear-gradient(90deg, var(--cv-accent) 0 1px, transparent 1px 14px);
-}
-[data-endpaper="arcs"] {
-  background-image:
-    repeating-radial-gradient(circle at 100% 0,
-      transparent 0 18px, var(--cv-accent) 18px 19px, transparent 19px 38px);
-}
-[data-endpaper="speck"] {
-  background-image:
-    radial-gradient(circle at 20% 30%, var(--cv-accent) 0 1.2px, transparent 1.6px),
-    radial-gradient(circle at 70% 60%, var(--cv-accent) 0 1.2px, transparent 1.6px),
-    radial-gradient(circle at 45% 80%, var(--cv-accent) 0 1.2px, transparent 1.6px);
-  background-size: 26px 26px, 34px 34px, 19px 19px;
-}
-.book__face--inside[data-endpaper],
-.book__page--left[data-endpaper] { --pattern-alpha: 0.22; }
-[data-endpaper]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--surface-2);
-  opacity: 0.74;
+/* ---------- context sizes ---------- */
+.shelf .book, .rail .book { --depth: 17px; }
+.hero__book .book { --depth: 26px; }
+.dialog__visual .book { --depth: 22px; }
+
+/* ---------- reduced motion: no turn, no swing ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .book__body, .book.is-active .book__body { transform: rotateY(-8deg); transition: none; }
+  .book__cover, .book--open.is-open .book__cover { transition: opacity 1ms linear; }
+  .book--open.is-open .book__body { transform: translateX(var(--open-x)) scale(var(--open-scale)); }
+  .book--open.is-open .book__cover { opacity: 0; pointer-events: none; }
+  .book__page { transition: none; }
+  .book__shadow { display: none; }
+  .shelf.is-browsing .book:not(.is-active) .cv,
+  .shelf.is-browsing .book:not(.is-active) .book__card { filter: none; }
 }
 
-/* ---------- contact shadow ---------- */
-.book__shadow {
-  position: absolute;
-  inset-inline: 4%;
-  inset-block-end: -5%;
-  block-size: 9%;
-  background: radial-gradient(ellipse at 50% 50%,
-    rgb(var(--sh-color) / .42) 0%, rgb(var(--sh-color) / .16) 45%, transparent 72%);
-  filter: blur(7px);
-  transform: translateZ(-30px) scaleX(0.9);
-  transition: transform var(--t-book) var(--ease-out), opacity var(--t-book) var(--ease-out);
-  pointer-events: none;
-}
-.book.is-open .book__shadow {
-  transform: translateZ(-30px) translateX(-6%) scaleX(1.85) scaleY(1.15);
-  opacity: 0.8;
-}
-
-/* ---------- cover artwork templates ---------- */
+/* ============================================================
+   COVER ARTWORK
+   Six typographic templates. Each sets the same three voices —
+   imprint, author, title — on its own geometric plate, so the
+   shelf reads as one designed series rather than six accidents.
+   ============================================================ */
 .cv {
   position: absolute;
   inset: 0;
-  padding: 11% 10%;
+  padding: 10.5% 9.5%;
   display: flex;
   flex-direction: column;
   container-type: inline-size;
   overflow: hidden;
 }
+.cv__art { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.cv__art svg { inline-size: 100%; block-size: 100%; display: block; }
+.cv__body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  min-block-size: 0;
+}
+
 .cv__imprint {
   font-family: var(--font-display);
-  font-size: clamp(5px, 2.7cqi, 9px);
+  font-size: clamp(5px, 2.6cqi, 8.5px);
   font-weight: 600;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  opacity: 0.66;
+  opacity: 0.62;
+  line-height: 1.3;
 }
 .cv__author {
   font-family: var(--font-ui);
-  font-size: clamp(7px, 3.6cqi, 12px);
+  font-size: clamp(6.5px, 3.4cqi, 11.5px);
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  opacity: 0.92;
+  opacity: 0.94;
+  line-height: 1.3;
 }
 .cv__title {
   font-family: var(--font-text);
   font-weight: 700;
-  font-size: clamp(13px, 10.5cqi, 34px);
-  line-height: 0.96;
-  letter-spacing: -0.02em;
+  font-size: clamp(12px, 9.8cqi, 31px);
+  line-height: 1.0;
+  letter-spacing: -0.022em;
   text-wrap: balance;
   hyphens: auto;
+  overflow-wrap: anywhere;
+  margin: 0;
 }
-.cv__rule { block-size: 2px; background: currentColor; opacity: 0.9; }
-.cv__art { position: absolute; inset: 0; pointer-events: none; }
-.cv__art svg { inline-size: 100%; block-size: 100%; display: block; }
-.cv__body { position: relative; z-index: 1; display: flex; flex-direction: column; block-size: 100%; }
+.cv__rule { block-size: 2px; background: currentColor; opacity: 0.88; flex: none; }
 
-/* at thumbnail size only the title survives, and it is set to fit */
-@container (max-width: 96px) {
-  .cv { padding: 10% 8%; }
-  .cv__author, .cv__imprint, .cv__rule { display: none; }
-  .cv__title { font-size: 8px !important; line-height: 1.05; letter-spacing: -0.02em; }
-  .cv__body { justify-content: flex-end !important; }
-}
-
-/* template: stack — title words stacked, constructivist rules */
-.cv--stack .cv__title { text-transform: uppercase; font-family: var(--font-display); font-size: clamp(11px, 8.4cqi, 27px); line-height: 1.02; letter-spacing: -0.04em; }
+/* stack — words counted out in the display face, constructivist rules */
 .cv--stack .cv__body { justify-content: flex-end; gap: 0.5em; }
 .cv--stack .cv__author { order: -1; margin-block-end: auto; }
-
-/* template: plate — a geometric plate above the title */
-.cv--plate .cv__body { justify-content: flex-end; gap: 0.6em; }
-.cv--plate .cv__title { font-size: clamp(12px, 9.4cqi, 30px); }
-
-/* template: band — a full-width colour band carrying the title */
-.cv--band .cv__body { justify-content: center; gap: 0.45em; }
-.cv--band .cv__title { font-size: clamp(12px, 9cqi, 29px); }
-
-/* template: column — a vertical accent column at the fore-edge */
-.cv--column { padding-inline-end: 22%; }
-.cv--column .cv__body { justify-content: flex-start; gap: 0.6em; }
-
-/* template: serif — quiet classical setting, centred */
-.cv--serif { padding: 13% 12%; text-align: center; }
-.cv--serif .cv__body { justify-content: center; gap: 0.7em; align-items: center; }
-.cv--serif .cv__title { font-style: italic; font-weight: 400; font-size: clamp(13px, 10cqi, 32px); }
-.cv--serif .cv__rule { inline-size: 28%; block-size: 1px; }
-
-/* template: split — field divided, title in the lower half */
-.cv--split .cv__body { justify-content: space-between; }
-.cv--split .cv__title { font-size: clamp(12px, 9.6cqi, 31px); }
-
-/* ---------- card meta under the book ---------- */
-.book__meta { display: flex; flex-direction: column; gap: 0.35rem; flex: 1 1 auto; }
-.book__title {
-  font-family: var(--font-text);
-  font-size: var(--step-0);
-  font-weight: 600;
-  line-height: 1.24;
-  letter-spacing: -0.01em;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow: hidden;
-}
-.book__author {
-  font-size: var(--step--1);
-  color: var(--text-mute);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  overflow: hidden;
-}
-.book__line {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--s-3);
-  margin-block-start: auto;
-  padding-block-start: 0.2rem;
-}
-.book__price {
+.cv--stack .cv__title {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--step-0);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.book__price s { color: var(--text-mute); font-weight: 400; font-size: 0.82em; margin-inline-end: 0.45em; }
-
-.book__actions { display: flex; gap: var(--s-2); }
-
-/* prompt that teaches the interaction without shouting */
-.book__hint {
-  position: absolute;
-  inset-block-end: 3%;
-  inset-inline-start: 50%;
-  translate: -50% 0;
-  z-index: 5;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  padding: 0.3em 0.7em;
-  border-radius: var(--r-pill);
-  background: var(--surface-ink);
-  color: var(--text-on-ink);
-  font-family: var(--font-display);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: clamp(10px, 7.8cqi, 24px);
   text-transform: uppercase;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity var(--t-fast) linear;
-  pointer-events: none;
-}
-.book.is-open:not(.book--solo) .book__hint { opacity: 0.92; }
-
-/* whole card is the hit target */
-.book__trigger {
-  position: absolute;
-  inset: -2% -2% -2% -2%;
-  z-index: 6;
-  border-radius: var(--r-sm);
-  cursor: pointer;
-}
-.book.is-open .book__trigger { inset: -2% -2% -2% -100%; }
-.book__trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-/* neighbours recede while one book is open */
-.shelf.is-browsing .book:not(.is-open),
-.rail.is-browsing .book:not(.is-open) {
-  opacity: 0.52;
-  filter: saturate(0.68);
-}
-.shelf .book { transition: opacity var(--t-mid) var(--ease-out), filter var(--t-mid) var(--ease-out); }
-.shelf .book.is-open { z-index: 20; }
-
-@media (max-width: 720px) {
-  .book { --open-scale: 1.06; --thick: 8px; }
-  .book--solo { --open-scale: 0.96; }
-  .book__excerpt { font-size: clamp(9px, 4.1cqi, 13px); }
-  .colophon { font-size: clamp(8px, 3.3cqi, 11px); }
+  line-height: 1.04;
+  letter-spacing: -0.035em;
 }
 
-/* ---------- reduced motion: no 3D, the inside is simply revealed ---------- */
-@media (prefers-reduced-motion: reduce) {
-  .book__body, .book.is-open .book__body { transform: none; transition: none; }
-  .book__cover, .book.is-open .book__cover { transform: none; transition: opacity 1ms linear; }
-  .book.is-open .book__cover { opacity: 0; pointer-events: none; }
-  .book__page { transition: none; }
-  .book__shadow { display: none; }
-  .book.is-open .book__trigger { inset: -2%; }
+/* plate — the geometric plate above, the title anchored to the foot */
+.cv--plate .cv__body { justify-content: flex-end; gap: 0.55em; }
+.cv--plate .cv__title { font-size: clamp(11px, 8.8cqi, 27px); }
+
+/* band — the title held between two rules, centred in the field */
+.cv--band .cv__title { font-size: clamp(11px, 8.4cqi, 26px); }
+
+/* column — an accent band along the fore-edge */
+.cv--column { padding-inline-end: 24%; }
+.cv--column .cv__body { justify-content: flex-start; gap: 0.5em; }
+
+/* serif — quiet classical setting, centred */
+.cv--serif { padding: 13% 11%; text-align: center; }
+.cv--serif .cv__body { justify-content: center; gap: 0.7em; align-items: center; }
+.cv--serif .cv__title {
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(12px, 9.2cqi, 29px);
+  letter-spacing: -0.015em;
+}
+.cv--serif .cv__rule { inline-size: 30%; block-size: 1px; }
+
+/* split — the field divided, the title in the lower half */
+.cv--split .cv__body { justify-content: space-between; gap: 0.6em; }
+.cv--split .cv__title { font-size: clamp(11px, 8.8cqi, 28px); }
+
+/* at thumbnail size only the title survives, set to fit */
+@container (max-width: 96px) {
+  .cv { padding: 11% 9%; }
+  .cv__author, .cv__imprint, .cv__rule { display: none; }
+  .cv__title { font-size: 8px !important; line-height: 1.08; letter-spacing: -0.02em; }
+  .cv__body { justify-content: flex-end !important; }
 }

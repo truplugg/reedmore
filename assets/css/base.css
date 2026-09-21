@@ -5,6 +5,9 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
+  /* a book turned in 3D reaches past its layout box; clip rather than
+     let that become a sideways scroll */
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-h) + 1.5rem);

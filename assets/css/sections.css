@@ -187,22 +187,51 @@
 }
 .results b { color: var(--text); font-variant-numeric: tabular-nums; }
 
-/* list view */
+/* list view: the same object, laid on its side */
 .shelf--list { grid-template-columns: 1fr; gap: 0; }
 .shelf--list .book {
+  --depth: 8px;
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr) auto;
+  grid-template-columns: 96px minmax(0, 1fr);
   gap: var(--s-5);
   align-items: center;
   padding-block: var(--s-5);
   border-block-end: 1px solid var(--line-soft);
+  block-size: auto;
 }
-.shelf--list .book__stage { perspective: 1200px; }
-.shelf--list .book__meta { gap: 0.3rem; }
-.shelf--list .book__line { flex-direction: column; align-items: flex-end; gap: 0.6rem; }
+.shelf--list .book__stage { perspective: 1100px; margin-inline: 0; }
+.shelf--list .book__card {
+  margin-block-start: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "badges badges" "title price" "author price" "actions price";
+  align-items: start;
+  column-gap: var(--s-5);
+  row-gap: 0.25rem;
+}
+.shelf--list .book.is-active .book__card { background: none; box-shadow: none; }
+.shelf--list .book__badges { grid-area: badges; }
+.shelf--list .book__title { grid-area: title; font-size: var(--step-1); -webkit-line-clamp: 2; }
+.shelf--list .book__author { grid-area: author; }
+.shelf--list .book__line {
+  grid-area: price;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+}
+.shelf--list .book__hint { display: none; }
+.shelf--list .book__actions { grid-area: actions; margin-block-start: 0.7rem; max-inline-size: 260px; }
 @media (max-width: 640px) {
   .shelf--list .book { grid-template-columns: 74px minmax(0, 1fr); }
-  .shelf--list .book__line { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; }
+  .shelf--list .book__card { grid-template-columns: 1fr; grid-template-areas: "badges" "title" "author" "price" "actions"; }
+  .shelf--list .book__line { align-items: flex-start; flex-direction: row; justify-content: space-between; inline-size: 100%; }
 }
 
 /* ---------- collections ---------- */
@@ -444,3 +473,37 @@
 }
 .totop.is-on { opacity: 1; transform: none; pointer-events: auto; }
 .totop:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---------- embroidered rule ----------
+   An eight-pointed star and a hooked rhombus, counted in stitches, the
+   way they sit on a Ukrainian shirt band. Used twice on the page, never
+   as filler. */
+.ornament {
+  block-size: 26px;
+  overflow: hidden;
+  color: var(--accent);
+  opacity: 0.42;
+}
+.ornament__svg { inline-size: 100%; block-size: 26px; display: block; }
+.ornament--inset {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  opacity: 0.30;
+  color: var(--accent-hot);
+}
+
+/* ---------- the page's opening move ----------
+   The hero settles in reading order — running head, headline, blurb,
+   calls to action, the figures — and the book arrives with the blurb.
+   Gated on .js so a page without scripts shows everything at once. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .hero [data-enter] {
+    animation: enter 760ms var(--ease-out) both;
+    animation-delay: calc(var(--enter-i, 0) * 80ms + 60ms);
+  }
+}
+@keyframes enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}

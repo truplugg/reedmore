@@ -15,7 +15,7 @@
   padding: 0.72em 1.25em;
   border: 1px solid var(--btn-bd);
   border-radius: var(--r-pill);
-  background: var(--btn-bg);
+  background-color: var(--btn-bg);
   color: var(--btn-fg);
   font-family: var(--font-display);
   font-size: var(--step--1);
@@ -25,7 +25,8 @@
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-  transition: background var(--t-fast) var(--ease-out),
+  transition: background-color var(--t-fast) var(--ease-out),
+              background-size 360ms var(--ease-out),
               color var(--t-fast) var(--ease-out),
               border-color var(--t-fast) var(--ease-out),
               transform var(--t-fast) var(--ease-out);
@@ -35,10 +36,14 @@
 .btn[disabled] { opacity: 0.45; pointer-events: none; }
 
 .btn--primary { --btn-bg: var(--accent); --btn-fg: var(--text-on-accent); --btn-bd: var(--accent); }
-.btn--primary:hover { --btn-bg: var(--accent-hot); --btn-bd: var(--accent-hot); }
+.btn--primary:hover { --btn-bd: var(--accent-hot); }
 
-.btn--ink { --btn-bg: var(--surface-ink); --btn-fg: var(--text-on-ink); --btn-bd: var(--surface-ink); }
-.btn--ink:hover { --btn-bg: var(--accent); --btn-bd: var(--accent); --btn-fg: var(--text-on-accent); }
+.btn--ink { --btn-bg: var(--navy-800); --btn-fg: #f2efe6; --btn-bd: var(--navy-800); }
+.btn--ink:hover { --btn-bd: var(--accent); --btn-fg: var(--text-on-accent); }
+
+.btn--icon { flex: 0 0 auto !important; inline-size: 2.9em; padding-inline: 0; gap: 0; }
+.btn--icon .btn__icon { inline-size: 1.5em; block-size: 1.5em; }
+.btn--icon[aria-pressed="true"] { --btn-fg: var(--accent); --btn-bd: var(--accent-line); }
 
 .btn--ghost { --btn-bd: var(--line); }
 .btn--ghost:hover { --btn-bd: var(--accent); --btn-fg: var(--accent); }
@@ -133,7 +138,7 @@
 .badge--best     { background: var(--accent); color: var(--text-on-accent); }
 .badge--preorder { background: var(--wheat-soft); color: var(--wheat); box-shadow: inset 0 0 0 1px currentColor; }
 .badge--last     { background: transparent; color: var(--crit); box-shadow: inset 0 0 0 1px currentColor; }
-.badge--sale     { background: var(--surface-ink); color: var(--text-on-ink); }
+.badge--sale     { background: var(--navy-800); color: #f2efe6; }
 
 .book__badges {
   display: flex;
@@ -369,3 +374,29 @@
   opacity: 0.5;
 }
 .empty h3 { font-size: var(--step-2); }
+
+/* ---------- micro-interactions ---------- */
+
+/* a filled button takes its colour from the middle out */
+.btn--primary, .btn--ink {
+  background-image: linear-gradient(var(--btn-sweep) 0 0);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 0% 100%;
+}
+.btn--primary { --btn-sweep: var(--accent-hot); }
+.btn--ink     { --btn-sweep: var(--accent); }
+.btn--primary:hover, .btn--ink:hover { background-size: 100% 100%; }
+
+/* the counter acknowledges what was just added */
+.iconbtn__count.is-pop { animation: count-pop 460ms var(--ease-spring); }
+@keyframes count-pop {
+  0%   { transform: scale(1); }
+  38%  { transform: scale(1.5); }
+  100% { transform: scale(1); }
+}
+
+/* chips and cards settle rather than snap */
+.chip { transition: background 200ms var(--ease-out), border-color 200ms var(--ease-out),
+                    color 200ms var(--ease-out), transform 200ms var(--ease-out); }
+.chip:active { transform: scale(0.97); }

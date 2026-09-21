@@ -35,7 +35,7 @@ function renderHeroBook() {
   const slot = document.querySelector('.hero__book');
   if (!slot) return;
   const featured = findBook('slovnyk-viyny') || BOOKS[0];
-  slot.innerHTML = bookHTML(featured, { variant: 'solo', reveal: false });
+  slot.innerHTML = bookHTML(featured, { mode: 'open' });
   slot.querySelector('.book')?.classList.add('book--solo');
   mountBooks(slot, { onDetails: openDialog });
 }

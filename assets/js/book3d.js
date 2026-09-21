@@ -1,23 +1,24 @@
 /* ============================================================
-   READMORE — the opening book
-   Markup for one book object plus the behaviour that opens it:
-   hover on a fine pointer, tap on a coarse one, focus for the
-   keyboard. One book open at a time inside a shelf; the rest
-   recede so the open spread has room.
+   READMORE — the book object
+   One component, two behaviours:
+     turn  — the shelf. Pointing at a book turns it toward the
+             reader and returns its colour; its neighbours fall
+             to grey. A second activation opens the record.
+     open  — hero and record. The cover swings on its spine to
+             show the endpaper and the first page.
+   Mouse hovers, a finger taps, the keyboard focuses.
    ============================================================ */
 
-import { coverHTML, esc } from './covers.js';
+import { coverHTML, endpaperSVG, deviceSVG, esc } from './covers.js';
 import { money, inWish } from './store.js';
 import { t } from './i18n.js';
 
 export const fine = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 export const calm = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const BADGE_CLASS = { new: 'new', best: 'best', preorder: 'preorder', last: 'last' };
-
 function badges(book) {
   const out = [];
-  if (book.badge) out.push(`<span class="badge badge--${BADGE_CLASS[book.badge]}">${esc(t('badge.' + book.badge))}</span>`);
+  if (book.badge) out.push(`<span class="badge badge--${book.badge}">${esc(t('badge.' + book.badge))}</span>`);
   if (book.oldPrice) out.push(`<span class="badge badge--sale">${esc(t('badge.sale'))}</span>`);
   if (book.stock > 0 && book.stock <= 6 && book.badge !== 'last') {
     out.push(`<span class="badge badge--last">${esc(t('badge.last'))} ${book.stock}</span>`);
@@ -43,80 +44,93 @@ function colophon(book) {
   ).join('')}</dl>`;
 }
 
+const heart = (on) =>
+  `<svg class="btn__icon" viewBox="0 0 24 24" fill="${on ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 20s-7-4.6-7-9.4A4 4 0 0 1 12 7a4 4 0 0 1 7 3.6C19 15.4 12 20 12 20Z"/></svg>`;
+
 /**
- * One book. `variant` is 'card' (shelf), 'solo' (hero / dialog)
- * or 'list'. Solo books carry no meta block of their own.
+ * One book.
+ *   mode 'turn'  — shelf and rail, with a product card beneath
+ *   mode 'open'  — hero and record, cover swings, no card
  */
-export function bookHTML(book, { variant = 'card', reveal = false } = {}) {
+export function bookHTML(book, { mode = 'turn' } = {}) {
   const p = book.cover.pal;
   const vars = `--cv-paper:${p.paper};--cv-ink:${p.ink};--cv-accent:${p.accent}`;
   const label = `${book.title} — ${book.author}`;
+  const open = mode === 'open';
 
-  const meta = variant === 'solo' ? '' : `
-    <div class="book__meta">
+  const inside = open ? `
+    <div class="book__face book__face--inside">
+      ${endpaperSVG(book.endpaper, book.id)}
+      <div class="book__plate"><span>READMORE</span><span>Київ · Warszawa</span></div>
+    </div>` : '';
+
+  const page = open ? `
+    <div class="book__page">
+      <div class="book__folio"><span>${esc(t('book.annotation'))}</span><span class="num">${book.year}</span></div>
+      <p class="book__excerpt">${esc(book.blurb)}</p>
+      ${deviceSVG()}
+      ${colophon(book)}
+    </div>` : '';
+
+  const card = open ? '' : `
+    <div class="book__card">
       ${badges(book)}
       <h3 class="book__title">${esc(book.title)}</h3>
       <p class="book__author">${esc(book.author)}</p>
       <div class="book__line">
-        <span class="book__price">${book.oldPrice ? `<s>${money(book.oldPrice)}</s>` : ''}${money(book.price)}</span>
+        <span class="book__price">${book.oldPrice ? `<s>${money(book.oldPrice)}</s>` : ''}<span class="${book.oldPrice ? 'is-now' : ''}">${money(book.price)}</span></span>
         ${stars(book.rating)}
       </div>
       <div class="book__actions">
-        <button class="btn btn--sm btn--ghost" data-act="add" data-id="${esc(book.id)}">${esc(t('book.add'))}</button>
-        <button class="btn btn--sm btn--quiet" data-act="wish" data-id="${esc(book.id)}"
-                aria-pressed="${inWish(book.id)}" aria-label="${esc(t('book.wish'))}">
-          <svg class="btn__icon" viewBox="0 0 24 24" fill="${inWish(book.id) ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 20s-7-4.6-7-9.4A4 4 0 0 1 12 7a4 4 0 0 1 7 3.6C19 15.4 12 20 12 20Z"/></svg>
-        </button>
+        <button class="btn btn--sm btn--ink" data-act="add" data-id="${esc(book.id)}">${esc(t('book.add'))}</button>
+        <button class="btn btn--sm btn--ghost btn--icon" data-act="wish" data-id="${esc(book.id)}"
+                aria-pressed="${inWish(book.id)}" aria-label="${esc(t('book.wish'))}">${heart(inWish(book.id))}</button>
       </div>
     </div>`;
 
   return `
-    <article class="book${reveal ? ' reveal' : ''}" data-id="${esc(book.id)}" style="${vars}">
+    <article class="book book--${open ? 'open' : 'turn'}" data-id="${esc(book.id)}" style="${vars}">
+      <div class="book__head">
       <div class="book__stage">
         <div class="book__body">
           <div class="book__shadow" aria-hidden="true"></div>
-          <div class="book__block">
-            <div class="book__page">
-              <div class="book__folio"><span>${esc(t('book.annotation'))}</span><span class="num">${book.year}</span></div>
-              <p class="book__excerpt">${esc(book.blurb)}</p>
-              ${colophon(book)}
-            </div>
-          </div>
+          <div class="book__back" aria-hidden="true"></div>
+          <div class="book__spine" aria-hidden="true"></div>
+          <div class="book__edge" aria-hidden="true"></div>
+          <div class="book__block">${page}</div>
           <div class="book__cover">
             <div class="book__face book__face--front">${coverHTML(book)}</div>
-            <div class="book__face book__face--inside" data-endpaper="${esc(book.endpaper)}">
-              <div class="book__plate">
-                <span>READMORE</span>
-                <span>Київ · Warszawa</span>
-              </div>
-            </div>
+            ${inside}
           </div>
         </div>
-        <span class="book__hint" aria-hidden="true">${esc(t('book.details'))}</span>
-        <button class="book__trigger" type="button" data-act="open" data-id="${esc(book.id)}"
-                aria-expanded="false" aria-label="${esc(label)}"></button>
       </div>
-      ${meta}
+      <span class="book__hint" aria-hidden="true">${esc(t('book.details'))}</span>
+      <button class="book__trigger" type="button" data-act="open" data-id="${esc(book.id)}"
+              aria-expanded="false" aria-label="${esc(label)}"></button>
+      </div>
+      ${card}
     </article>`;
 }
 
 /* ---------- behaviour ---------- */
 
-let openBook = null;
+let active = null;
 let lastPointer = 'mouse';
-let openAtPointerDown = false;
+let activeAtPointerDown = false;
 
 export function closeOpenBook() {
-  if (!openBook) return;
-  openBook.classList.remove('is-open');
-  openBook.querySelector('.book__trigger')?.setAttribute('aria-expanded', 'false');
-  openBook.closest('.shelf, .rail')?.classList.remove('is-browsing');
-  openBook = null;
+  if (!active) return;
+  active.classList.remove('is-active', 'is-open');
+  active.querySelector('.book__trigger')?.setAttribute('aria-expanded', 'false');
+  active.closest('.shelf, .rail')?.classList.remove('is-browsing');
+  active = null;
 }
 
-/* The cover swings a full width to the left, so a book near either edge
-   of the grid would open off-screen. Solve for the shift that keeps the
-   whole spread inside its container, and fall back to the CSS default. */
+/**
+ * The cover swings a full width to the left, so a book near either edge
+ * of its container would open off-screen. Solve for the shift that keeps
+ * the spread inside the frame; the CSS default covers the rest.
+ */
 export function placeSpread(book) {
   const stage = book.querySelector('.book__stage');
   const frame = book.closest('.shelf, .rail, .hero__stage, .dialog__visual');
@@ -136,9 +150,9 @@ export function placeSpread(book) {
   const left = (stageRect.left - frameRect.left) / k;
   const frameW = frameRect.width / k;
 
-  /* Measured against the rendered spread: with the cover hinged at 154°
-     and lifted toward the viewer, it reaches about 0.94 of a scaled width
-     past the body's left edge. REACH folds in the body's own half-width. */
+  /* measured against the rendered spread: hinged at 154° and lifted
+     toward the viewer, the cover reaches ~0.94 of a scaled width past
+     the body's left edge; REACH folds in the body's own half-width */
   const REACH = 1.45;
   const minX = pad - left - W / 2 + REACH * W * S;
   const maxX = (frameW - pad) - left - W / 2 - 0.5 * W * S;
@@ -149,13 +163,16 @@ export function placeSpread(book) {
 }
 
 export function openOne(book) {
-  if (openBook === book) return;
+  if (active === book) return;
   closeOpenBook();
-  placeSpread(book);
-  book.classList.add('is-open');
+  book.classList.add('is-active');
+  if (book.classList.contains('book--open')) {
+    placeSpread(book);
+    book.classList.add('is-open');
+  }
   book.querySelector('.book__trigger')?.setAttribute('aria-expanded', 'true');
   book.closest('.shelf, .rail')?.classList.add('is-browsing');
-  openBook = book;
+  active = book;
 }
 
 function tilt(book, e) {
@@ -165,8 +182,8 @@ function tilt(book, e) {
   const r = stage.getBoundingClientRect();
   const x = (e.clientX - r.left) / r.width - 0.5;
   const y = (e.clientY - r.top) / r.height - 0.5;
-  stage.style.setProperty('--ty', `${(x * 8).toFixed(2)}deg`);
-  stage.style.setProperty('--tx', `${(-y * 5).toFixed(2)}deg`);
+  stage.style.setProperty('--ty', `${(x * 5).toFixed(2)}deg`);
+  stage.style.setProperty('--tx', `${(-y * 3.5).toFixed(2)}deg`);
 }
 
 function untilt(book) {
@@ -177,9 +194,9 @@ function untilt(book) {
 }
 
 /**
- * Wire a container of books. Delegated, so re-rendering the shelf
- * needs no re-binding. `onDetails` receives the book id when an
- * already-open book is activated.
+ * Wire a container of books. Delegated, so re-rendering needs no
+ * re-binding. `onDetails` gets the id when an already-focused book
+ * is activated again.
  */
 export function mountBooks(root, { onDetails } = {}) {
   if (!root || root.dataset.booksMounted) return;
@@ -188,17 +205,15 @@ export function mountBooks(root, { onDetails } = {}) {
   root.addEventListener('pointerover', (e) => {
     if (e.pointerType !== 'mouse') return;
     const book = e.target.closest('.book');
-    if (!book || !root.contains(book)) return;
-    openOne(book);
+    if (book && root.contains(book)) openOne(book);
   });
 
   root.addEventListener('pointerout', (e) => {
     if (e.pointerType !== 'mouse') return;
     const book = e.target.closest('.book');
-    if (!book) return;
-    if (book.contains(e.relatedTarget)) return;
+    if (!book || book.contains(e.relatedTarget)) return;
     untilt(book);
-    if (openBook === book) closeOpenBook();
+    if (active === book) closeOpenBook();
   });
 
   root.addEventListener('pointermove', (e) => {
@@ -207,15 +222,13 @@ export function mountBooks(root, { onDetails } = {}) {
     if (book) tilt(book, e);
   }, { passive: true });
 
-  /* Tap: the first one opens the book, the second asks for the full
-     record. A mouse has already opened it by hovering, so its click
-     goes straight to the record. Focus opens it for the keyboard, which
-     is why the state is read at pointerdown — before focus moves. */
+  /* the state is read at pointerdown, before focus moves, so a first
+     tap always gets the turn and only a second one asks for the record */
   root.addEventListener('pointerdown', (e) => {
     const trigger = e.target.closest('[data-act="open"]');
     if (!trigger) return;
     lastPointer = e.pointerType || 'mouse';
-    openAtPointerDown = trigger.closest('.book')?.classList.contains('is-open') ?? false;
+    activeAtPointerDown = trigger.closest('.book')?.classList.contains('is-active') ?? false;
   }, true);
 
   root.addEventListener('click', (e) => {
@@ -226,9 +239,9 @@ export function mountBooks(root, { onDetails } = {}) {
     e.preventDefault();
 
     const viaKeyboard = e.detail === 0;
-    const wantsRecord = viaKeyboard || lastPointer === 'mouse' || openAtPointerDown;
+    const wantsRecord = viaKeyboard || lastPointer === 'mouse' || activeAtPointerDown;
 
-    if (wantsRecord && book.classList.contains('is-open')) {
+    if (wantsRecord && book.classList.contains('is-active')) {
       onDetails?.(trigger.dataset.id, book);
     } else {
       openOne(book);
@@ -238,29 +251,25 @@ export function mountBooks(root, { onDetails } = {}) {
     }
   });
 
-  /* Keyboard: focus reveals, Enter or Space opens the record. */
   root.addEventListener('focusin', (e) => {
     const book = e.target.closest('.book');
     if (book && e.target.matches('.book__trigger')) openOne(book);
   });
   root.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
-    closeOpenBook();
+    if (e.key === 'Escape') closeOpenBook();
   });
 }
 
-/* Keep an open spread in frame when the viewport changes under it. */
+/* keep an open spread in frame when the viewport changes under it */
 let resizeTimer;
 window.addEventListener('resize', () => {
-  if (!openBook) return;
+  if (!active) return;
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => openBook && placeSpread(openBook), 120);
+  resizeTimer = setTimeout(() => active && placeSpread(active), 120);
 });
 
-/* A book left open by touch closes when the reader taps elsewhere. */
+/* a book left focused by touch lets go when the reader taps elsewhere */
 document.addEventListener('pointerdown', (e) => {
-  if (!openBook) return;
-  if (e.pointerType === 'mouse') return;
-  const target = e.target.closest('.book');
-  if (target !== openBook) closeOpenBook();
+  if (!active || e.pointerType === 'mouse') return;
+  if (e.target.closest('.book') !== active) closeOpenBook();
 }, true);

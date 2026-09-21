@@ -66,10 +66,10 @@ export function openDialog(id) {
   const title = lang === 'en' && book.titleEn ? book.titleEn : book.title;
   const about = lang === 'en' && book.aboutEn ? book.aboutEn : book.about;
 
-  visual.innerHTML = bookHTML(book, { variant: 'solo', reveal: false })
+  visual.innerHTML = bookHTML(book, { mode: 'open' })
     + `<p class="dialog__hint">
          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 3.5 18.5 11 13 12.5 16 19l-2.6 1.2L10.4 14 6 17.5Z"/></svg>
-         ${esc(fine() ? t('hero.hint') : t('hero.hintTouch'))}
+         ${esc(fine() ? t('book.hintOne') : t('book.hintOneTouch'))}
        </p>`;
   visual.querySelector('.book')?.classList.add('book--solo');
 
