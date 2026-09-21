@@ -232,7 +232,12 @@ export function mountBooks(root, { onDetails } = {}) {
     const trigger = e.target.closest('[data-act="open"]');
     if (!trigger) return;
     lastPointer = e.pointerType || 'mouse';
-    activeAtPointerDown = trigger.closest('.book')?.classList.contains('is-active') ?? false;
+    const book = trigger.closest('.book');
+    activeAtPointerDown = book?.classList.contains('is-active') ?? false;
+    /* A finger gets the turn the moment it lands, rather than waiting for
+       the click that follows — which some mobile browsers withhold while
+       they decide whether the touch is a scroll. */
+    if (lastPointer !== 'mouse' && book && !activeAtPointerDown) openOne(book);
   }, true);
 
   root.addEventListener('click', (e) => {
@@ -249,9 +254,6 @@ export function mountBooks(root, { onDetails } = {}) {
       onDetails?.(trigger.dataset.id, book);
     } else {
       openOne(book);
-      if (lastPointer !== 'mouse') {
-        book.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'center' });
-      }
     }
   });
 

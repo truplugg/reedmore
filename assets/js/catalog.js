@@ -88,10 +88,58 @@ function renderChips() {
   ).join('');
 }
 
-export function render() {
+/**
+ * Grow the shelf instead of replacing it: the new books are appended, the
+ * container's height is animated from the old to the new, and each arrival
+ * rises into place a beat after the one before it.
+ */
+function growShelf(added, startIndex) {
+  const shelf = els.shelf;
+  const before = shelf.offsetHeight;
+
+  shelf.insertAdjacentHTML('beforeend', added.map((b) => bookHTML(b)).join(''));
+
+  const fresh = [...shelf.querySelectorAll('.book')].slice(startIndex);
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return fresh;
+
+  fresh.forEach((el, i) => {
+    el.classList.add('is-arriving');
+    el.style.setProperty('--arrive-i', String(i));
+  });
+
+  const after = shelf.offsetHeight;
+  shelf.style.overflow = 'clip';
+  shelf.style.blockSize = `${before}px`;
+
+  requestAnimationFrame(() => {
+    shelf.style.transition = 'block-size 640ms cubic-bezier(0.20, 0.92, 0.20, 1)';
+    shelf.style.blockSize = `${after}px`;
+  });
+
+  const settle = () => {
+    shelf.style.blockSize = '';
+    shelf.style.transition = '';
+    shelf.style.overflow = '';
+    fresh.forEach((el) => {
+      el.classList.remove('is-arriving');
+      el.style.removeProperty('--arrive-i');
+    });
+  };
+  setTimeout(settle, 700 + fresh.length * 55);
+  return fresh;
+}
+
+export function render({ append = false } = {}) {
   closeOpenBook();
   const list = filtered();
   const shown = list.slice(0, state.limit);
+
+  const rendered = els.shelf.querySelectorAll('.book').length;
+  if (append && rendered && shown.length > rendered) {
+    growShelf(shown.slice(rendered), rendered);
+    afterRender(shown, list);
+    return;
+  }
 
   els.shelf.className = `shelf shelf--${get('view') === 'list' ? 'list' : 'wide'}`;
 
@@ -104,6 +152,10 @@ export function render() {
          <button class="btn btn--ghost" data-act="clear">${esc(t('cat.clear'))}</button>
        </div>`;
 
+  afterRender(shown, list);
+}
+
+function afterRender(shown, list) {
   els.count.innerHTML = `${esc(t('cat.found'))} <b class="num">${shown.length}</b> ${esc(t('cat.of'))} <b class="num">${list.length}</b>`;
   const moreWrap = els.more.parentElement;
   moreWrap.hidden = shown.length >= list.length;
@@ -177,13 +229,19 @@ export function initCatalog(opts = {}) {
 
   els.sort.addEventListener('change', () => { state.sort = els.sort.value; render(); });
 
-  els.more.addEventListener('click', () => {
+  els.more.addEventListener('click', (e) => {
+    const from = state.limit;
+    const viaKeyboard = e.detail === 0;
     state.limit += PAGE;
-    render();
-    requestAnimationFrame(() => {
-      els.shelf.querySelectorAll('.book')[state.limit - PAGE]
-        ?.querySelector('.book__trigger')?.focus({ preventScroll: true });
-    });
+    render({ append: true });
+    /* the keyboard needs to land on the first new book; a mouse does not,
+       and moving focus there would turn a book nobody pointed at */
+    if (viaKeyboard) {
+      requestAnimationFrame(() => {
+        els.shelf.querySelectorAll('.book')[from]
+          ?.querySelector('.book__trigger')?.focus({ preventScroll: true });
+      });
+    }
   });
 
   els.wish?.addEventListener('click', () => {

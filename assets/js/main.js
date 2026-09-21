@@ -17,16 +17,28 @@ import { t } from './i18n.js';
 document.documentElement.classList.add('js');
 
 /* ---------- the shelf of new arrivals ---------- */
-function newestFirst() {
+function newestFirst(n = 14) {
   return [...BOOKS]
     .sort((a, x) => (x.badge === 'new' ? 1 : 0) - (a.badge === 'new' ? 1 : 0) || x.year - a.year)
-    .slice(0, 8);
+    .slice(0, n);
 }
 
+/**
+ * The rail drifts right to left like the band above it. The loop is
+ * seamless because the same set is laid out twice and the track travels
+ * exactly one set plus one gap; the second set is a decoration, so it is
+ * hidden from assistive tech and taken out of the tab order.
+ */
 function renderRail() {
   const rail = document.getElementById('rail');
   if (!rail) return;
-  rail.innerHTML = newestFirst().map((b) => bookHTML(b)).join('');
+  const group = newestFirst().map((b) => bookHTML(b)).join('');
+  rail.innerHTML = `
+    <div class="rail__track">
+      <div class="rail__group">${group}</div>
+      <div class="rail__group rail__group--echo" aria-hidden="true">${group}</div>
+    </div>`;
+  rail.querySelectorAll('.rail__group--echo button').forEach((btn) => { btn.tabIndex = -1; });
   mountBooks(rail, { onDetails: openDialog });
 }
 

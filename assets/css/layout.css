@@ -173,25 +173,53 @@
 .shelf > .book { block-size: 100%; }
 .shelf--wide { grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); }
 
-/* horizontal rail with snap, used for the featured row */
+/* ---------- the drifting rail of new arrivals ----------
+   Right to left, like the band above it, and it stops the moment a
+   reader points at a book. On touch there is no hover to stop it, so
+   the rail becomes an ordinary swipeable strip instead. */
 .rail {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(185px, 1fr);
-  gap: clamp(1.1rem, 2.4vw, 2.2rem);
-  overflow-x: auto;
-  overflow-y: visible;
-  scroll-snap-type: x proximity;
-  scroll-padding-inline-start: var(--gutter);
-  padding-block: 2.25rem 1.5rem;
-  padding-inline: var(--gutter);
-  margin-inline: calc(var(--gutter) * -1);
-  scrollbar-width: none;
+  --rail-gap: clamp(1.1rem, 2.4vw, 2.2rem);
+  overflow: hidden;
+  padding-block: 2.25rem 1.75rem;
 }
-.rail::-webkit-scrollbar { display: none; }
-.rail > * { scroll-snap-align: start; }
-@media (min-width: 900px) {
-  .rail { grid-auto-columns: minmax(215px, 235px); }
+.rail__track {
+  display: flex;
+  gap: var(--rail-gap);
+  inline-size: max-content;
+}
+.rail__group {
+  display: flex;
+  gap: var(--rail-gap);
+}
+.rail__group > .book {
+  inline-size: clamp(168px, 15vw, 218px);
+  flex: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .rail__track {
+    animation: rail-drift 96s linear infinite;
+    will-change: transform;
+  }
+  .rail:hover .rail__track,
+  .rail:focus-within .rail__track,
+  .rail.is-browsing .rail__track { animation-play-state: paused; }
+}
+@keyframes rail-drift {
+  to { transform: translateX(calc(-50% - var(--rail-gap) / 2)); }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .rail { overflow-x: auto; scrollbar-width: none; scroll-padding-inline-start: var(--gutter); }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail__track { padding-inline: var(--gutter); }
+  .rail__group--echo { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail { overflow-x: auto; }
+  .rail__track { animation: none; padding-inline: var(--gutter); }
+  .rail__group--echo { display: none; }
 }
 
 /* ---------- footer ---------- */
