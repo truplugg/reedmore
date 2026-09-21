@@ -9,7 +9,7 @@
   color-scheme: light;
 
   /* --- ground & surfaces --- */
-  --bg:            #f1eee5;   /* laid book stock */
+  --bg:            #f0ece1;   /* laid book stock */
   --bg-sunk:       #e7e3d6;   /* recessed band  */
   --bg-deep:       #1a3557;   /* the navy block */
   --surface:       #faf8f2;   /* product cards */
@@ -21,6 +21,7 @@
   --navy-800:      #1a3557;
   --navy-700:      #24466e;
   --navy-soft:     rgb(26 53 87 / 0.08);
+  --navy-block:    #1c3a5e;   /* full-bleed dark sections */
 
   /* --- type --- */
   --text:          #16273d;
@@ -98,10 +99,10 @@
 
   /* --- book geometry --- */
   --cover-ratio: 0.655;       /* 130×200 mm, format 84×108/32 */
-  --book-open-angle: -154deg; /* cover swing, hero and record only */
-  --turn-rest: -21deg;        /* how a book stands on the shelf */
-  --turn-focus: -7deg;        /* how far it turns toward the reader */
-  --depth: 18px;              /* board thickness, overridden per context */
+  --book-open-angle: -162deg; /* cover swing, hero and record only */
+  --turn-rest: -30deg;        /* how a book stands on the shelf */
+  --turn-focus: -3deg;        /* how far it turns toward the reader */
+  --depth: 26px;              /* board thickness, overridden per context */
 }
 
 /* Dark: system default, unless an explicit light choice is stamped */
@@ -119,6 +120,7 @@
     --navy-800:      #1a3557;
     --navy-700:      #35618f;
     --navy-soft:     rgb(120 165 214 / 0.12);
+    --navy-block:    #16293f;
 
     --text:          #ebe7dc;
     --text-dim:      #a9b6c7;
@@ -165,6 +167,7 @@
   --navy-800:      #1a3557;
   --navy-700:      #35618f;
   --navy-soft:     rgb(120 165 214 / 0.12);
+  --navy-block:    #16293f;
 
   --text:          #ebe7dc;
   --text-dim:      #a9b6c7;

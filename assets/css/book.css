@@ -165,8 +165,8 @@
   inset-block-end: -4%;
   block-size: 8%;
   background: radial-gradient(ellipse at 50% 50%,
-    rgb(var(--sh-color) / .38) 0%, rgb(var(--sh-color) / .14) 46%, transparent 72%);
-  filter: blur(8px);
+    rgb(var(--sh-color) / .46) 0%, rgb(var(--sh-color) / .17) 46%, transparent 72%);
+  filter: blur(9px);
   transform: translateZ(calc(var(--depth) / -2 - 14px)) scaleX(0.92);
   transition: transform 620ms var(--ease-turn), opacity 620ms var(--ease-turn);
   pointer-events: none;
@@ -187,23 +187,14 @@
 }
 .shelf .book.is-active, .rail .book.is-active { z-index: 20; }
 
-/* ---------- the product card the book stands on ---------- */
+/* ---------- what the book is called, set under it ---------- */
 .book__card {
   position: relative;
-  margin-block-start: -30%;
-  padding: calc(30% + 1.15rem) 1.05rem 1.05rem;
+  margin-block-start: 1.1rem;
   display: flex;
   flex-direction: column;
   gap: 0.34rem;
   flex: 1 1 auto;
-  background: var(--surface);
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-}
-.book.is-active .book__card {
-  background: var(--surface-2);
-  border-color: var(--line);
-  box-shadow: var(--sh-2);
 }
 .book.is-active .book__actions .btn--ink {
   --btn-bg: var(--accent);
@@ -452,9 +443,9 @@
 .book__plate span:first-child { color: var(--cv-accent); }
 
 /* ---------- context sizes ---------- */
-.shelf .book, .rail .book { --depth: 17px; }
-.hero__book .book { --depth: 26px; }
-.dialog__visual .book { --depth: 22px; }
+.shelf .book, .rail .book { --depth: 25px; }
+.hero__book .book { --depth: 36px; }
+.dialog__visual .book { --depth: 32px; }
 
 /* ---------- reduced motion: no turn, no swing ---------- */
 @media (prefers-reduced-motion: reduce) {

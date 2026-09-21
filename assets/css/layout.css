@@ -23,7 +23,7 @@
   position: sticky;
   inset-block-start: env(safe-area-inset-top, 0px);
   z-index: 700;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  background: color-mix(in srgb, var(--bg) 93%, transparent);
   backdrop-filter: blur(14px) saturate(1.4);
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
   border-block-end: 1px solid transparent;

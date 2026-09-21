@@ -23,7 +23,8 @@ function badges(book) {
   if (book.stock > 0 && book.stock <= 6 && book.badge !== 'last') {
     out.push(`<span class="badge badge--last">${esc(t('badge.last'))} ${book.stock}</span>`);
   }
-  return out.length ? `<div class="book__badges">${out.slice(0, 2).join('')}</div>` : '';
+  /* always rendered: an empty row keeps every title on one baseline */
+  return `<div class="book__badges">${out.slice(0, 2).join('')}</div>`;
 }
 
 export function stars(rating) {
@@ -150,10 +151,10 @@ export function placeSpread(book) {
   const left = (stageRect.left - frameRect.left) / k;
   const frameW = frameRect.width / k;
 
-  /* measured against the rendered spread: hinged at 154° and lifted
-     toward the viewer, the cover reaches ~0.94 of a scaled width past
+  /* measured against the rendered spread: hinged at 162° and lifted
+     toward the viewer, the cover reaches ~0.99 of a scaled width past
      the body's left edge; REACH folds in the body's own half-width */
-  const REACH = 1.45;
+  const REACH = 1.52;
   const minX = pad - left - W / 2 + REACH * W * S;
   const maxX = (frameW - pad) - left - W / 2 - 0.5 * W * S;
   const wanted = 0.45 * W;

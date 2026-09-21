@@ -101,8 +101,13 @@
 @media (max-width: 900px) {
   .hero__grid { grid-template-columns: 1fr; }
   .hero__stage { order: -1; }
-  .hero__book { inline-size: min(260px, 66%); }
+  .hero__book { inline-size: min(240px, 60%); }
   .figures { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  /* the open spread is twice the board's width, so the book itself has
+     to be narrow enough for both pages to stay on a phone screen */
+  .hero__book { inline-size: min(165px, 45%); }
 }
 
 /* ---------- marquee band ---------- */
@@ -295,8 +300,36 @@
 .collection:hover .collection__go svg { transform: translateX(5px); }
 .collection__link { position: absolute; inset: 0; z-index: 2; }
 
+/* ---------- a deep navy block, set against the cream ground ----------
+   Every colour inside comes from the same token set, redefined here, so
+   nothing has to be restyled component by component. */
+.section--navy {
+  background: var(--navy-block);
+  --text:        #f0ece1;
+  --text-dim:    rgb(240 236 225 / 0.76);
+  --text-mute:   rgb(240 236 225 / 0.52);
+  --line:        rgb(240 236 225 / 0.18);
+  --line-soft:   rgb(240 236 225 / 0.10);
+  --line-strong: rgb(240 236 225 / 0.36);
+  --surface:     rgb(240 236 225 / 0.06);
+  --surface-2:   rgb(240 236 225 / 0.09);
+  --bg-sunk:     rgb(8 18 32 / 0.34);
+  --accent:      #e8654a;
+  --accent-hot:  #f4795c;
+  --accent-soft: rgb(232 101 74 / 0.18);
+  --accent-line: rgb(232 101 74 / 0.40);
+  --teal:        #6fbfae;
+  --wheat:       #e0a93b;
+  --navy-800:    rgb(240 236 225 / 0.10);
+  color: var(--text);
+}
+.section--navy + .section--navy { padding-block-start: 0; }
+.section--navy .btn--ink { --btn-fg: #f0ece1; --btn-bd: var(--line-strong); }
+.section--navy .input,
+.section--navy .select { background: rgb(240 236 225 / 0.07); color: var(--text); }
+.section--navy .calc { box-shadow: none; }
+
 /* ---------- pull quote ---------- */
-.quote { background: var(--bg-sunk); border-block: 1px solid var(--line); }
 .quote blockquote {
   margin: 0;
   font-family: var(--font-text);
