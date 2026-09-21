@@ -100,7 +100,10 @@ export function bookHTML(book, { mode = 'turn' } = {}) {
           <div class="book__edge" aria-hidden="true"></div>
           <div class="book__block">${page}</div>
           <div class="book__cover">
-            <div class="book__face book__face--front">${coverHTML(book)}</div>
+            <div class="book__face book__face--front">
+              ${coverHTML(book)}
+              <span class="book__gloss" aria-hidden="true"></span>
+            </div>
             ${inside}
           </div>
         </div>

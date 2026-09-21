@@ -23,7 +23,17 @@
 /* The head holds the 3D stage plus the flat things that must sit above
    it. z-index does not order children of a preserve-3d parent — depth
    does — so the hit target and the hint stay out of that scene. */
-.book__head { position: relative; }
+.book__head {
+  position: relative;
+  transform: translateY(0) scale(1);
+  transition: transform 780ms cubic-bezier(0.20, 0.92, 0.20, 1);
+  will-change: transform;
+}
+.book.is-active .book__head { transform: translateY(-16px) scale(1.015); }
+
+/* the shelf parts: everything else steps back half a pace */
+.shelf.is-browsing .book:not(.is-active) .book__head,
+.rail.is-browsing .book:not(.is-active) .book__head { transform: scale(0.962); }
 
 /* ---------- stage ---------- */
 .book__stage {
@@ -43,12 +53,12 @@
   inset: 0;
   transform-style: preserve-3d;
   transform: rotateY(var(--turn-rest)) rotateX(1.4deg);
-  transition: transform 620ms var(--ease-turn);
+  transition: transform 700ms cubic-bezier(0.20, 1.06, 0.32, 1);
   will-change: transform;
 }
 
 .book.is-active .book__body {
-  transform: translateY(-14px) scale(1.055) rotateY(var(--turn-focus)) rotateX(0.4deg);
+  transform: translateZ(64px) rotateY(var(--turn-focus)) rotateX(0.3deg);
 }
 
 /* ---------- the six faces of the volume ---------- */
@@ -99,6 +109,25 @@
 }
 .book.is-active .book__face--front::after { opacity: 0.72; }
 
+/* the highlight that travels over the board as it turns */
+.book__gloss {
+  position: absolute;
+  inset: -32% -42%;
+  z-index: 6;
+  pointer-events: none;
+  background: linear-gradient(102deg,
+    transparent 28%,
+    rgb(255 255 255 / 0.07) 38%,
+    rgb(255 255 255 / 0.55) 50%,
+    rgb(255 255 255 / 0.07) 62%,
+    transparent 72%);
+  transform: translateX(-52%);
+  opacity: 0;
+  transition: transform 1080ms cubic-bezier(0.18, 0.84, 0.28, 1) 60ms,
+              opacity 420ms linear 60ms;
+}
+.book.is-active .book__gloss { transform: translateX(52%); opacity: 1; }
+
 /* back board */
 .book__back {
   inset: 0;
@@ -121,7 +150,9 @@
       #fffdf7 1px 2.5px,
       #efe9db 2.5px 4px);
   box-shadow: inset 0 0 0 1px rgb(20 18 12 / .10);
+  transition: filter 700ms var(--ease-turn);
 }
+.book.is-active .book__edge { filter: brightness(1.14); }
 
 /* spine */
 .book__spine {
@@ -168,12 +199,15 @@
     rgb(var(--sh-color) / .46) 0%, rgb(var(--sh-color) / .17) 46%, transparent 72%);
   filter: blur(9px);
   transform: translateZ(calc(var(--depth) / -2 - 14px)) scaleX(0.92);
-  transition: transform 620ms var(--ease-turn), opacity 620ms var(--ease-turn);
+  transition: transform 800ms cubic-bezier(0.20, 0.92, 0.20, 1) 40ms,
+              opacity 620ms var(--ease-turn),
+              filter 700ms var(--ease-turn);
   pointer-events: none;
-  opacity: 0.85;
+  opacity: 0.8;
 }
 .book.is-active .book__shadow {
-  transform: translateZ(calc(var(--depth) / -2 - 14px)) translateY(10px) scale(1.1, 1.3);
+  transform: translateZ(calc(var(--depth) / -2 - 14px)) translateY(18px) scale(1.16, 1.45);
+  filter: blur(15px);
   opacity: 1;
 }
 
@@ -185,6 +219,7 @@
 .rail.is-browsing .book:not(.is-active) .book__card {
   filter: grayscale(1);
 }
+.book.is-active .cv { filter: saturate(1.07) contrast(1.02); }
 .shelf .book.is-active, .rail .book.is-active { z-index: 20; }
 
 /* ---------- what the book is called, set under it ---------- */
@@ -449,6 +484,9 @@
 
 /* ---------- reduced motion: no turn, no swing ---------- */
 @media (prefers-reduced-motion: reduce) {
+  .book__head, .book.is-active .book__head,
+  .shelf.is-browsing .book:not(.is-active) .book__head { transform: none; transition: none; }
+  .book__gloss { display: none; }
   .book__body, .book.is-active .book__body { transform: rotateY(-8deg); transition: none; }
   .book__cover, .book--open.is-open .book__cover { transition: opacity 1ms linear; }
   .book--open.is-open .book__body { transform: translateX(var(--open-x)) scale(var(--open-scale)); }

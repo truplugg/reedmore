@@ -23,6 +23,26 @@
   --navy-soft:     rgb(26 53 87 / 0.08);
   --navy-block:    #1c3a5e;   /* full-bleed dark sections */
 
+  /* --- the contrasting block ---------------------------------------
+     Light theme: a deep navy block on the cream page.
+     Dark theme: the same block inverts to cream on the navy page.
+     Everything inside a block reads these, so the rhythm flips with
+     the theme without restyling a single component. */
+  --block-bg:          #1c3a5e;
+  --block-text:        #f2eee3;
+  --block-dim:         rgb(242 238 227 / 0.78);
+  --block-mute:        rgb(242 238 227 / 0.54);
+  --block-line:        rgb(242 238 227 / 0.20);
+  --block-line-soft:   rgb(242 238 227 / 0.10);
+  --block-line-strong: rgb(242 238 227 / 0.38);
+  --block-surface:     rgb(242 238 227 / 0.07);
+  --block-surface-2:   rgb(242 238 227 / 0.11);
+  --block-sunk:        rgb(6 16 30 / 0.36);
+  --block-accent:      #e8654a;
+  --block-accent-hot:  #f6836a;
+  --block-teal:        #74c4b2;
+  --block-wheat:       #e6b45a;
+
   /* --- type --- */
   --text:          #16273d;
   --text-dim:      #4a5b71;
@@ -122,6 +142,22 @@
     --navy-soft:     rgb(120 165 214 / 0.12);
     --navy-block:    #16293f;
 
+    /* the block inverts: cream on the navy page */
+    --block-bg:          #eee8da;
+    --block-text:        #14243a;
+    --block-dim:         rgb(20 36 58 / 0.80);
+    --block-mute:        rgb(20 36 58 / 0.56);
+    --block-line:        rgb(20 36 58 / 0.16);
+    --block-line-soft:   rgb(20 36 58 / 0.08);
+    --block-line-strong: rgb(20 36 58 / 0.34);
+    --block-surface:     rgb(20 36 58 / 0.05);
+    --block-surface-2:   rgb(255 253 248 / 0.72);
+    --block-sunk:        rgb(20 36 58 / 0.07);
+    --block-accent:      #b23a24;
+    --block-accent-hot:  #d2452b;
+    --block-teal:        #2f5d52;
+    --block-wheat:       #a8761c;
+
     --text:          #ebe7dc;
     --text-dim:      #a9b6c7;
     --text-mute:     #7d8b9d;
@@ -168,6 +204,22 @@
   --navy-700:      #35618f;
   --navy-soft:     rgb(120 165 214 / 0.12);
   --navy-block:    #16293f;
+
+  /* the block inverts: cream on the navy page */
+  --block-bg:          #eee8da;
+  --block-text:        #14243a;
+  --block-dim:         rgb(20 36 58 / 0.80);
+  --block-mute:        rgb(20 36 58 / 0.56);
+  --block-line:        rgb(20 36 58 / 0.16);
+  --block-line-soft:   rgb(20 36 58 / 0.08);
+  --block-line-strong: rgb(20 36 58 / 0.34);
+  --block-surface:     rgb(20 36 58 / 0.05);
+  --block-surface-2:   rgb(255 253 248 / 0.72);
+  --block-sunk:        rgb(20 36 58 / 0.07);
+  --block-accent:      #b23a24;
+  --block-accent-hot:  #d2452b;
+  --block-teal:        #2f5d52;
+  --block-wheat:       #a8761c;
 
   --text:          #ebe7dc;
   --text-dim:      #a9b6c7;

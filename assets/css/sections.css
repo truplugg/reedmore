@@ -300,34 +300,57 @@
 .collection:hover .collection__go svg { transform: translateX(5px); }
 .collection__link { position: absolute; inset: 0; z-index: 2; }
 
-/* ---------- a deep navy block, set against the cream ground ----------
-   Every colour inside comes from the same token set, redefined here, so
-   nothing has to be restyled component by component. */
-.section--navy {
-  background: var(--navy-block);
-  --text:        #f0ece1;
-  --text-dim:    rgb(240 236 225 / 0.76);
-  --text-mute:   rgb(240 236 225 / 0.52);
-  --line:        rgb(240 236 225 / 0.18);
-  --line-soft:   rgb(240 236 225 / 0.10);
-  --line-strong: rgb(240 236 225 / 0.36);
-  --surface:     rgb(240 236 225 / 0.06);
-  --surface-2:   rgb(240 236 225 / 0.09);
-  --bg-sunk:     rgb(8 18 32 / 0.34);
-  --accent:      #e8654a;
-  --accent-hot:  #f4795c;
-  --accent-soft: rgb(232 101 74 / 0.18);
-  --accent-line: rgb(232 101 74 / 0.40);
-  --teal:        #6fbfae;
-  --wheat:       #e0a93b;
-  --navy-800:    rgb(240 236 225 / 0.10);
+/* ---------- the contrasting block ----------
+   One class, one token remap. In the light theme these sections are
+   deep navy against the cream page; in the dark theme they invert to
+   cream against the navy page. Nothing inside needs restyling. */
+.block-ground {
+  --text:        var(--block-text);
+  --text-dim:    var(--block-dim);
+  --text-mute:   var(--block-mute);
+  --text-on-ink: var(--block-text);
+  --line:        var(--block-line);
+  --line-soft:   var(--block-line-soft);
+  --line-strong: var(--block-line-strong);
+  --surface:     var(--block-surface);
+  --surface-2:   var(--block-surface-2);
+  --bg-sunk:     var(--block-sunk);
+  --accent:      var(--block-accent);
+  --accent-hot:  var(--block-accent-hot);
+  --accent-soft: color-mix(in srgb, var(--block-accent) 18%, transparent);
+  --accent-line: color-mix(in srgb, var(--block-accent) 42%, transparent);
+  --teal:        var(--block-teal);
+  --wheat:       var(--block-wheat);
+  --navy-800:    var(--block-surface-2);
   color: var(--text);
 }
-.section--navy + .section--navy { padding-block-start: 0; }
-.section--navy .btn--ink { --btn-fg: #f0ece1; --btn-bd: var(--line-strong); }
-.section--navy .input,
-.section--navy .select { background: rgb(240 236 225 / 0.07); color: var(--text); }
-.section--navy .calc { box-shadow: none; }
+
+.section--block {
+  background: var(--block-bg);
+}
+/* consecutive blocks read as one deep band, not two stripes */
+.section--block + .section--block { padding-block-start: 0; }
+
+.block-ground .btn--ink {
+  --btn-bg: transparent;
+  --btn-bd: var(--block-line-strong);
+  --btn-fg: var(--block-text);
+  --btn-sweep: var(--block-accent);
+}
+.block-ground .btn--ink:hover { --btn-fg: var(--text-on-accent); }
+.block-ground .input,
+.block-ground .select { background: var(--block-surface); color: var(--text); }
+.block-ground .calc { box-shadow: none; }
+.block-ground .chip[aria-pressed="true"] {
+  background: var(--block-text);
+  border-color: var(--block-text);
+  color: var(--block-bg);
+}
+.block-ground .seg button[aria-pressed="true"] {
+  background: var(--block-text);
+  color: var(--block-bg);
+}
+.block-ground .badge--sale { background: var(--block-text); color: var(--block-bg); }
 
 /* ---------- pull quote ---------- */
 .quote blockquote {
@@ -463,22 +486,16 @@
   align-items: center;
   padding: clamp(1.8rem, 4.5vw, 3.6rem);
   border-radius: var(--r-lg);
-  background: var(--surface-ink);
-  color: var(--text-on-ink);
-  --line: rgb(233 229 218 / 0.18);
-  --text-dim: rgb(233 229 218 / 0.7);
-  --text-mute: rgb(233 229 218 / 0.5);
-  --surface-2: rgb(233 229 218 / 0.06);
-  --text: #e9e5da;
+  background: var(--block-bg);
   position: relative;
   overflow: hidden;
 }
-.club__art { position: absolute; inset-block: 0; inset-inline-end: -8%; inline-size: 46%; opacity: 0.16; pointer-events: none; }
+.club__art { position: absolute; inset-block: 0; inset-inline-end: -8%; inline-size: 46%; opacity: 0.16; pointer-events: none; color: var(--block-text); }
 .club__copy { position: relative; display: flex; flex-direction: column; gap: var(--s-4); }
 .club h2 { font-size: var(--step-3); }
 .club__perks { display: flex; flex-direction: column; gap: 0.55rem; margin-block-start: var(--s-2); }
 .club__perks li { display: flex; gap: 0.7em; align-items: flex-start; font-size: var(--step--1); color: var(--text-dim); }
-.club__perks svg { inline-size: 15px; block-size: 15px; color: var(--accent-hot); flex: none; margin-block-start: 0.28em; }
+.club__perks svg { inline-size: 15px; block-size: 15px; color: var(--block-accent); flex: none; margin-block-start: 0.28em; }
 .club__form { position: relative; display: flex; flex-direction: column; gap: var(--s-3); }
 .club__form .input { background: var(--surface-2); border-color: var(--line); color: #e9e5da; }
 .club__fine { font-size: var(--step--2); color: var(--text-mute); line-height: 1.5; }
