@@ -9,6 +9,7 @@ import { money, addToCart, inWish } from './store.js';
 import { t, getLang } from './i18n.js';
 import { findBook, applyFilter } from './catalog.js';
 import { toast } from './ui.js';
+import { stagger } from './motion.js';
 import { openCart } from './cart.js';
 
 let dialog, panel, visual, scroll, lastFocus = null, currentId = null;
@@ -95,6 +96,7 @@ export function openDialog(id) {
       `<button class="tag" data-act="tag" data-tag="${esc(tag)}">${esc(tag)}</button>`).join('')}</div>
     ${related(book)}`;
 
+  stagger(scroll, ':scope > *');
   dialog.hidden = false;
   document.getElementById('scrim').hidden = false;
   requestAnimationFrame(() => {

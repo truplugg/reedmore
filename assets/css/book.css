@@ -586,3 +586,29 @@
   from { opacity: 0; transform: translateY(38px) scale(0.94); }
   to   { opacity: 1; transform: none; }
 }
+
+/* ---------- artwork supplied as a picture ---------- */
+.cv--photo { padding: 0; }
+.cv--photo img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+}
+.book__back:has(img) { background: none; }
+.book__back img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+.book__back { backface-visibility: hidden; overflow: hidden; }
+
+/* ---------- the studio preview: free rotation, no hover behaviour ---------- */
+.book--studio .book__body { transform: rotateY(var(--turn-rest)) rotateX(var(--turn-x, 1.4deg)); }
+.book--studio.is-dragging .book__body,
+.book--studio.is-dragging .book__cover { transition: none; }
+.book--studio .book__trigger { display: none; }

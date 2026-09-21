@@ -560,3 +560,83 @@
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: none; }
 }
+
+/* ============================================================
+   MOTION — how the page comes to life as you read down it
+   Each of these encodes something: a heading arrives the way a
+   line of type is set, a figure counts to its real value, a
+   collection's plate drifts behind it as you scroll past.
+   ============================================================ */
+@media (prefers-reduced-motion: no-preference) {
+
+  /* a section head sets itself rather than fading in as a block */
+  .js .section-head.reveal,
+  .js .delivery__grid > .reveal:first-child,
+  .js .club.reveal { opacity: 1; transform: none; transition: none; }
+
+  .js .reveal .wipe {
+    clip-path: inset(-0.2em 0 108% 0);
+    transform: translateY(0.14em);
+  }
+  .js .reveal.is-in .wipe {
+    clip-path: inset(-0.2em 0 -0.3em 0);
+    transform: none;
+    transition: clip-path 880ms cubic-bezier(0.20, 0.92, 0.20, 1),
+                transform 880ms cubic-bezier(0.20, 0.92, 0.20, 1);
+  }
+
+  /* the running head's rule draws itself */
+  .js .reveal .eyebrow::before { transform: scaleX(0); transform-origin: left center; }
+  .js .reveal.is-in .eyebrow::before {
+    transform: none;
+    transition: transform 620ms cubic-bezier(0.20, 0.92, 0.20, 1) 140ms;
+  }
+
+  /* the embroidered rule stitches itself in from the left */
+  .js .ornament {
+    -webkit-mask-image: linear-gradient(90deg, #000 0 0);
+    mask-image: linear-gradient(90deg, #000 0 0);
+    -webkit-mask-size: 0% 100%;
+    mask-size: 0% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    transition: -webkit-mask-size 1500ms cubic-bezier(0.30, 0.86, 0.26, 1),
+                mask-size 1500ms cubic-bezier(0.30, 0.86, 0.26, 1);
+  }
+  .js .ornament.is-stitched { -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+}
+
+/* a collection's plate drifts behind it while the card is in view */
+.collection__art {
+  transform: translate3d(0, var(--art-y, 0px), 0) scale(1.08);
+  transition: transform 220ms linear;
+}
+.collection:hover .collection__art { transform: translate3d(0, var(--art-y, 0px), 0) scale(1.14); transition: transform 700ms var(--ease-out); }
+
+/* a journal card draws its rule in the accent */
+.post { --rule: var(--text); border-block-start-color: var(--rule); transition: transform var(--t-mid) var(--ease-out), border-color 320ms var(--ease-out); }
+.post::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -2px;
+  inset-inline: 0;
+  block-size: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 520ms var(--ease-out);
+}
+.post:hover::before, .post:focus-within::before { transform: none; }
+
+/* overlay contents arrive in reading order */
+@media (prefers-reduced-motion: no-preference) {
+  .drawer.is-open .line,
+  .dialog.is-open .dialog__scroll > * {
+    animation: overlay-in 460ms cubic-bezier(0.20, 0.92, 0.20, 1) both;
+    animation-delay: calc(var(--in-i, 0) * 48ms + 90ms);
+  }
+}
+@keyframes overlay-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}

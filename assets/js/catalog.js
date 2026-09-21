@@ -143,8 +143,12 @@ export function render({ append = false } = {}) {
 
   els.shelf.className = `shelf shelf--${get('view') === 'list' ? 'list' : 'wide'}`;
 
+  const calmMode = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   els.shelf.innerHTML = shown.length
-    ? shown.map((b) => bookHTML(b)).join('')
+    ? shown.map((b, i) => bookHTML(b).replace(
+        '<article class="book',
+        `<article style="--arrive-i:${Math.min(i, 11)}" class="book${calmMode ? '' : ' is-arriving'}`
+      )).join('')
     : `<div class="empty">
          <svg class="empty__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 5.5v15"/><path d="m9.5 10.5 5 5m0-5-5 5"/></svg>
          <h3>${esc(t('cat.empty'))}</h3>

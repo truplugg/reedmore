@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>READMORE — адмінка</title>
+<meta name="description" content="Додавання книжки до каталогу READMORE: обкладинки, опис, видавничі дані, ціна.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f0ece1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#152234" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%231a3557'/%3E%3Cpath d='M8 7h9a5 5 0 0 1 0 10h-3l6 8h-4l-6-8v8H8z' fill='%23e0563c'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@300..700&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..600&family=Unbounded:wght@500..800&display=swap">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/book.css">
+<link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body class="adm-body">
+
+<header class="adm-top">
+  <div class="adm-top__bar">
+    <a class="logo" href="index.html" aria-label="READMORE">
+      <span class="logo__mark">READ</span><span>MORE</span><span class="logo__dot" aria-hidden="true"></span>
+    </a>
+    <span class="adm-top__tag">Адмінка</span>
+    <span class="adm-top__spacer"></span>
+    <button class="iconbtn" id="theme-toggle" data-mode="system" aria-label="Змінити тему" title="Змінити тему">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8.2"/><path d="M12 3.8a8.2 8.2 0 0 0 0 16.4z" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <a class="btn btn--ghost btn--sm" href="index.html">До крамниці</a>
+  </div>
+</header>
+
+<main class="adm">
+
+  <!-- ============ live preview ============ -->
+  <section class="adm__stage" aria-label="Попередній перегляд">
+    <div class="adm__stageInner">
+      <div class="adm__book" id="preview"></div>
+      <div class="adm__spin">
+        <label class="adm__spinLabel" for="spin">Поворот</label>
+        <input type="range" id="spin" min="-200" max="200" step="1" value="-30" aria-label="Поворот книжки">
+        <output id="spin-out" class="num">−30°</output>
+      </div>
+      <div class="adm__views">
+        <button type="button" class="chip" data-view="front">Обкладинка</button>
+        <button type="button" class="chip" data-view="back">Спинка</button>
+        <button type="button" class="chip" data-view="spread" aria-pressed="false">Розворот</button>
+      </div>
+      <p class="adm__hint">Потягніть книжку вбік, щоб покрутити її</p>
+    </div>
+  </section>
+
+  <!-- ============ form ============ -->
+  <form class="adm__form" id="book-form" novalidate>
+
+    <fieldset class="adm__group">
+      <legend>Обкладинки</legend>
+      <p class="adm__note">Передня і задня сторонки. Найкраще — вертикальне зображення близько 1:1,5. Велике фото зменшиться автоматично.</p>
+      <div class="adm__drops">
+        <div class="drop" data-side="front">
+          <input type="file" id="file-front" accept="image/*" hidden>
+          <div class="drop__preview" id="prev-front" aria-hidden="true"></div>
+          <div class="drop__body">
+            <strong>Передня сторонка</strong>
+            <span class="drop__hint">Перетягніть сюди або натисніть</span>
+          </div>
+          <button type="button" class="drop__clear" data-clear="front" hidden aria-label="Прибрати">×</button>
+        </div>
+        <div class="drop" data-side="back">
+          <input type="file" id="file-back" accept="image/*" hidden>
+          <div class="drop__preview" id="prev-back" aria-hidden="true"></div>
+          <div class="drop__body">
+            <strong>Задня сторонка</strong>
+            <span class="drop__hint">Перетягніть сюди або натисніть</span>
+          </div>
+          <button type="button" class="drop__clear" data-clear="back" hidden aria-label="Прибрати">×</button>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="adm__group" id="art-group">
+      <legend>Якщо фото немає</legend>
+      <p class="adm__note">Тоді обкладинка збереться з шаблону й кольорів — як у решти каталогу.</p>
+      <div class="adm__row adm__row--3">
+        <label class="field"><span class="field__label">Шаблон</span>
+          <select class="select" name="coverStyle">
+            <option value="stack">Стосом</option>
+            <option value="plate">З плашкою</option>
+            <option value="band">Між лінійками</option>
+            <option value="column">Зі смугою</option>
+            <option value="serif">Класична</option>
+            <option value="split">Поділена</option>
+          </select>
+        </label>
+        <label class="field"><span class="field__label">Геометрія</span>
+          <select class="select" name="coverMotif">
+            <option value="none">Без плашки</option>
+            <option value="bars">Смуги</option>
+            <option value="circle">Коло</option>
+            <option value="arc">Дуга</option>
+            <option value="grid">Сітка</option>
+            <option value="diag">Діагоналі</option>
+            <option value="dots">Крапки</option>
+            <option value="square">Квадрат</option>
+            <option value="wave">Хвилі</option>
+          </select>
+        </label>
+        <label class="field"><span class="field__label">Форзац</span>
+          <select class="select" name="endpaper">
+            <option value="star">Зірка (Берегиня)</option>
+            <option value="rhomb">Ромб із крючками</option>
+            <option value="cross">Лічений хрест</option>
+            <option value="zig">Зигзаг</option>
+          </select>
+        </label>
+      </div>
+      <div class="adm__row adm__row--3">
+        <label class="field"><span class="field__label">Тло</span><input class="color" type="color" name="palPaper" value="#1d3b5c"></label>
+        <label class="field"><span class="field__label">Текст</span><input class="color" type="color" name="palInk" value="#efe9db"></label>
+        <label class="field"><span class="field__label">Акцент</span><input class="color" type="color" name="palAccent" value="#e0563c"></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="adm__group">
+      <legend>Основне</legend>
+      <div class="adm__row adm__row--2">
+        <label class="field"><span class="field__label">Назва *</span><input class="input" name="title" required placeholder="Інтернат"></label>
+        <label class="field"><span class="field__label">Автор *</span><input class="input" name="author" required placeholder="Сергій Жадан"></label>
+      </div>
+      <div class="adm__row adm__row--3">
+        <label class="field"><span class="field__label">Видавництво</span><input class="input" name="publisher" placeholder="Видавництво Старого Лева"></label>
+        <label class="field"><span class="field__label">Рік</span><input class="input num" name="year" type="number" min="1500" max="2100" placeholder="2026"></label>
+        <label class="field"><span class="field__label">Жанр</span>
+          <select class="select" name="genre">
+            <option value="proza">Сучасна проза</option>
+            <option value="klasyka">Класика</option>
+            <option value="poeziia">Поезія</option>
+            <option value="nonfic">Нонфікшн</option>
+            <option value="dytiacha">Дитяча</option>
+          </select>
+        </label>
+      </div>
+      <div class="adm__row adm__row--3">
+        <label class="field"><span class="field__label">Палітурка</span>
+          <select class="select" name="format">
+            <option value="hard">Тверда</option>
+            <option value="soft">М’яка</option>
+          </select>
+        </label>
+        <label class="field"><span class="field__label">Позначка</span>
+          <select class="select" name="badge">
+            <option value="">Без позначки</option>
+            <option value="new">Новинка</option>
+            <option value="best">Бестселер</option>
+            <option value="preorder">Передзамовлення</option>
+            <option value="last">Останні</option>
+          </select>
+        </label>
+        <label class="field"><span class="field__label">Теги, через кому</span><input class="input" name="tags" placeholder="війна, сучасна проза"></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="adm__group">
+      <legend>Тексти</legend>
+      <label class="field"><span class="field__label">Коротка анотація — друкується на сторінці книжки</span>
+        <textarea class="input" name="blurb" rows="2" maxlength="220" placeholder="Три дні дороги вчителя через прифронтову зону."></textarea>
+      </label>
+      <label class="field"><span class="field__label">Повний опис — у картці книжки</span>
+        <textarea class="input" name="about" rows="4" placeholder="Роман про те, як людина, що все життя намагалася нічого не вирішувати, мусить нарешті вибрати сторону."></textarea>
+      </label>
+    </fieldset>
+
+    <fieldset class="adm__group">
+      <legend>Видання</legend>
+      <div class="adm__row adm__row--3">
+        <label class="field"><span class="field__label">Сторінок</span><input class="input num" name="pages" type="number" min="1" placeholder="336"></label>
+        <label class="field"><span class="field__label">Формат</span><input class="input" name="size" placeholder="130×200 мм"></label>
+        <label class="field"><span class="field__label">Папір</span><input class="input" name="paper" placeholder="офсет 70 г/м²"></label>
+      </div>
+      <div class="adm__row adm__row--3">
+        <label class="field"><span class="field__label">Тип палітурки</span><input class="input" name="binding" placeholder="тверда, з ляссе"></label>
+        <label class="field"><span class="field__label">ISBN</span><input class="input num" name="isbn" placeholder="978-966-97679-2-0"></label>
+        <label class="field"><span class="field__label">Вага, г</span><input class="input num" name="weight" type="number" min="1" placeholder="420"></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="adm__group">
+      <legend>Ціна й наявність</legend>
+      <div class="adm__row adm__row--3">
+        <label class="field"><span class="field__label">Ціна, ₴ *</span><input class="input num" name="price" type="number" min="1" required placeholder="420"></label>
+        <label class="field"><span class="field__label">Стара ціна, ₴</span><input class="input num" name="oldPrice" type="number" min="0" placeholder="—"></label>
+        <label class="field"><span class="field__label">На складі</span><input class="input num" name="stock" type="number" min="0" placeholder="12"></label>
+      </div>
+      <p class="adm__note">Ціна зберігається в гривні. У крамниці вона переводиться в обрану валюту автоматично.</p>
+    </fieldset>
+
+    <p class="adm__error" id="form-error" role="alert" hidden></p>
+
+    <div class="adm__actions">
+      <button class="btn btn--primary btn--lg" type="submit" id="save">Зберегти книжку</button>
+      <button class="btn btn--ghost" type="button" id="reset">Очистити форму</button>
+      <button class="btn btn--quiet" type="button" id="delete" hidden>Видалити з каталогу</button>
+    </div>
+  </form>
+</main>
+
+<!-- ============ saved books ============ -->
+<section class="adm__saved">
+  <div class="adm__savedHead">
+    <div>
+      <p class="eyebrow eyebrow--plain">Додані книжки</p>
+      <h2 class="adm__savedTitle"><span id="saved-count" class="num">0</span> у каталозі</h2>
+    </div>
+    <div class="adm__savedTools">
+      <span class="adm__usage num" id="usage">0 КБ</span>
+      <button class="btn btn--ghost btn--sm" type="button" id="copy">Скопіювати JSON</button>
+      <button class="btn btn--ghost btn--sm" type="button" id="download">Завантажити JSON</button>
+      <button class="btn btn--ghost btn--sm" type="button" id="import">Імпорт</button>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+    </div>
+  </div>
+  <div class="adm__cards" id="saved"></div>
+</section>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script type="module" src="assets/js/admin.js"></script>
+</body>
+</html>

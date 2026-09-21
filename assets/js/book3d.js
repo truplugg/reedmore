@@ -95,7 +95,9 @@ export function bookHTML(book, { mode = 'turn' } = {}) {
       <div class="book__stage">
         <div class="book__body">
           <div class="book__shadow" aria-hidden="true"></div>
-          <div class="book__back" aria-hidden="true"></div>
+          <div class="book__back" aria-hidden="true">${
+            book.cover.back ? `<img src="${esc(book.cover.back)}" alt="" draggable="false">` : ''
+          }</div>
           <div class="book__spine" aria-hidden="true"></div>
           <div class="book__edge" aria-hidden="true"></div>
           <div class="book__block">${page}</div>

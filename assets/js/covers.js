@@ -79,6 +79,11 @@ function stackLines(title, max = 4) {
  * thumbnails, where it would only add noise.
  */
 export function coverHTML(book, { compact = false } = {}) {
+  /* A book added through the admin desk carries its own artwork; the rest
+     of the catalogue is set from the templates below. */
+  if (book.cover.front) {
+    return `<div class="cv cv--photo"><img src="${esc(book.cover.front)}" alt="" draggable="false"></div>`;
+  }
   const { style = 'stack', pal, motif: art = 'none' } = book.cover;
   const title = esc(book.title);
   const author = esc(book.author);

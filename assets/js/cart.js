@@ -7,6 +7,7 @@ import { thumbHTML, esc } from './covers.js';
 import { findBook } from './catalog.js';
 import { t } from './i18n.js';
 import { toast, clearToasts } from './ui.js';
+import { stagger } from './motion.js';
 
 let drawer, scrim, body, foot, goal;
 
@@ -58,6 +59,7 @@ export function renderCart() {
       : `<b>${esc(t('cart.goalDone'))}</b>`}</div>
     <div class="ship-goal__bar"><div class="ship-goal__fill" style="inline-size:${Math.min(100, (sub / FREE_FROM_UAH) * 100).toFixed(1)}%"></div></div>` : '';
 
+  stagger(body, '.line');
   foot.querySelector('#cart-sub').textContent = money(sub);
   foot.querySelector('#cart-total').textContent = money(sub);
   foot.querySelector('#cart-ship').textContent = left > 0 ? t('cart.shipCalc') : money(0);

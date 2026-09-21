@@ -207,6 +207,7 @@ const DICT = {
     'foot.terms': 'Умови',
     'foot.privacy': 'Приватність',
     'foot.cookies': 'Cookies',
+    'foot.admin': 'Адмінка',
     'foot.demo': 'Демонстраційна збірка. Назви книжок, автори й видавництва — справжні; ціни, наявність, ISBN та відгуки — тестові дані. Обкладинки — оригінальний типографічний дизайн, а не репродукції видавничих.'
   },
 
@@ -407,6 +408,7 @@ const DICT = {
     'foot.jobs': 'Jobs',
     'foot.press': 'Press',
     'foot.rights': 'All rights reserved',
+    'foot.admin': 'Admin',
     'foot.terms': 'Terms',
     'foot.privacy': 'Privacy',
     'foot.cookies': 'Cookies',

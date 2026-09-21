@@ -3,23 +3,30 @@
    ============================================================ */
 
 import { BOOKS } from './data/books.js';
+import { installCustomBooks } from './custom.js';
 import { bookHTML, mountBooks } from './book3d.js';
 import { initCatalog, render as renderShelf, findBook, applyFilter, showWishlist } from './catalog.js';
 import { initCart, renderCart, renderWishCount, openCart, wish } from './cart.js';
 import { initDialog, openDialog, closeDialog, dialogBookId } from './dialog.js';
 import { initDelivery } from './delivery.js';
 import { initPalette } from './palette.js';
-import { initReveals, initMarquee, initHero } from './motion.js';
+import { initReveals, initMarquee, initHero, initCounters, initOrnaments, initParallax } from './motion.js';
 import { initShell, initSectionSpy, toast } from './ui.js';
 import { addToCart, subscribe, get } from './store.js';
 import { t } from './i18n.js';
 
 document.documentElement.classList.add('js');
 
+/* books added from the admin desk join the catalogue before anything renders */
+installCustomBooks(BOOKS);
+
 /* ---------- the shelf of new arrivals ---------- */
 function newestFirst(n = 14) {
   return [...BOOKS]
-    .sort((a, x) => (x.badge === 'new' ? 1 : 0) - (a.badge === 'new' ? 1 : 0) || x.year - a.year)
+    .sort((a, x) =>
+      (x.custom ? 1 : 0) - (a.custom ? 1 : 0) ||
+      (x.badge === 'new' ? 1 : 0) - (a.badge === 'new' ? 1 : 0) ||
+      x.year - a.year)
     .slice(0, n);
 }
 
@@ -97,6 +104,7 @@ function redrawAll() {
   renderCart();
   renderWishCount();
   initReveals();
+  initCounters();
   const open = dialogBookId();
   if (open) { closeDialog(); setTimeout(() => openDialog(open), 20); }
   document.dispatchEvent(new CustomEvent('readmore:refresh'));
@@ -114,6 +122,9 @@ function boot() {
   initMarquee();
   initSectionSpy();
   initReveals();
+  initOrnaments();
+  initCounters();
+  initParallax();
   initHero();
 
   /* prices live in one currency at a time, so a change redraws
