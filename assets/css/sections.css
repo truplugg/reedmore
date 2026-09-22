@@ -115,16 +115,18 @@
 
 /* ---------- the running band ----------
    A rule of counted stitch above and below, and the words between them.
-   The band is a real scroller: it drifts on its own, stops under a
-   cursor, and can be dragged or swiped either way. The trim reads its
-   offset from the same scroll position, so the embroidery travels with
-   the words rather than beside them. */
+   It drifts on its own and can be dragged or swiped either way; letting
+   go leaves a fling that decays back into the drift. Both the words and
+   the trim are moved by the same offset in the same frame — the track
+   modulo one copy of its group, the stitch modulo one tile — so the
+   embroidery travels with the words and cannot fall out of step. */
 .band {
   position: relative;
   border-block: 1px solid var(--line);
   background: var(--bg-sunk);
   overflow: hidden;
   padding-block: 0.4rem;
+  --band-x: 0;
   --stitch-x: 0;
 }
 .band__stitch {
@@ -145,21 +147,20 @@
 .band__stitch--bottom .band__stitch-svg { transform: translate3d(calc(var(--stitch-x) * -1px), 0, 0) scaleY(-1); }
 
 .band__rail {
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  overflow: hidden;
   padding-block: 0.75rem;
   cursor: grab;
+  /* a sideways drag is the band's; an up-and-down swipe is the page's */
+  touch-action: pan-y;
 }
-.band__rail::-webkit-scrollbar { display: none; }
 .band.is-dragging .band__rail { cursor: grabbing; }
 .band.is-dragging .band__item { user-select: none; }
 .band__track {
   display: flex;
   inline-size: max-content;
   gap: 0;
+  transform: translate3d(calc(var(--band-x, 0) * -1px), 0, 0);
+  will-change: transform;
 }
 .band__group { display: flex; gap: 0; flex: none; }
 .band__item {

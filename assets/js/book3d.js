@@ -9,7 +9,7 @@
    Mouse hovers, a finger taps, the keyboard focuses.
    ============================================================ */
 
-import { coverHTML, endpaperSVG, deviceSVG, esc } from './covers.js';
+import { coverHTML, backHTML, endpaperSVG, deviceSVG, esc } from './covers.js';
 import { money, inWish } from './store.js';
 import { t } from './i18n.js';
 
@@ -96,7 +96,9 @@ export function bookHTML(book, { mode = 'turn' } = {}) {
       <div class="book__stage">
         <div class="book__body">
           <div class="book__back" aria-hidden="true">${
-            book.cover.back ? `<img src="${esc(book.cover.back)}" alt="" draggable="false">` : ''
+            book.cover.back
+              ? `<img src="${esc(book.cover.back)}" alt="" draggable="false">`
+              : backHTML(book)
           }</div>
           <div class="book__spine" aria-hidden="true"></div>
           <div class="book__edge" aria-hidden="true"></div>
@@ -174,6 +176,29 @@ export function openOne(book) {
   }
   book.querySelector('.book__trigger')?.setAttribute('aria-expanded', 'true');
   book.closest('.shelf, .rail')?.classList.add('is-browsing');
+  active = book;
+}
+
+/**
+ * Put a book on one of its three faces. Used where the reader chooses
+ * what to look at rather than pointing at it: the record's view switch.
+ *   front  — closed, the artwork forward
+ *   spread — the cover swung open on its spine
+ *   back   — turned right around, the back board forward
+ */
+export function setBookView(book, view) {
+  if (!book) return;
+  if (active && active !== book) closeOpenBook();
+  book.classList.add('is-active');
+  book.classList.toggle('is-flipped', view === 'back');
+  book.classList.toggle('is-cover', view === 'front');
+  if (view === 'spread') {
+    placeSpread(book);
+    book.classList.add('is-open');
+  } else {
+    book.classList.remove('is-open');
+  }
+  book.querySelector('.book__trigger')?.setAttribute('aria-expanded', String(view === 'spread'));
   active = book;
 }
 

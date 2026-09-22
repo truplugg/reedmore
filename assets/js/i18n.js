@@ -34,6 +34,10 @@ const DICT = {
     'hero.cta2': 'Порахувати доставку',
     'hero.hint': 'Наведіть курсор на будь-яку обкладинку',
     'hero.hintTouch': 'Торкніться будь-якої обкладинки',
+    'view.label': 'Як дивитися книжку',
+    'view.front': 'Обкладинка',
+    'view.spread': 'Розворот',
+    'view.back': 'Зворот',
     'book.hintOne': 'Наведіть курсор на обкладинку',
     'book.hintOneTouch': 'Торкніться обкладинки',
 
@@ -240,6 +244,10 @@ const DICT = {
     'hero.cta2': 'Estimate delivery',
     'hero.hint': 'Hover any cover to open it',
     'hero.hintTouch': 'Tap any cover to open it',
+    'view.label': 'How to view the book',
+    'view.front': 'Front',
+    'view.spread': 'Spread',
+    'view.back': 'Back',
     'book.hintOne': 'Hover the cover to open it',
     'book.hintOneTouch': 'Tap the cover to open it',
 

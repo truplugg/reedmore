@@ -40,15 +40,22 @@ export function initReveals() {
 
 /* ------------------------------------------------------------------
    The running band.
-   It is a scroller, not an animation: one number — scrollLeft — drives
-   the words and the embroidered trim together, and that same number is
-   what a finger or a drag moves. Three copies of the group mean there
-   is always more band to either side, so the position can be wrapped
-   back to the middle copy without a seam and the reader can go on
-   scrolling in either direction for as long as they like.
+   One number — offset, in pixels — is the whole mechanism. Every frame
+   it moves the words and the embroidered trim by exactly the same
+   amount, so the stitch can never drift out of step with the type: the
+   track takes offset modulo one copy of the group, the trim takes it
+   modulo one stitch, and both are written in the same paint.
+
+   It is not a native scroller. Handing the drift to scrollLeft means
+   fighting the platform's own momentum for the same number, and on a
+   phone the scroll event arrives late enough for the trim to visibly
+   lag. Dragging is ours instead: touch-action keeps vertical swipes
+   with the page, a drag moves the offset directly, and letting go
+   leaves a fling that decays back into the drift — so the band carries
+   on running the moment the finger stops.
    ------------------------------------------------------------------ */
 const BAND_TILE = 16;    /* one stitch of the trim, in px */
-const BAND_SPEED = 30;   /* px a second, the band's resting drift */
+const BAND_SPEED = 34;   /* px a second, the band's resting drift */
 
 export function initBand() {
   const band = document.querySelector('.band');
@@ -57,55 +64,57 @@ export function initBand() {
   const group = track?.querySelector('.band__group');
   if (!band || !rail || !track || !group) return;
 
-  while (track.children.length < 3) track.append(group.cloneNode(true));
-
-  let span = 0;                       /* width of one copy */
-  let hovered = false;
-  let onScreen = true;
+  let span = 0;          /* width of one copy of the group */
+  let offset = 0;        /* how far the band has run, in px */
+  let fling = 0;         /* what a released drag left behind, px/s */
   let drag = null;
+  let onScreen = true;
+
+  const mod = (n, m) => (m > 0 ? ((n % m) + m) % m : 0);
 
   const paint = () => {
-    band.style.setProperty('--stitch-x', (rail.scrollLeft % BAND_TILE).toFixed(2));
+    band.style.setProperty('--band-x', mod(offset, span).toFixed(2));
+    band.style.setProperty('--stitch-x', mod(offset, BAND_TILE).toFixed(2));
+  };
+
+  /* enough copies that the window is never looking past the end */
+  const stock = () => {
+    const need = span ? Math.ceil(rail.clientWidth / span) + 2 : 3;
+    while (track.children.length < need) track.append(group.cloneNode(true));
   };
 
   const measure = () => {
-    const was = span;
     span = group.getBoundingClientRect().width;
-    if (!span) return;
-    /* keep the reader where they were within the copy, then re-centre */
-    const within = was ? rail.scrollLeft - was : 0;
-    rail.scrollLeft = span + (was ? within * (span / was) : 0);
+    stock();
     paint();
   };
 
-  const wrap = () => {
-    if (!span) return;
-    if (rail.scrollLeft >= span * 2) rail.scrollLeft -= span;
-    else if (rail.scrollLeft <= 0) rail.scrollLeft += span;
-  };
-
-  rail.addEventListener('scroll', () => { wrap(); paint(); }, { passive: true });
-
-  /* a cursor resting on the band stops it, so the words can be read */
-  band.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hovered = true; });
-  band.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hovered = false; });
-
-  /* touch gets the platform's own scrolling, momentum and all; a mouse
-     gets the same thing by hand */
+  /* ---- dragging ---- */
   rail.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'touch') return;
-    drag = { id: e.pointerId, x: e.clientX, from: rail.scrollLeft };
+    if (e.button > 0) return;
+    drag = { id: e.pointerId, x: e.clientX, from: offset, at: performance.now(), vx: 0 };
+    fling = 0;
     band.classList.add('is-dragging');
     rail.setPointerCapture?.(e.pointerId);
   });
+
   rail.addEventListener('pointermove', (e) => {
     if (!drag || e.pointerId !== drag.id) return;
-    rail.scrollLeft = drag.from - (e.clientX - drag.x);
+    const next = drag.from - (e.clientX - drag.x);
+    const now = performance.now();
+    const dt = (now - drag.at) / 1000;
+    if (dt > 0) drag.vx = (next - offset) / dt;
+    drag.at = now;
+    offset = next;
+    paint();
     e.preventDefault();
   });
+
   const endDrag = (e) => {
     if (!drag || (e && e.pointerId !== drag.id)) return;
     rail.releasePointerCapture?.(drag.id);
+    /* what was left of the gesture carries on, then dies into the drift */
+    fling = Math.max(-2600, Math.min(2600, drag.vx));
     drag = null;
     band.classList.remove('is-dragging');
   };
@@ -115,22 +124,23 @@ export function initBand() {
 
   if ('ResizeObserver' in window) new ResizeObserver(measure).observe(group);
   if ('IntersectionObserver' in window) {
-    new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; })
-      .observe(band);
+    new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; }).observe(band);
   }
 
   measure();
   requestAnimationFrame(measure);   /* again once webfonts have settled */
 
-  if (calm()) { paint(); return; }  /* still scrollable, just never by itself */
+  if (calm()) return;               /* still draggable, just never by itself */
 
   let last = 0;
   const tick = (now) => {
     requestAnimationFrame(tick);
-    const dt = last ? Math.min(now - last, 64) : 0;
+    const dt = last ? Math.min((now - last) / 1000, 0.064) : 0;
     last = now;
-    if (!dt || drag || hovered || !onScreen || document.hidden) return;
-    rail.scrollLeft += (BAND_SPEED * dt) / 1000;
+    if (!dt || drag || !onScreen || document.hidden) return;
+    offset += (BAND_SPEED + fling) * dt;
+    fling *= Math.exp(-4.2 * dt);
+    if (Math.abs(fling) < 1) fling = 0;
     paint();
   };
   requestAnimationFrame(tick);

@@ -110,8 +110,20 @@
 .book__back {
   inset: 0;
   transform: translateZ(calc(var(--depth) / -2)) rotateY(180deg);
-  background: color-mix(in srgb, var(--cv-paper) 86%, #000);
+  background: color-mix(in srgb, var(--cv-paper) 88%, #000);
+  color: var(--cv-ink);
   border-radius: var(--r-sm) 1px 1px var(--r-sm);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / .18);
+}
+/* the light rakes the back board from the other side */
+.book__back::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(270deg,
+    rgb(0 0 0 / .26) 0%, rgb(0 0 0 / .10) 12%, rgb(0 0 0 / 0) 34%);
 }
 
 /* fore-edge: the stack of page edges on the right */
@@ -333,6 +345,19 @@
   opacity: 0.8;
 }
 .book--solo { --open-scale: 0.94; --open-x: 46%; --depth: 24px; }
+
+/* ---------- turned right around ----------
+   The back board comes to the front and the spine catches the near
+   edge, so the reader sees the object has two faces and a thickness
+   between them. Declared after the open rules so it wins over them. */
+.book.is-flipped .book__body {
+  transform: translateZ(34px) rotateY(-197deg) rotateX(0.4deg);
+}
+.book.is-flipped .book__cover { transform: translateZ(calc(var(--depth) / 2)); }
+/* closed, but turned enough that the volume reads */
+.book.is-cover .book__body {
+  transform: translateZ(34px) rotateY(-17deg) rotateX(0.6deg);
+}
 
 /* back of the cover: the paste-down endpaper */
 .book__face--inside {
@@ -610,6 +635,66 @@
 @keyframes book-arrive {
   from { opacity: 0; transform: translateY(38px) scale(0.94); }
   to   { opacity: 1; transform: none; }
+}
+
+/* ---------- the back board's typography ---------- */
+.cv--back { padding: 11% 9.5% 9%; }
+.cv--back .cv__body { gap: 0.55em; }
+.cv--back .cv__imprint { opacity: 0.55; }
+.cv__blurb {
+  margin: 0.9em 0 auto;
+  font-family: var(--font-text);
+  font-size: clamp(4.6px, 3.05cqi, 10px);
+  line-height: 1.5;
+  letter-spacing: -0.004em;
+  opacity: 0.8;
+  text-wrap: pretty;
+  hyphens: auto;
+}
+.cv__back-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6%;
+  margin-block-start: 0.7em;
+}
+.cv__isbn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  font-family: var(--font-display);
+  font-size: clamp(4px, 2.3cqi, 7.5px);
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+.cv__isbn span:first-child { letter-spacing: 0.3em; opacity: 0.7; }
+/* the barcode is printed on its own white patch, the way it is on a
+   real back board — never in the cover's ink */
+.cv__ean {
+  flex: 0 1 44%;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15em;
+  padding: 5% 5% 3%;
+  background: #f4f1e8;
+  border-radius: 1px;
+}
+.cv__bars { inline-size: 100%; block-size: clamp(9px, 7cqi, 22px); display: block; }
+.cv__ean .num {
+  font-size: clamp(3.4px, 2cqi, 6.5px);
+  letter-spacing: 0.1em;
+  color: #17212e;
+  opacity: 0.75;
+}
+/* too small to read: the back keeps its imprint and its barcode, and
+   drops the lines nobody could make out at this size */
+@container (max-width: 132px) {
+  .cv--back .cv__blurb { display: none; }
+  .cv--back .cv__rule { margin-block-start: auto; }
 }
 
 /* ---------- artwork supplied as a picture ---------- */

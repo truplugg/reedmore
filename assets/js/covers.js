@@ -181,3 +181,53 @@ export function deviceSVG() {
   const m = STITCH.rhomb;
   return `<svg class="book__device" viewBox="0 0 ${m.w} ${m.h}" aria-hidden="true"><g fill="currentColor">${m.d}</g></svg>`;
 }
+
+/* ------------------------------------------------------------------
+   The back board.
+   A book is not a front and a void behind it. The back carries what
+   a back carries: the imprint, a few lines about the book, and the
+   barcode over the ISBN — set in the same palette and the same three
+   voices as the front, so both faces read as one designed object.
+   ------------------------------------------------------------------ */
+
+/** Bars derived from the ISBN's own digits, so each title keeps its own. */
+function barcode(isbn) {
+  const digits = (String(isbn).replace(/\D/g, '') || '9786170000000').slice(0, 13);
+  let x = 1.2;
+  const bars = digits.split('').map((ch) => {
+    const d = Number(ch);
+    const w = 0.85 + (d % 4) * 0.5;
+    const bar = `<rect x="${x.toFixed(2)}" width="${w.toFixed(2)}" height="26"/>`;
+    x += w + 0.75 + (d % 3) * 0.4;
+    return bar;
+  }).join('');
+  return `<svg class="cv__bars" viewBox="0 0 ${(x + 1.2).toFixed(2)} 26"
+               preserveAspectRatio="none" aria-hidden="true"><g fill="#17212e">${bars}</g></svg>`;
+}
+
+/** Trim the blurb to what fits a back board without crowding it. */
+function backBlurb(text, max = 210) {
+  const s = String(text ?? '').trim();
+  if (s.length <= max) return s;
+  return s.slice(0, max).replace(/[\s.,;:—–-]+\S*$/, '') + '…';
+}
+
+export function backHTML(book) {
+  const pal = book.cover.pal;
+  const isbn = String(book.isbn ?? '');
+  return `
+    <div class="cv cv--back" style="--cv-p:${pal.paper}">
+      <div class="cv__body">
+        <div class="cv__imprint">${esc(book.publisher)}</div>
+        <p class="cv__blurb">${esc(backBlurb(book.about))}</p>
+        <div class="cv__rule" style="opacity:.42"></div>
+        <div class="cv__back-foot">
+          ${isbn ? `<div class="cv__isbn">
+            <span>ISBN</span>
+            <span class="num">${esc(isbn)}</span>
+          </div>` : ''}
+          <div class="cv__ean">${barcode(isbn)}<span class="num">${esc(isbn.replace(/\D/g, ''))}</span></div>
+        </div>
+      </div>
+    </div>`;
+}

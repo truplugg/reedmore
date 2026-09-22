@@ -197,6 +197,9 @@
   gap: 0.5em;
   text-align: center;
 }
+/* the record's view switch, set under the book it turns */
+.seg--views { flex: none; }
+.seg--views button { font-size: var(--step--2); padding-inline: 0.85em; }
 .dialog__author a { color: var(--accent); }
 .dialog__blurb { font-family: var(--font-text); font-size: var(--step-0); line-height: 1.62; color: var(--text-dim); }
 .dialog__buy {

@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { BOOKS } from './data/books.js';
-import { bookHTML, mountBooks, stars, closeOpenBook, fine } from './book3d.js';
+import { bookHTML, setBookView, stars, closeOpenBook } from './book3d.js';
 import { thumbHTML, esc } from './covers.js';
 import { money, addToCart, inWish } from './store.js';
 import { t, getLang } from './i18n.js';
@@ -58,6 +58,22 @@ function related(book) {
     </div>`;
 }
 
+const VIEWS = ['front', 'spread', 'back'];
+
+let view = 'spread';
+
+function showView(next) {
+  const book = visual?.querySelector('.book');
+  if (!book) return;
+  view = next;
+  setBookView(book, view);
+  visual.querySelectorAll('#dialog-views button').forEach((b) =>
+    b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+}
+
+/* the book itself is a control too: tapping it walks the three faces */
+const nextView = () => VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length];
+
 export function openDialog(id) {
   const book = findBook(id);
   if (!book || !dialog) return;
@@ -68,12 +84,15 @@ export function openDialog(id) {
   const title = lang === 'en' && book.titleEn ? book.titleEn : book.title;
   const about = lang === 'en' && book.aboutEn ? book.aboutEn : book.about;
 
+  /* the record is where the object gets looked at properly, so all
+     three faces are on offer rather than left to a hover */
   visual.innerHTML = bookHTML(book, { mode: 'open' })
-    + `<p class="dialog__hint">
-         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 3.5 18.5 11 13 12.5 16 19l-2.6 1.2L10.4 14 6 17.5Z"/></svg>
-         ${esc(fine() ? t('book.hintOne') : t('book.hintOneTouch'))}
-       </p>`;
+    + `<div class="seg seg--views" id="dialog-views" role="group" aria-label="${esc(t('view.label'))}">
+         ${VIEWS.map((v) => `<button type="button" data-view="${v}"
+             aria-pressed="${v === 'spread'}">${esc(t('view.' + v))}</button>`).join('')}
+       </div>`;
   visual.querySelector('.book')?.classList.add('book--solo');
+  requestAnimationFrame(() => showView('spread'));
 
   scroll.innerHTML = `
     <div class="dialog__eyebrow">
@@ -130,7 +149,11 @@ export function initDialog() {
   visual = dialog.querySelector('.dialog__visual');
   scroll = dialog.querySelector('.dialog__scroll');
 
-  mountBooks(visual, {});
+  visual.addEventListener('click', (e) => {
+    const btn = e.target.closest('#dialog-views button');
+    if (btn) { showView(btn.dataset.view); return; }
+    if (e.target.closest('.book__trigger')) showView(nextView());
+  });
 
   panel.querySelector('.dialog__close').addEventListener('click', closeDialog);
   dialog.addEventListener('click', (e) => { if (e.target === dialog) closeDialog(); });
