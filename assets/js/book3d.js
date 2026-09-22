@@ -119,7 +119,6 @@ export function bookHTML(book, { mode = 'turn' } = {}) {
 
 let active = null;
 let lastPointer = 'mouse';
-let activeAtPointerDown = false;
 
 export function closeOpenBook() {
   if (!active) return;
@@ -228,35 +227,64 @@ export function mountBooks(root, { onDetails } = {}) {
     if (book) tilt(book, e);
   }, { passive: true });
 
-  /* the state is read at pointerdown, before focus moves, so a first
-     tap always gets the turn and only a second one asks for the record */
+  /* A finger behaves like a cursor: the book turns while the finger is on
+     it and returns the moment it lifts, so nothing is left stuck. A quick
+     tap — short, and without the movement that means a scroll — also asks
+     for the record on the way back. A book that stands alone (hero,
+     record) has nothing behind it, so there a tap simply toggles. */
+  let press = null;
+
   root.addEventListener('pointerdown', (e) => {
     const trigger = e.target.closest('[data-act="open"]');
     if (!trigger) return;
     lastPointer = e.pointerType || 'mouse';
+    if (lastPointer === 'mouse') return;
+
     const book = trigger.closest('.book');
-    activeAtPointerDown = book?.classList.contains('is-active') ?? false;
-    /* A finger gets the turn the moment it lands, rather than waiting for
-       the click that follows — which some mobile browsers withhold while
-       they decide whether the touch is a scroll. */
-    if (lastPointer !== 'mouse' && book && !activeAtPointerDown) openOne(book);
+    if (!book) return;
+
+    if (book.classList.contains('book--open')) {
+      /* toggle and stay: the reader is here to look at the spread */
+      if (book.classList.contains('is-active')) closeOpenBook();
+      else openOne(book);
+      press = null;
+      return;
+    }
+
+    press = { book, at: performance.now(), x: e.clientX, y: e.clientY, moved: false };
+    openOne(book);
   }, true);
 
+  root.addEventListener('pointermove', (e) => {
+    if (!press || e.pointerType === 'mouse') return;
+    if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > 12) press.moved = true;
+  }, { passive: true });
+
+  const release = (cancelled) => {
+    if (!press) return;
+    const { book, at, moved } = press;
+    press = null;
+    closeOpenBook();
+    if (!cancelled && !moved && performance.now() - at < 500) {
+      onDetails?.(book.dataset.id, book);
+    }
+  };
+  root.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') release(false); }, true);
+  root.addEventListener('pointercancel', (e) => { if (e.pointerType !== 'mouse') release(true); }, true);
+
+  /* mouse and keyboard keep the click path: the book is already turned by
+     hover or focus, so the click asks for the record */
   root.addEventListener('click', (e) => {
     const trigger = e.target.closest('[data-act="open"]');
     if (!trigger) return;
+    e.preventDefault();
+    const viaKeyboard = e.detail === 0;
+    if (!viaKeyboard && lastPointer !== 'mouse') return;
+
     const book = trigger.closest('.book');
     if (!book) return;
-    e.preventDefault();
-
-    const viaKeyboard = e.detail === 0;
-    const wantsRecord = viaKeyboard || lastPointer === 'mouse' || activeAtPointerDown;
-
-    if (wantsRecord && book.classList.contains('is-active')) {
-      onDetails?.(trigger.dataset.id, book);
-    } else {
-      openOne(book);
-    }
+    if (book.classList.contains('is-active')) onDetails?.(trigger.dataset.id, book);
+    else openOne(book);
   });
 
   root.addEventListener('focusin', (e) => {

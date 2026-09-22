@@ -300,6 +300,10 @@
   z-index: 6;
   border-radius: var(--r-sm);
   cursor: pointer;
+  /* a held finger must not raise the system callout over the cover */
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 /* an open cover swings a full width to the left, and that area is part
    of the same object */
