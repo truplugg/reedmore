@@ -126,7 +126,19 @@
     rgb(0 0 0 / .26) 0%, rgb(0 0 0 / .10) 12%, rgb(0 0 0 / 0) 34%);
 }
 
-/* fore-edge: the stack of page edges on the right */
+/* ---------- fore-edge: the stack of page edges on the right ----------
+   The trap here is resolution, not drawing. The edge is seen at about
+   30°, so 25px of depth projects to roughly 12 on screen; a comb fine
+   enough to be "many sheets" falls below the sampling rate and aliases
+   into a handful of broad, perfectly even fringes — which is exactly
+   what a milled plastic edge looks like. So every rhythm here stays
+   safely above that limit, and the irregularity comes from layering
+   three of them (4.4 / 6.9 / 11.3px) whose multiples almost never
+   coincide: the lines land unevenly and at different strengths, the
+   way a real stack does. Each is a dark cut with a bright lip beside
+   it, because that lit top edge is what reads as paper rather than
+   groove. The boards overhang, so both ends sit in shadow, which is
+   also what makes a rounded fore-edge read as rounded. */
 .book__edge {
   inset-block: 1.2%;
   inset-inline-end: 0;
@@ -134,13 +146,39 @@
   transform-origin: right center;
   transform: translateZ(calc(var(--depth) / -2)) rotateY(90deg);
   background:
-    linear-gradient(90deg, rgb(20 18 12 / .16), rgb(20 18 12 / 0) 22%),
+    /* the block is rounded, so it darkens into both boards and takes
+       the light on the swell a third of the way in */
+    linear-gradient(90deg,
+      rgb(20 18 12 / .46) 0%, rgb(20 18 12 / .13) 7%, rgb(20 18 12 / 0) 22%,
+      rgb(255 253 246 / .30) 36%, rgb(0 0 0 / 0) 58%,
+      rgb(20 18 12 / .12) 90%, rgb(20 18 12 / .38) 100%),
+    /* the sewn gatherings — the widest rhythm, and the deepest cuts */
     repeating-linear-gradient(90deg,
-      rgb(28 24 16 / .13) 0 1px,
-      #fffdf7 1px 2.5px,
-      #efe9db 2.5px 4px);
-  box-shadow: inset 0 0 0 1px rgb(20 18 12 / .10);
+      rgb(22 18 12 / .46) 0 1px,
+      rgb(255 252 244 / .72) 1px 2.2px,
+      rgb(0 0 0 / 0) 2.2px 11.3px),
+    /* sheets, on two beats that never line up with it or each other */
+    repeating-linear-gradient(90deg,
+      rgb(28 24 16 / .26) 0 1px,
+      rgb(255 252 244 / .46) 1px 1.9px,
+      rgb(0 0 0 / 0) 1.9px 6.9px),
+    repeating-linear-gradient(90deg,
+      rgb(28 24 16 / .17) 0 1px,
+      rgb(255 252 244 / .30) 1px 1.8px,
+      rgb(0 0 0 / 0) 1.8px 4.4px),
+    /* the paper, toned from head to tail */
+    linear-gradient(180deg, #fcf9f0 0%, #f2ebdb 52%, #e4dac4 100%);
   transition: filter 700ms var(--ease-turn);
+}
+/* the seam where the block meets the front board, and nothing else:
+   a ring around the whole edge is what made it look cast */
+.book__edge::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline: 0 auto;
+  inline-size: 1px;
+  background: rgb(20 18 12 / .24);
 }
 .book.is-active .book__edge { filter: brightness(1.14); }
 
