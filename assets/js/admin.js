@@ -11,7 +11,7 @@ import {
   normalize, saveBook, deleteBook, customBooks, usedBytes,
   exportJSON, importJSON, slugify
 } from './custom.js';
-import { toast } from './ui.js';
+import { toast, initThemeToggle } from './ui.js';
 
 document.documentElement.classList.add('js');
 
@@ -26,21 +26,8 @@ let angle = -30;
 let spread = false;
 let art = { front: null, back: null };
 
-/* ---------- theme ---------- */
-const THEMES = ['system', 'light', 'dark'];
-let theme = (() => { try { return localStorage.getItem('readmore.adm.theme') || 'system'; } catch { return 'system'; } })();
-function applyTheme() {
-  const root = document.documentElement;
-  if (theme === 'system') root.removeAttribute('data-theme');
-  else root.setAttribute('data-theme', theme);
-  $('#theme-toggle').dataset.mode = theme;
-}
-applyTheme();
-$('#theme-toggle').addEventListener('click', () => {
-  theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
-  try { localStorage.setItem('readmore.adm.theme', theme); } catch { /* unavailable */ }
-  applyTheme();
-});
+/* the desk shares the shop's theme preference, one switch for both */
+initThemeToggle($('#theme-toggle'));
 
 /* ---------- form <-> draft ---------- */
 function draft() {

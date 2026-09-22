@@ -34,12 +34,56 @@ export function toast(message, { action } = {}) {
   }
 }
 
-/* ---------- theme ---------- */
-const THEMES = ['system', 'light', 'dark'];
+/* ---------- theme ----------
+   A two-state switch, not a three-state cycle. Cycling through
+   system/light/dark meant one of the three taps changed nothing
+   visible — on a light phone, system and light look identical.
+   The stored preference still starts as 'system' and follows the
+   operating system until the reader decides for themselves. */
+const dark = window.matchMedia('(prefers-color-scheme: dark)');
+
 function applyTheme(mode) {
   const root = document.documentElement;
   if (mode === 'system') root.removeAttribute('data-theme');
   else root.setAttribute('data-theme', mode);
+}
+
+/** What the reader is actually looking at right now. */
+export function renderedTheme() {
+  return document.documentElement.getAttribute('data-theme')
+    || (dark.matches ? 'dark' : 'light');
+}
+
+/**
+ * Wire the header's theme button. The icon shows where a tap leads:
+ * a moon while the page is light, a sun while it is dark.
+ */
+export function initThemeToggle(btn) {
+  if (!btn) return;
+  const paint = () => {
+    const now = renderedTheme();
+    btn.dataset.mode = now;
+    const label = now === 'dark' ? t('a11y.themeLight') : t('a11y.themeDark');
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('title', label);
+    btn.setAttribute('aria-pressed', String(now === 'dark'));
+  };
+
+  applyTheme(get('theme'));
+  paint();
+
+  btn.addEventListener('click', () => {
+    const next = renderedTheme() === 'dark' ? 'light' : 'dark';
+    set('theme', next);
+    applyTheme(next);
+    paint();
+  });
+
+  /* while still following the system, keep the icon honest */
+  const onSystem = () => { if (get('theme') === 'system') paint(); };
+  dark.addEventListener ? dark.addEventListener('change', onSystem) : dark.addListener(onSystem);
+
+  subscribe((what) => { if (what === 'lang') paint(); });
 }
 
 /* ---------- header ---------- */
@@ -48,7 +92,6 @@ export function initShell({ onLangChange } = {}) {
   const progress = document.getElementById('progress');
   const totop = document.getElementById('totop');
 
-  applyTheme(get('theme'));
   setLang(get('lang'));
   document.documentElement.lang = get('lang');
   applyI18n();
@@ -75,15 +118,7 @@ export function initShell({ onLangChange } = {}) {
 
   totop?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-  /* theme cycle */
-  const themeBtn = document.getElementById('theme-toggle');
-  themeBtn?.addEventListener('click', () => {
-    const next = THEMES[(THEMES.indexOf(get('theme')) + 1) % THEMES.length];
-    set('theme', next);
-    applyTheme(next);
-    themeBtn.dataset.mode = next;
-  });
-  if (themeBtn) themeBtn.dataset.mode = get('theme');
+  initThemeToggle(document.getElementById('theme-toggle'));
 
   /* currency */
   document.querySelectorAll('[data-switch="currency"]').forEach((sel) => {

@@ -245,9 +245,19 @@
 .tag:hover { border-color: var(--accent); color: var(--accent); }
 
 @media (max-width: 820px) {
-  .dialog__panel { grid-template-columns: 1fr; max-block-size: 92vh; }
-  .dialog__visual { padding-block: var(--s-6); border-inline-end: 0; border-block-end: 1px solid var(--line); }
-  .dialog__visual .book { inline-size: min(170px, 50%); }
+  .dialog__panel {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    max-block-size: 94vh;
+  }
+  .dialog__visual {
+    padding: var(--s-5) var(--s-5) var(--s-4);
+    border-inline-end: 0;
+    border-block-end: 1px solid var(--line);
+    min-block-size: 0;
+  }
+  .dialog__visual .book { inline-size: min(150px, 44%); }
+  .dialog__scroll { padding: var(--s-5); }
 }
 
 /* ---------- command palette ---------- */
