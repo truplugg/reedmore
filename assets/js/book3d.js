@@ -92,9 +92,9 @@ export function bookHTML(book, { mode = 'turn' } = {}) {
   return `
     <article class="book book--${open ? 'open' : 'turn'}" data-id="${esc(book.id)}" style="${vars}">
       <div class="book__head">
+      <div class="book__shadow" aria-hidden="true"></div>
       <div class="book__stage">
         <div class="book__body">
-          <div class="book__shadow" aria-hidden="true"></div>
           <div class="book__back" aria-hidden="true">${
             book.cover.back ? `<img src="${esc(book.cover.back)}" alt="" draggable="false">` : ''
           }</div>
@@ -227,12 +227,33 @@ export function mountBooks(root, { onDetails } = {}) {
     if (book) tilt(book, e);
   }, { passive: true });
 
-  /* A finger behaves like a cursor: the book turns while the finger is on
-     it and returns the moment it lifts, so nothing is left stuck. A quick
-     tap — short, and without the movement that means a scroll — also asks
-     for the record on the way back. A book that stands alone (hero,
-     record) has nothing behind it, so there a tap simply toggles. */
+  /* A finger behaves like a cursor, with one rule a cursor does not need:
+     the book turns only once the finger has RESTED on it. A flick that
+     starts on a cover is a scroll, and a scroll must leave the shelf
+     still. So the turn waits out HOLD_MS, and any travel, lift, page
+     scroll or cancelled gesture in that window calls the whole thing off.
+     Held: the book stays turned, and returns the moment the finger lifts.
+     Released before the turn: that was a tap, and a tap asks for the
+     record. A book that stands alone (hero, record) has nothing behind
+     it, so there the same hold simply toggles the spread. */
+  const HOLD_MS = 180;   /* a finger must rest this long to mean "turn" */
+  const SLOP = 10;       /* px of travel a held finger is still allowed */
   let press = null;
+
+  const dropPress = () => {
+    if (!press) return null;
+    clearTimeout(press.timer);
+    const p = press;
+    press = null;
+    return p;
+  };
+
+  /* the finger moved on, or the page did: no turn, and undo one already
+     under way so a scroll never drags an animation along with it */
+  const abandon = () => {
+    const p = dropPress();
+    if (p?.turned && active === p.book) closeOpenBook();
+  };
 
   root.addEventListener('pointerdown', (e) => {
     const trigger = e.target.closest('[data-act="open"]');
@@ -243,31 +264,46 @@ export function mountBooks(root, { onDetails } = {}) {
     const book = trigger.closest('.book');
     if (!book) return;
 
-    if (book.classList.contains('book--open')) {
-      /* toggle and stay: the reader is here to look at the spread */
-      if (book.classList.contains('is-active')) closeOpenBook();
+    abandon();
+    const solo = book.classList.contains('book--open');
+    press = {
+      book, solo,
+      at: performance.now(),
+      x: e.clientX, y: e.clientY,
+      scroll: window.scrollY,
+      turned: false,
+      timer: 0
+    };
+    press.timer = setTimeout(() => {
+      if (!press) return;
+      press.timer = 0;
+      press.turned = true;
+      if (solo && book.classList.contains('is-active')) closeOpenBook();
       else openOne(book);
-      press = null;
-      return;
-    }
-
-    press = { book, at: performance.now(), x: e.clientX, y: e.clientY, moved: false };
-    openOne(book);
+    }, HOLD_MS);
   }, true);
 
   root.addEventListener('pointermove', (e) => {
     if (!press || e.pointerType === 'mouse') return;
-    if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > 12) press.moved = true;
+    if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > SLOP) abandon();
+  }, { passive: true });
+
+  /* iOS hands the gesture to its own scroller without always sending a
+     pointermove first; the page moving under the finger says the same */
+  window.addEventListener('scroll', () => {
+    if (press && Math.abs(window.scrollY - press.scroll) > 4) abandon();
   }, { passive: true });
 
   const release = (cancelled) => {
-    if (!press) return;
-    const { book, at, moved } = press;
-    press = null;
-    closeOpenBook();
-    if (!cancelled && !moved && performance.now() - at < 500) {
-      onDetails?.(book.dataset.id, book);
+    const p = dropPress();
+    if (!p) return;
+    if (p.turned) {
+      /* the spread on a solo book is what the reader came to see: it
+         stays until the next tap. On the shelf the book comes back. */
+      if (!p.solo && active === p.book) closeOpenBook();
+      return;
     }
+    if (!cancelled) onDetails?.(p.book.dataset.id, p.book);
   };
   root.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') release(false); }, true);
   root.addEventListener('pointercancel', (e) => { if (e.pointerType !== 'mouse') release(true); }, true);

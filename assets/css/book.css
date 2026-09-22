@@ -167,26 +167,32 @@
 }
 .book--open.is-open .book__block::before { opacity: 1; }
 
-/* ---------- contact shadow ---------- */
+/* ---------- contact shadow ----------
+   It sits beside the 3D stage, not inside it: a blurred layer within a
+   preserve-3d scene is rasterised flat by mobile Safari and then shows
+   up as a grey box behind the book. Out here it is plain 2D and the
+   blur stays a blur. --sh-inset lines it up with the stage, which the
+   shelf insets by 6% and the list view does not. */
 .book__shadow {
   position: absolute;
-  inset-inline: 2%;
-  inset-block-end: -4%;
-  block-size: 8%;
+  z-index: 1;
+  inset-inline: var(--sh-inset, 7.8%);
+  inset-block-end: -3.6%;
+  block-size: 7.5%;
   background: radial-gradient(ellipse at 50% 50%,
-    rgb(var(--sh-color) / .46) 0%, rgb(var(--sh-color) / .17) 46%, transparent 72%);
+    rgb(var(--sh-color) / .42) 0%, rgb(var(--sh-color) / .15) 46%, transparent 72%);
   filter: blur(9px);
-  transform: translateZ(calc(var(--depth) / -2 - 14px)) scaleX(0.92);
+  transform: scaleX(0.9);
   transition: transform 800ms cubic-bezier(0.20, 0.92, 0.20, 1) 40ms,
               opacity 620ms var(--ease-turn),
               filter 700ms var(--ease-turn);
   pointer-events: none;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 .book.is-active .book__shadow {
-  transform: translateZ(calc(var(--depth) / -2 - 14px)) translateY(18px) scale(1.16, 1.45);
-  filter: blur(15px);
-  opacity: 1;
+  transform: translateY(15px) scale(1.12, 1.4);
+  filter: blur(14px);
+  opacity: 0.95;
 }
 
 /* ---------- colour focus: one book in colour, the rest in grey ---------- */
@@ -320,8 +326,11 @@
 .book--open.is-open .book__body {
   transform: translateX(var(--open-x)) scale(var(--open-scale)) rotateY(0deg) rotateX(0.6deg);
 }
+/* open, the book lies across two pages: the shadow spreads to ground
+   both halves rather than pooling under the swung cover */
 .book--open.is-open .book__shadow {
-  transform: translateZ(calc(var(--depth) / -2 - 14px)) translateX(-6%) scale(1.8, 1.15);
+  transform: translateX(-30%) scale(2.5, 1.2);
+  opacity: 0.8;
 }
 .book--solo { --open-scale: 0.94; --open-x: 46%; --depth: 24px; }
 

@@ -10,7 +10,7 @@ import { initCart, renderCart, renderWishCount, openCart, wish } from './cart.js
 import { initDialog, openDialog, closeDialog, dialogBookId } from './dialog.js';
 import { initDelivery } from './delivery.js';
 import { initPalette } from './palette.js';
-import { initReveals, initMarquee, initHero, initCounters, initOrnaments, initParallax } from './motion.js';
+import { initReveals, initBand, initHero, initCounters, initOrnaments, initParallax } from './motion.js';
 import { initShell, initSectionSpy, toast } from './ui.js';
 import { addToCart, subscribe, get } from './store.js';
 import { t } from './i18n.js';
@@ -119,7 +119,7 @@ function boot() {
   initDialog();
   initDelivery();
   initPalette({ onPick: openDialog });
-  initMarquee();
+  initBand();
   initSectionSpy();
   initReveals();
   initOrnaments();

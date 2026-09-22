@@ -9,6 +9,9 @@ html {
      let that become a sideways scroll */
   overflow-x: clip;
   -webkit-text-size-adjust: 100%;
+  /* a finger held on a cover must not raise the system's grey wash over
+     it — the book's own turn is the whole feedback */
+  -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-h) + 1.5rem);
 }

@@ -38,12 +38,102 @@ export function initReveals() {
   }), 1200);
 }
 
-/** The marquee needs its content twice so the loop has no seam. */
-export function initMarquee() {
-  const track = document.querySelector('.band__track');
-  if (!track) return;
-  const group = track.querySelector('.band__group');
-  if (group && track.children.length === 1) track.append(group.cloneNode(true));
+/* ------------------------------------------------------------------
+   The running band.
+   It is a scroller, not an animation: one number — scrollLeft — drives
+   the words and the embroidered trim together, and that same number is
+   what a finger or a drag moves. Three copies of the group mean there
+   is always more band to either side, so the position can be wrapped
+   back to the middle copy without a seam and the reader can go on
+   scrolling in either direction for as long as they like.
+   ------------------------------------------------------------------ */
+const BAND_TILE = 16;    /* one stitch of the trim, in px */
+const BAND_SPEED = 30;   /* px a second, the band's resting drift */
+
+export function initBand() {
+  const band = document.querySelector('.band');
+  const rail = band?.querySelector('.band__rail');
+  const track = rail?.querySelector('.band__track');
+  const group = track?.querySelector('.band__group');
+  if (!band || !rail || !track || !group) return;
+
+  while (track.children.length < 3) track.append(group.cloneNode(true));
+
+  let span = 0;                       /* width of one copy */
+  let hovered = false;
+  let onScreen = true;
+  let drag = null;
+
+  const paint = () => {
+    band.style.setProperty('--stitch-x', (rail.scrollLeft % BAND_TILE).toFixed(2));
+  };
+
+  const measure = () => {
+    const was = span;
+    span = group.getBoundingClientRect().width;
+    if (!span) return;
+    /* keep the reader where they were within the copy, then re-centre */
+    const within = was ? rail.scrollLeft - was : 0;
+    rail.scrollLeft = span + (was ? within * (span / was) : 0);
+    paint();
+  };
+
+  const wrap = () => {
+    if (!span) return;
+    if (rail.scrollLeft >= span * 2) rail.scrollLeft -= span;
+    else if (rail.scrollLeft <= 0) rail.scrollLeft += span;
+  };
+
+  rail.addEventListener('scroll', () => { wrap(); paint(); }, { passive: true });
+
+  /* a cursor resting on the band stops it, so the words can be read */
+  band.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hovered = true; });
+  band.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hovered = false; });
+
+  /* touch gets the platform's own scrolling, momentum and all; a mouse
+     gets the same thing by hand */
+  rail.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch') return;
+    drag = { id: e.pointerId, x: e.clientX, from: rail.scrollLeft };
+    band.classList.add('is-dragging');
+    rail.setPointerCapture?.(e.pointerId);
+  });
+  rail.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    rail.scrollLeft = drag.from - (e.clientX - drag.x);
+    e.preventDefault();
+  });
+  const endDrag = (e) => {
+    if (!drag || (e && e.pointerId !== drag.id)) return;
+    rail.releasePointerCapture?.(drag.id);
+    drag = null;
+    band.classList.remove('is-dragging');
+  };
+  rail.addEventListener('pointerup', endDrag);
+  rail.addEventListener('pointercancel', endDrag);
+  window.addEventListener('blur', () => endDrag());
+
+  if ('ResizeObserver' in window) new ResizeObserver(measure).observe(group);
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; })
+      .observe(band);
+  }
+
+  measure();
+  requestAnimationFrame(measure);   /* again once webfonts have settled */
+
+  if (calm()) { paint(); return; }  /* still scrollable, just never by itself */
+
+  let last = 0;
+  const tick = (now) => {
+    requestAnimationFrame(tick);
+    const dt = last ? Math.min(now - last, 64) : 0;
+    last = now;
+    if (!dt || drag || hovered || !onScreen || document.hidden) return;
+    rail.scrollLeft += (BAND_SPEED * dt) / 1000;
+    paint();
+  };
+  requestAnimationFrame(tick);
 }
 
 /** Open the hero book once, so the reader sees what a cover does. */

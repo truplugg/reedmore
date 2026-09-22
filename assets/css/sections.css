@@ -113,20 +113,54 @@
   .hero__book { inline-size: min(230px, 62%); }
 }
 
-/* ---------- marquee band ---------- */
+/* ---------- the running band ----------
+   A rule of counted stitch above and below, and the words between them.
+   The band is a real scroller: it drifts on its own, stops under a
+   cursor, and can be dragged or swiped either way. The trim reads its
+   offset from the same scroll position, so the embroidery travels with
+   the words rather than beside them. */
 .band {
+  position: relative;
   border-block: 1px solid var(--line);
   background: var(--bg-sunk);
   overflow: hidden;
-  padding-block: 0.85rem;
+  padding-block: 0.4rem;
+  --stitch-x: 0;
 }
+.band__stitch {
+  block-size: 10px;
+  overflow: hidden;
+  color: var(--accent);
+  opacity: 0.38;
+  pointer-events: none;
+}
+.band__stitch-svg {
+  display: block;
+  block-size: 10px;
+  /* one tile wider than the frame, so sliding by up to a tile never
+     uncovers the far edge */
+  inline-size: calc(100% + 16px);
+  transform: translate3d(calc(var(--stitch-x) * -1px), 0, 0);
+}
+.band__stitch--bottom .band__stitch-svg { transform: translate3d(calc(var(--stitch-x) * -1px), 0, 0) scaleY(-1); }
+
+.band__rail {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-block: 0.75rem;
+  cursor: grab;
+}
+.band__rail::-webkit-scrollbar { display: none; }
+.band.is-dragging .band__rail { cursor: grabbing; }
+.band.is-dragging .band__item { user-select: none; }
 .band__track {
   display: flex;
   inline-size: max-content;
   gap: 0;
-  animation: marquee 48s linear infinite;
 }
-.band:hover .band__track { animation-play-state: paused; }
 .band__group { display: flex; gap: 0; flex: none; }
 .band__item {
   display: inline-flex;
@@ -149,8 +183,6 @@
   background: var(--accent);
   flex: none;
 }
-@keyframes marquee { to { transform: translateX(-50%); } }
-@media (prefers-reduced-motion: reduce) { .band__track { animation: none; } }
 
 /* ---------- catalogue toolbar ---------- */
 .toolbar {
@@ -207,6 +239,7 @@
   border-block-end: 1px solid var(--line-soft);
   block-size: auto;
 }
+.shelf--list .book { --sh-inset: 2%; }
 .shelf--list .book__stage { perspective: 1100px; margin-inline: 0; }
 .shelf--list .book__card {
   margin-block-start: 0;
