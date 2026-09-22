@@ -244,20 +244,67 @@
 }
 .tag:hover { border-color: var(--accent); color: var(--accent); }
 
+/* ---------- on a phone the record is a sheet, not a centred panel ----------
+   vh units measure the viewport with the browser bars hidden, so a panel
+   sized in vh hangs off the bottom of the screen while the address bar is
+   showing. The sheet is measured against the fixed overlay itself, which
+   always matches what the reader can see. */
 @media (max-width: 820px) {
+  .dialog {
+    padding: 0;
+    place-items: end stretch;
+  }
   .dialog__panel {
+    inline-size: 100%;
+    block-size: calc(100% - 3.25rem);
+    max-block-size: none;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
-    max-block-size: 94vh;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    border-inline: 0;
+    border-block-end: 0;
+    transform: translateY(24px);
   }
+  .dialog.is-open .dialog__panel { transform: none; }
+
+  /* the grab bar says the sheet holds more than one screen */
+  .dialog__panel::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 8px;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+    z-index: 4;
+    inline-size: 38px;
+    block-size: 4px;
+    border-radius: var(--r-pill);
+    background: var(--line-strong);
+    opacity: 0.6;
+  }
+
   .dialog__visual {
     padding: var(--s-5) var(--s-5) var(--s-4);
     border-inline-end: 0;
     border-block-end: 1px solid var(--line);
     min-block-size: 0;
   }
-  .dialog__visual .book { inline-size: min(150px, 44%); }
-  .dialog__scroll { padding: var(--s-5); }
+  .dialog__visual .book { inline-size: min(150px, 42%); }
+
+  .dialog__scroll {
+    padding: var(--s-5);
+    padding-block-end: calc(var(--s-6) + env(safe-area-inset-bottom, 0px));
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dialog__close {
+    inset-block-start: 14px;
+    inset-inline-end: 12px;
+    inline-size: 42px;
+    block-size: 42px;
+    background: var(--surface-2);
+    box-shadow: var(--sh-1), inset 0 0 0 1px var(--line);
+  }
 }
 
 /* ---------- command palette ---------- */
@@ -323,3 +370,71 @@
 .palette__p { font-family: var(--font-display); font-size: var(--step--2); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text-dim); }
 .palette__hint { padding: 0.6rem 1.1rem; border-block-start: 1px solid var(--line); font-size: var(--step--2); color: var(--text-mute); display: flex; gap: 1.2rem; flex-wrap: wrap; }
 .palette__empty { padding: 1.6rem 1.1rem; text-align: center; color: var(--text-mute); font-size: var(--step--1); }
+
+/* ---------- books bought alongside ---------- */
+.related {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+.related__item {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-areas: "thumb text" "thumb price";
+  align-items: center;
+  gap: 0.1rem 0.6rem;
+  padding: 0.45rem;
+  border-radius: var(--r-sm);
+  text-align: start;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out);
+}
+.related__item:hover, .related__item:focus-visible { background: var(--accent-soft); }
+.related__item .line__thumb { grid-area: thumb; inline-size: 38px; }
+.related__text { grid-area: text; min-inline-size: 0; }
+.related__t {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-family: var(--font-text);
+  font-size: var(--step--2);
+  font-weight: 600;
+  line-height: 1.25;
+}
+.related__a { display: none; }
+.related__p {
+  grid-area: price;
+  font-family: var(--font-display);
+  font-size: var(--step--2);
+  font-weight: 600;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* on a phone they read as a list, which is what a list of three is */
+@media (max-width: 820px) {
+  .related { grid-template-columns: 1fr; gap: 0; }
+  .related__item {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    grid-template-areas: "thumb text price";
+    align-items: center;
+    gap: 0 var(--s-4);
+    padding: 0.6rem 0.4rem;
+    border-radius: 0;
+    border-block-end: 1px solid var(--line-soft);
+  }
+  .related__item:last-child { border-block-end: 0; }
+  .related__item .line__thumb { inline-size: 44px; }
+  .related__t { -webkit-line-clamp: 1; line-clamp: 1; font-size: var(--step--1); }
+  .related__a {
+    display: block;
+    font-size: var(--step--2);
+    color: var(--text-mute);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .related__p { font-size: var(--step--1); }
+}

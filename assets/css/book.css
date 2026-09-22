@@ -571,8 +571,20 @@
 @container (max-width: 96px) {
   .cv { padding: 11% 9%; }
   .cv__author, .cv__imprint, .cv__rule { display: none; }
-  .cv__title { font-size: 8px !important; line-height: 1.08; letter-spacing: -0.02em; }
+  .cv__title {
+    font-size: 8px !important;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    overflow: hidden;
+  }
   .cv__body { justify-content: flex-end !important; }
+}
+@container (max-width: 56px) {
+  .cv__title { -webkit-line-clamp: 4; line-clamp: 4; font-size: 7px !important; }
 }
 
 /* ---------- a book arriving when the shelf grows ---------- */

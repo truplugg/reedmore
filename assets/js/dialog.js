@@ -44,14 +44,15 @@ function related(book) {
   return `
     <div>
       <h4 class="field__label" style="margin-block-end:.7rem">${esc(t('book.related'))}</h4>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+      <div class="related">
         ${near.map((b) => `
-          <button class="palette__item" data-act="swap" data-id="${esc(b.id)}" style="grid-template-columns:38px 1fr;padding:.4rem">
+          <button class="related__item" type="button" data-act="swap" data-id="${esc(b.id)}">
             ${thumbHTML(b)}
-            <span style="min-width:0">
-              <span class="palette__t" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.title)}</span>
-              <span class="palette__p">${money(b.price)}</span>
+            <span class="related__text">
+              <span class="related__t">${esc(b.title)}</span>
+              <span class="related__a">${esc(b.author)}</span>
             </span>
+            <span class="related__p num">${money(b.price)}</span>
           </button>`).join('')}
       </div>
     </div>`;
