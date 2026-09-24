@@ -1,0 +1,252 @@
+/* ============================================================
+   RIDMORE — design tokens
+   Palette: Ukrainian press — printer's ink, unbleached stock,
+   cinnabar, buckram green. Light ground is the default;
+   dark is a full re-declaration of the same token set.
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* --- ground & surfaces --- */
+  --bg:            #f0ece1;   /* laid book stock */
+  --bg-sunk:       #e7e3d6;   /* recessed band  */
+  --bg-deep:       #1a3557;   /* the navy block */
+  --surface:       #faf8f2;   /* product cards */
+  --surface-2:     #fffdf8;   /* page paper */
+  --surface-ink:   #1a3557;   /* navy, never black */
+
+  /* --- navy: the structural colour of the brand --- */
+  --navy-900:      #112339;
+  --navy-800:      #1a3557;
+  --navy-700:      #24466e;
+  --navy-soft:     rgb(26 53 87 / 0.08);
+  --navy-block:    #1c3a5e;   /* full-bleed dark sections */
+
+  /* --- the contrasting block ---------------------------------------
+     Light theme: a deep navy block on the cream page.
+     Dark theme: the same block inverts to cream on the navy page.
+     Everything inside a block reads these, so the rhythm flips with
+     the theme without restyling a single component. */
+  --block-bg:          #1c3a5e;
+  --block-text:        #f2eee3;
+  --block-dim:         rgb(242 238 227 / 0.78);
+  --block-mute:        rgb(242 238 227 / 0.54);
+  --block-line:        rgb(242 238 227 / 0.20);
+  --block-line-soft:   rgb(242 238 227 / 0.10);
+  --block-line-strong: rgb(242 238 227 / 0.38);
+  --block-surface:     rgb(242 238 227 / 0.07);
+  --block-surface-2:   rgb(242 238 227 / 0.11);
+  --block-sunk:        rgb(6 16 30 / 0.36);
+  --block-accent:      #e8654a;
+  --block-accent-hot:  #f6836a;
+  --block-teal:        #74c4b2;
+  --block-wheat:       #e6b45a;
+
+  /* --- type --- */
+  --text:          #16273d;
+  --text-dim:      #4a5b71;
+  --text-mute:     #7a879a;
+  --text-on-ink:   #eceadf;
+  --text-on-accent:#fdf6ef;
+
+  /* --- lines --- */
+  --line:          rgb(22 39 61 / 0.13);
+  --line-soft:     rgb(22 39 61 / 0.07);
+  --line-strong:   rgb(22 39 61 / 0.30);
+
+  /* --- accents --- */
+  --accent:        #b23a24;   /* cinnabar, book cloth red */
+  --accent-hot:    #d2452b;
+  --accent-soft:   rgb(178 58 36 / 0.10);
+  --accent-line:   rgb(178 58 36 / 0.30);
+  --teal:          #2f5d52;   /* buckram green */
+  --teal-soft:     rgb(47 93 82 / 0.12);
+  --wheat:         #a8761c;   /* foil / ratings */
+  --wheat-soft:    rgb(168 118 28 / 0.14);
+
+  /* --- status --- */
+  --ok:            #2f6b45;
+  --warn:          #9a6510;
+  --crit:          #a33224;
+
+  /* --- shadow (warm, paper-like) --- */
+  --sh-color:      28 22 14;
+  --sh-1: 0 1px 2px rgb(var(--sh-color) / .08), 0 2px 6px rgb(var(--sh-color) / .05);
+  --sh-2: 0 2px 4px rgb(var(--sh-color) / .08), 0 10px 24px rgb(var(--sh-color) / .10);
+  --sh-3: 0 6px 14px rgb(var(--sh-color) / .12), 0 28px 60px rgb(var(--sh-color) / .18);
+  --sh-book: 0 18px 40px rgb(var(--sh-color) / .22);
+
+  /* --- type families --- */
+  --font-display: "Unbounded", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --font-text:    "Literata", "Georgia", "Times New Roman", serif;
+  --font-ui:      "Commissioner", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  /* --- fluid type scale (1.25 minor third, clamped) --- */
+  --step--2: clamp(0.69rem, 0.67rem + 0.10vw, 0.75rem);
+  --step--1: clamp(0.80rem, 0.77rem + 0.16vw, 0.89rem);
+  --step-0:  clamp(0.95rem, 0.91rem + 0.20vw, 1.05rem);
+  --step-1:  clamp(1.13rem, 1.06rem + 0.36vw, 1.36rem);
+  --step-2:  clamp(1.36rem, 1.22rem + 0.70vw, 1.85rem);
+  --step-3:  clamp(1.66rem, 1.38rem + 1.35vw, 2.55rem);
+  --step-4:  clamp(2.05rem, 1.52rem + 2.60vw, 3.70rem);
+  --step-5:  clamp(2.55rem, 1.55rem + 4.90vw, 5.60rem);
+
+  /* --- spacing --- */
+  --s-1: 0.25rem;  --s-2: 0.5rem;   --s-3: 0.75rem;  --s-4: 1rem;
+  --s-5: 1.5rem;   --s-6: 2rem;     --s-7: 3rem;     --s-8: 4rem;
+  --s-9: 6rem;     --s-10: 8rem;
+
+  /* --- geometry: printed matter, so radii stay tight --- */
+  --r-xs: 2px;  --r-sm: 4px;  --r-md: 8px;  --r-lg: 14px;  --r-pill: 999px;
+
+  /* --- layout --- */
+  --gutter: clamp(1rem, 4vw, 3.5rem);
+  --measure: 68ch;
+  --wrap: 1360px;
+  --wrap-narrow: 860px;
+  --header-h: 68px;
+
+  /* --- motion --- */
+  --ease-out:   cubic-bezier(0.22, 0.90, 0.24, 1);
+  --ease-turn:  cubic-bezier(0.16, 0.86, 0.26, 1);
+  --ease-inout: cubic-bezier(0.62, 0.02, 0.22, 1);
+  --ease-spring:cubic-bezier(0.34, 1.32, 0.48, 1);
+  --t-fast: 160ms;
+  --t-mid:  320ms;
+  --t-slow: 620ms;
+  --t-book: 900ms;
+
+  /* --- book geometry --- */
+  --cover-ratio: 0.655;       /* 130×200 mm, format 84×108/32 */
+  --book-open-angle: -162deg; /* cover swing, hero and record only */
+  --turn-rest: -30deg;        /* how a book stands on the shelf */
+  --turn-focus: -3deg;        /* how far it turns toward the reader */
+  --depth: 26px;              /* board thickness, overridden per context */
+}
+
+/* Dark: system default, unless an explicit light choice is stamped */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:            #152234;
+    --bg-sunk:       #101b2a;
+    --bg-deep:       #0c1524;
+    --surface:       #1d2d43;
+    --surface-2:     #24364f;
+    --surface-ink:   #0f1c2e;
+
+    --navy-900:      #0c1524;
+    --navy-800:      #1a3557;
+    --navy-700:      #35618f;
+    --navy-soft:     rgb(120 165 214 / 0.12);
+    --navy-block:    #16293f;
+
+    /* the block inverts: cream on the navy page */
+    --block-bg:          #eee8da;
+    --block-text:        #14243a;
+    --block-dim:         rgb(20 36 58 / 0.80);
+    --block-mute:        rgb(20 36 58 / 0.56);
+    --block-line:        rgb(20 36 58 / 0.16);
+    --block-line-soft:   rgb(20 36 58 / 0.08);
+    --block-line-strong: rgb(20 36 58 / 0.34);
+    --block-surface:     rgb(20 36 58 / 0.05);
+    --block-surface-2:   rgb(255 253 248 / 0.72);
+    --block-sunk:        rgb(20 36 58 / 0.07);
+    --block-accent:      #b23a24;
+    --block-accent-hot:  #d2452b;
+    --block-teal:        #2f5d52;
+    --block-wheat:       #a8761c;
+
+    --text:          #ebe7dc;
+    --text-dim:      #a9b6c7;
+    --text-mute:     #7d8b9d;
+    --text-on-ink:   #ebe7dc;
+    --text-on-accent:#fdf6ef;
+
+    --line:          rgb(235 231 220 / 0.15);
+    --line-soft:     rgb(235 231 220 / 0.08);
+    --line-strong:   rgb(235 231 220 / 0.34);
+
+    --accent:        #e0563c;
+    --accent-hot:    #f06a4d;
+    --accent-soft:   rgb(224 86 60 / 0.14);
+    --accent-line:   rgb(224 86 60 / 0.34);
+    --teal:          #5fae9e;
+    --teal-soft:     rgb(95 174 158 / 0.14);
+    --wheat:         #e0a93b;
+    --wheat-soft:    rgb(224 169 59 / 0.16);
+
+    --ok:            #5cbd86;
+    --warn:          #e0a93b;
+    --crit:          #f06a4d;
+
+    --sh-color:      0 0 0;
+    --sh-1: 0 1px 2px rgb(0 0 0 / .30), 0 2px 6px rgb(0 0 0 / .24);
+    --sh-2: 0 2px 4px rgb(0 0 0 / .34), 0 10px 24px rgb(0 0 0 / .38);
+    --sh-3: 0 6px 14px rgb(0 0 0 / .40), 0 28px 60px rgb(0 0 0 / .52);
+    --sh-book: 0 18px 44px rgb(0 0 0 / .60);
+  }
+}
+
+/* Dark: explicit choice wins over a light OS */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:            #152234;
+  --bg-sunk:       #101b2a;
+  --bg-deep:       #0c1524;
+  --surface:       #1d2d43;
+  --surface-2:     #24364f;
+  --surface-ink:   #0f1c2e;
+
+  --navy-900:      #0c1524;
+  --navy-800:      #1a3557;
+  --navy-700:      #35618f;
+  --navy-soft:     rgb(120 165 214 / 0.12);
+  --navy-block:    #16293f;
+
+  /* the block inverts: cream on the navy page */
+  --block-bg:          #eee8da;
+  --block-text:        #14243a;
+  --block-dim:         rgb(20 36 58 / 0.80);
+  --block-mute:        rgb(20 36 58 / 0.56);
+  --block-line:        rgb(20 36 58 / 0.16);
+  --block-line-soft:   rgb(20 36 58 / 0.08);
+  --block-line-strong: rgb(20 36 58 / 0.34);
+  --block-surface:     rgb(20 36 58 / 0.05);
+  --block-surface-2:   rgb(255 253 248 / 0.72);
+  --block-sunk:        rgb(20 36 58 / 0.07);
+  --block-accent:      #b23a24;
+  --block-accent-hot:  #d2452b;
+  --block-teal:        #2f5d52;
+  --block-wheat:       #a8761c;
+
+  --text:          #ebe7dc;
+  --text-dim:      #a9b6c7;
+  --text-mute:     #7d8b9d;
+  --text-on-ink:   #ebe7dc;
+  --text-on-accent:#fdf6ef;
+
+  --line:          rgb(235 231 220 / 0.15);
+  --line-soft:     rgb(235 231 220 / 0.08);
+  --line-strong:   rgb(235 231 220 / 0.34);
+
+  --accent:        #e0563c;
+  --accent-hot:    #f06a4d;
+  --accent-soft:   rgb(224 86 60 / 0.14);
+  --accent-line:   rgb(224 86 60 / 0.34);
+  --teal:          #5fae9e;
+  --teal-soft:     rgb(95 174 158 / 0.14);
+  --wheat:         #e0a93b;
+  --wheat-soft:    rgb(224 169 59 / 0.16);
+
+  --ok:            #5cbd86;
+  --warn:          #e0a93b;
+  --crit:          #f06a4d;
+
+  --sh-color:      0 0 0;
+  --sh-1: 0 1px 2px rgb(0 0 0 / .30), 0 2px 6px rgb(0 0 0 / .24);
+  --sh-2: 0 2px 4px rgb(0 0 0 / .34), 0 10px 24px rgb(0 0 0 / .38);
+  --sh-3: 0 6px 14px rgb(0 0 0 / .40), 0 28px 60px rgb(0 0 0 / .52);
+  --sh-book: 0 18px 44px rgb(0 0 0 / .60);
+}

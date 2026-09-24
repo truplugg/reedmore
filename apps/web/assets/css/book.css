@@ -1,0 +1,762 @@
+/* ============================================================
+   RIDMORE — the book object
+   A real 3D volume: front board, page block, fore-edge, spine.
+   On the shelf it turns toward the reader and takes on colour
+   while its neighbours fall to grey. In the hero and the record
+   it goes further: the cover swings open on its spine to show
+   the endpaper and the first page.
+   ============================================================ */
+
+.book {
+  --cv-paper: #1d3b5c;
+  --cv-ink:   #efe9db;
+  --cv-accent:#e0563c;
+  --depth: 18px;
+  --open-scale: 0.9;
+  --open-x: 45%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+/* The head holds the 3D stage plus the flat things that must sit above
+   it. z-index does not order children of a preserve-3d parent — depth
+   does — so the hit target and the hint stay out of that scene. */
+.book__head {
+  position: relative;
+  transform: translateY(0) scale(1);
+  transition: transform 780ms cubic-bezier(0.20, 0.92, 0.20, 1);
+  will-change: transform;
+}
+.book.is-active .book__head { transform: translateY(-16px) scale(1.015); }
+
+
+/* ---------- stage ---------- */
+.book__stage {
+  position: relative;
+  aspect-ratio: var(--cover-ratio);
+  margin-inline: 6%;
+  perspective: 1700px;
+  perspective-origin: 54% 44%;
+  transform-style: preserve-3d;
+  z-index: 2;
+  transform: rotateY(var(--ty, 0deg)) rotateX(var(--tx, 0deg));
+  transition: transform 380ms var(--ease-out);
+}
+
+.book__body {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateY(var(--turn-rest)) rotateX(1.4deg);
+  transition: transform 700ms cubic-bezier(0.20, 1.06, 0.32, 1);
+  will-change: transform;
+}
+
+.book.is-active .book__body {
+  transform: translateZ(64px) rotateY(var(--turn-focus)) rotateX(0.3deg);
+}
+
+/* ---------- the six faces of the volume ---------- */
+.book__face,
+.book__block,
+.book__back,
+.book__edge,
+.book__spine {
+  position: absolute;
+  border-radius: 1px;
+}
+
+/* front board carries the artwork */
+.book__cover {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  transform: translateZ(calc(var(--depth) / 2));
+  transition: transform var(--t-book) var(--ease-inout);
+  will-change: transform;
+  z-index: 3;
+}
+.book__face {
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 1px var(--r-sm) var(--r-sm) 1px;
+  overflow: hidden;
+}
+.book__face--front {
+  background: var(--cv-paper);
+  color: var(--cv-ink);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / .16);
+}
+/* light raking across the board, strongest in the gutter */
+.book__face--front::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    rgb(0 0 0 / .30) 0%,
+    rgb(0 0 0 / .10) 5%,
+    rgb(0 0 0 / 0) 16%,
+    rgb(255 255 255 / .05) 88%,
+    rgb(255 255 255 / .14) 100%);
+  transition: opacity var(--t-book) var(--ease-out);
+}
+.book.is-active .book__face--front::after { opacity: 0.72; }
+
+/* back board */
+.book__back {
+  inset: 0;
+  transform: translateZ(calc(var(--depth) / -2)) rotateY(180deg);
+  background: color-mix(in srgb, var(--cv-paper) 88%, #000);
+  color: var(--cv-ink);
+  border-radius: var(--r-sm) 1px 1px var(--r-sm);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / .18);
+}
+/* the light rakes the back board from the other side */
+.book__back::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(270deg,
+    rgb(0 0 0 / .26) 0%, rgb(0 0 0 / .10) 12%, rgb(0 0 0 / 0) 34%);
+}
+
+/* ---------- fore-edge: the stack of page edges on the right ----------
+   The trap here is resolution, not drawing. The edge is seen at about
+   30°, so 25px of depth projects to roughly 12 on screen; a comb fine
+   enough to be "many sheets" falls below the sampling rate and aliases
+   into a handful of broad, perfectly even fringes — which is exactly
+   what a milled plastic edge looks like. So every rhythm here stays
+   safely above that limit, and the irregularity comes from layering
+   three of them (4.4 / 6.9 / 11.3px) whose multiples almost never
+   coincide: the lines land unevenly and at different strengths, the
+   way a real stack does. Each is a dark cut with a bright lip beside
+   it, because that lit top edge is what reads as paper rather than
+   groove. The boards overhang, so both ends sit in shadow, which is
+   also what makes a rounded fore-edge read as rounded. */
+.book__edge {
+  inset-block: 1.2%;
+  inset-inline-end: 0;
+  inline-size: var(--depth);
+  transform-origin: right center;
+  transform: translateZ(calc(var(--depth) / -2)) rotateY(90deg);
+  background:
+    /* the block is rounded, so it darkens into both boards and takes
+       the light on the swell a third of the way in */
+    linear-gradient(90deg,
+      rgb(20 18 12 / .46) 0%, rgb(20 18 12 / .13) 7%, rgb(20 18 12 / 0) 22%,
+      rgb(255 253 246 / .30) 36%, rgb(0 0 0 / 0) 58%,
+      rgb(20 18 12 / .12) 90%, rgb(20 18 12 / .38) 100%),
+    /* the sewn gatherings — the widest rhythm, and the deepest cuts */
+    repeating-linear-gradient(90deg,
+      rgb(22 18 12 / .46) 0 1px,
+      rgb(255 252 244 / .72) 1px 2.2px,
+      rgb(0 0 0 / 0) 2.2px 11.3px),
+    /* sheets, on two beats that never line up with it or each other */
+    repeating-linear-gradient(90deg,
+      rgb(28 24 16 / .26) 0 1px,
+      rgb(255 252 244 / .46) 1px 1.9px,
+      rgb(0 0 0 / 0) 1.9px 6.9px),
+    repeating-linear-gradient(90deg,
+      rgb(28 24 16 / .17) 0 1px,
+      rgb(255 252 244 / .30) 1px 1.8px,
+      rgb(0 0 0 / 0) 1.8px 4.4px),
+    /* the paper, toned from head to tail */
+    linear-gradient(180deg, #fcf9f0 0%, #f2ebdb 52%, #e4dac4 100%);
+  transition: filter 700ms var(--ease-turn);
+}
+/* the seam where the block meets the front board, and nothing else:
+   a ring around the whole edge is what made it look cast */
+.book__edge::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline: 0 auto;
+  inline-size: 1px;
+  background: rgb(20 18 12 / .24);
+}
+.book.is-active .book__edge { filter: brightness(1.14); }
+
+/* spine */
+.book__spine {
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--depth);
+  transform-origin: left center;
+  transform: translateZ(calc(var(--depth) / -2)) rotateY(-90deg);
+  background: color-mix(in srgb, var(--cv-paper) 80%, #000);
+  box-shadow: inset -2px 0 5px rgb(0 0 0 / .35);
+}
+
+/* the block of pages, whose top sheet is the right page of the spread */
+.book__block {
+  inset: 1.2% 1.5% 1.2% 0;
+  transform: translateZ(calc(var(--depth) / 2 - 1px));
+  background: var(--surface-2);
+  border-radius: 1px var(--r-sm) var(--r-sm) 1px;
+  overflow: hidden;
+  box-shadow: inset 1px 0 0 rgb(0 0 0 / .08);
+}
+.book__block::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 24%;
+  background: linear-gradient(90deg,
+    rgb(20 18 12 / .24) 0%, rgb(20 18 12 / .08) 44%, transparent 100%);
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--t-book) var(--ease-out);
+}
+.book--open.is-open .book__block::before { opacity: 1; }
+
+/* ---------- contact shadow ----------
+   It sits beside the 3D stage, not inside it: a blurred layer within a
+   preserve-3d scene is rasterised flat by mobile Safari and then shows
+   up as a grey box behind the book. Out here it is plain 2D and the
+   blur stays a blur. --sh-inset lines it up with the stage, which the
+   shelf insets by 6% and the list view does not. */
+.book__shadow {
+  position: absolute;
+  z-index: 1;
+  inset-inline: var(--sh-inset, 7.8%);
+  inset-block-end: -3.6%;
+  block-size: 7.5%;
+  background: radial-gradient(ellipse at 50% 50%,
+    rgb(var(--sh-color) / .42) 0%, rgb(var(--sh-color) / .15) 46%, transparent 72%);
+  filter: blur(9px);
+  transform: scaleX(0.9);
+  transition: transform 800ms cubic-bezier(0.20, 0.92, 0.20, 1) 40ms,
+              opacity 620ms var(--ease-turn),
+              filter 700ms var(--ease-turn);
+  pointer-events: none;
+  opacity: 0.75;
+}
+.book.is-active .book__shadow {
+  transform: translateY(15px) scale(1.12, 1.4);
+  filter: blur(14px);
+  opacity: 0.95;
+}
+
+/* ---------- colour focus: one book in colour, the rest in grey ---------- */
+.cv, .book__card { transition: filter 420ms var(--ease-out), background 260ms var(--ease-out); }
+.shelf.is-browsing .book:not(.is-active) .cv,
+.shelf.is-browsing .book:not(.is-active) .book__card,
+.rail.is-browsing .book:not(.is-active) .cv,
+.rail.is-browsing .book:not(.is-active) .book__card {
+  filter: grayscale(1);
+}
+.book.is-active .cv { filter: saturate(1.07) contrast(1.02); }
+.shelf .book.is-active, .rail .book.is-active { z-index: 20; }
+
+/* ---------- what the book is called, set under it ---------- */
+.book__card {
+  position: relative;
+  margin-block-start: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.34rem;
+  flex: 1 1 auto;
+}
+.book.is-active .book__actions .btn--ink {
+  --btn-bg: var(--accent);
+  --btn-bd: var(--accent);
+  --btn-fg: var(--text-on-accent);
+}
+
+.book__title {
+  font-family: var(--font-text);
+  font-size: var(--step-0);
+  font-weight: 700;
+  line-height: 1.26;
+  letter-spacing: -0.012em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.book__author {
+  font-size: var(--step--1);
+  color: var(--text-mute);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
+}
+.book__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-block-start: auto;
+  padding-block-start: 0.55rem;
+}
+.book__price {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--step-0);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+.book__price s {
+  color: var(--text-mute);
+  font-weight: 500;
+  font-size: 0.78em;
+  margin-inline-end: 0.45em;
+  text-decoration-thickness: 1px;
+}
+.book__price .is-now { color: var(--accent); }
+
+.book__actions { display: flex; gap: 0.4rem; align-items: center; margin-block-start: 0.65rem; }
+.book__actions .btn { flex: 1; }
+
+/* prompt on the focused book, naming the next step */
+.book__hint {
+  position: absolute;
+  inset-block-start: 4%;
+  inset-inline-end: 3%;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.34em 0.75em;
+  border-radius: var(--r-pill);
+  background: var(--navy-900);
+  color: #f2efe6;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.94);
+  transition: opacity 240ms var(--ease-out), transform 300ms var(--ease-spring);
+  pointer-events: none;
+}
+.book.is-active:not(.book--solo) .book__hint,
+.book--open.is-open:not(.book--solo) .book__hint {
+  opacity: 0.94;
+  transform: none;
+}
+
+.book__trigger {
+  position: absolute;
+  inset: -2% 0;
+  z-index: 6;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  /* a held finger must not raise the system callout over the cover */
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* an open cover swings a full width to the left, and that area is part
+   of the same object */
+.book--open.is-open .book__trigger { inset: -2% 0 -2% -100%; }
+.book__trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ============================================================
+   OPEN MODE — hero and record only, where there is room
+   ============================================================ */
+.book--open .book__cover { transform-origin: left center; }
+.book--open.is-open .book__cover {
+  transform: translateZ(calc(var(--depth) / 2)) rotateY(var(--book-open-angle));
+}
+.book--open.is-open .book__body {
+  transform: translateX(var(--open-x)) scale(var(--open-scale)) rotateY(0deg) rotateX(0.6deg);
+}
+/* open, the book lies across two pages: the shadow spreads to ground
+   both halves rather than pooling under the swung cover */
+.book--open.is-open .book__shadow {
+  transform: translateX(-30%) scale(2.5, 1.2);
+  opacity: 0.8;
+}
+.book--solo { --open-scale: 0.94; --open-x: 46%; --depth: 24px; }
+
+/* ---------- turned right around ----------
+   The back board comes to the front and the spine catches the near
+   edge, so the reader sees the object has two faces and a thickness
+   between them. Declared after the open rules so it wins over them. */
+.book.is-flipped .book__body {
+  transform: translateZ(34px) rotateY(-197deg) rotateX(0.4deg);
+}
+.book.is-flipped .book__cover { transform: translateZ(calc(var(--depth) / 2)); }
+/* closed, but turned enough that the volume reads */
+.book.is-cover .book__body {
+  transform: translateZ(34px) rotateY(-17deg) rotateX(0.6deg);
+}
+
+/* back of the cover: the paste-down endpaper */
+.book__face--inside {
+  transform: rotateY(180deg);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / .10);
+}
+.book__face--inside::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(270deg,
+    rgb(20 18 12 / .22) 0%, rgb(20 18 12 / .05) 16%, transparent 38%);
+  pointer-events: none;
+}
+
+/* ---------- the right-hand page ---------- */
+.book__page {
+  position: absolute;
+  inset: 0;
+  padding: 9% 8% 7% 15%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  container-type: inline-size;
+  opacity: 0;
+  transition: opacity 240ms linear;
+}
+.book--open.is-open .book__page { opacity: 1; transition-delay: 400ms; }
+
+.book__folio {
+  font-family: var(--font-display);
+  font-size: clamp(7px, 3.2cqi, 11px);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text) 45%, transparent);
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  border-block-end: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+  padding-block-end: 0.5em;
+}
+
+.book__excerpt {
+  font-family: var(--font-text);
+  font-size: clamp(9px, 4.1cqi, 13px);
+  line-height: 1.58;
+  color: color-mix(in srgb, var(--text) 80%, transparent);
+  hyphens: auto;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 7;
+  line-clamp: 7;
+}
+.book__excerpt::first-letter {
+  font-size: 2.6em;
+  line-height: 0.82;
+  float: inline-start;
+  padding-inline-end: 0.1em;
+  padding-block-start: 0.06em;
+  font-weight: 700;
+  color: var(--cv-accent);
+}
+
+.colophon {
+  margin: auto 0 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25em 0.8em;
+  font-size: clamp(8px, 3.3cqi, 11px);
+  line-height: 1.38;
+  border-block-start: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+  padding-block-start: 0.7em;
+}
+.colophon dt {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text) 42%, transparent);
+  white-space: nowrap;
+}
+.colophon dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--text) 74%, transparent);
+  text-align: end;
+}
+@container (max-width: 165px) {
+  .colophon .is-secondary { display: none; }
+  .book__excerpt { -webkit-line-clamp: 5; line-clamp: 5; }
+}
+
+/* printer's device, centred in the open space of the page */
+.book__device {
+  inline-size: 14%;
+  block-size: auto;
+  margin: auto auto;
+  color: color-mix(in srgb, var(--cv-accent) 55%, transparent);
+  flex: none;
+}
+
+/* the embroidered endpaper itself */
+.endpaper {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  color: var(--cv-accent);
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+/* ex-libris at the head of the endpaper */
+.book__plate {
+  position: absolute;
+  inset-block-start: 9%;
+  inset-inline-start: 11%;
+  inset-inline-end: 13%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  padding: 6% 7%;
+  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+  box-shadow: 0 1px 3px rgb(20 18 12 / .10), inset 0 0 0 1px color-mix(in srgb, var(--text) 12%, transparent);
+  font-family: var(--font-display);
+  font-size: clamp(6px, 3cqi, 10px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text) 42%, transparent);
+  container-type: inline-size;
+}
+.book__plate span:first-child { color: var(--cv-accent); }
+
+/* ---------- context sizes ---------- */
+.shelf .book, .rail .book { --depth: 25px; }
+.hero__book .book { --depth: 36px; }
+.dialog__visual .book { --depth: 32px; }
+
+/* ---------- reduced motion: no turn, no swing ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .book__head, .book.is-active .book__head { transform: none; transition: none; }
+  .book__body, .book.is-active .book__body { transform: rotateY(-8deg); transition: none; }
+  .book__cover, .book--open.is-open .book__cover { transition: opacity 1ms linear; }
+  .book--open.is-open .book__body { transform: translateX(var(--open-x)) scale(var(--open-scale)); }
+  .book--open.is-open .book__cover { opacity: 0; pointer-events: none; }
+  .book__page { transition: none; }
+  .book__shadow { display: none; }
+  .shelf.is-browsing .book:not(.is-active) .cv,
+  .shelf.is-browsing .book:not(.is-active) .book__card { filter: none; }
+}
+
+/* ============================================================
+   COVER ARTWORK
+   Six typographic templates. Each sets the same three voices —
+   imprint, author, title — on its own geometric plate, so the
+   shelf reads as one designed series rather than six accidents.
+   ============================================================ */
+.cv {
+  position: absolute;
+  inset: 0;
+  padding: 10.5% 9.5%;
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;
+  overflow: hidden;
+}
+.cv__art { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.cv__art svg { inline-size: 100%; block-size: 100%; display: block; }
+.cv__body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  min-block-size: 0;
+}
+
+.cv__imprint {
+  font-family: var(--font-display);
+  font-size: clamp(5px, 2.6cqi, 8.5px);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.62;
+  line-height: 1.3;
+}
+.cv__author {
+  font-family: var(--font-ui);
+  font-size: clamp(6.5px, 3.4cqi, 11.5px);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  opacity: 0.94;
+  line-height: 1.3;
+}
+.cv__title {
+  font-family: var(--font-text);
+  font-weight: 700;
+  font-size: clamp(12px, 9.8cqi, 31px);
+  line-height: 1.0;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+.cv__rule { block-size: 2px; background: currentColor; opacity: 0.88; flex: none; }
+
+/* stack — words counted out in the display face, constructivist rules */
+.cv--stack .cv__body { justify-content: flex-end; gap: 0.5em; }
+.cv--stack .cv__author { order: -1; margin-block-end: auto; }
+.cv--stack .cv__title {
+  font-family: var(--font-display);
+  font-size: clamp(10px, 7.8cqi, 24px);
+  text-transform: uppercase;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+}
+
+/* plate — the geometric plate above, the title anchored to the foot */
+.cv--plate .cv__body { justify-content: flex-end; gap: 0.55em; }
+.cv--plate .cv__title { font-size: clamp(11px, 8.8cqi, 27px); }
+
+/* band — the title held between two rules, centred in the field */
+.cv--band .cv__title { font-size: clamp(11px, 8.4cqi, 26px); }
+
+/* column — an accent band along the fore-edge */
+.cv--column { padding-inline-end: 24%; }
+.cv--column .cv__body { justify-content: flex-start; gap: 0.5em; }
+
+/* serif — quiet classical setting, centred */
+.cv--serif { padding: 13% 11%; text-align: center; }
+.cv--serif .cv__body { justify-content: center; gap: 0.7em; align-items: center; }
+.cv--serif .cv__title {
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(12px, 9.2cqi, 29px);
+  letter-spacing: -0.015em;
+}
+.cv--serif .cv__rule { inline-size: 30%; block-size: 1px; }
+
+/* split — the field divided, the title in the lower half */
+.cv--split .cv__body { justify-content: space-between; gap: 0.6em; }
+.cv--split .cv__title { font-size: clamp(11px, 8.8cqi, 28px); }
+
+/* at thumbnail size only the title survives, set to fit */
+@container (max-width: 96px) {
+  .cv { padding: 11% 9%; }
+  .cv__author, .cv__imprint, .cv__rule { display: none; }
+  .cv__title {
+    font-size: 8px !important;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    overflow: hidden;
+  }
+  .cv__body { justify-content: flex-end !important; }
+}
+@container (max-width: 56px) {
+  .cv__title { -webkit-line-clamp: 4; line-clamp: 4; font-size: 7px !important; }
+}
+
+/* ---------- a book arriving when the shelf grows ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .shelf .book.is-arriving {
+    animation: book-arrive 620ms cubic-bezier(0.20, 0.92, 0.20, 1) both;
+    animation-delay: calc(var(--arrive-i, 0) * 55ms);
+  }
+}
+@keyframes book-arrive {
+  from { opacity: 0; transform: translateY(38px) scale(0.94); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------- the back board's typography ---------- */
+.cv--back { padding: 11% 9.5% 9%; }
+.cv--back .cv__body { gap: 0.55em; }
+.cv--back .cv__imprint { opacity: 0.55; }
+.cv__blurb {
+  margin: 0.9em 0 auto;
+  font-family: var(--font-text);
+  font-size: clamp(4.6px, 3.05cqi, 10px);
+  line-height: 1.5;
+  letter-spacing: -0.004em;
+  opacity: 0.8;
+  text-wrap: pretty;
+  hyphens: auto;
+}
+.cv__back-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6%;
+  margin-block-start: 0.7em;
+}
+.cv__isbn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  font-family: var(--font-display);
+  font-size: clamp(4px, 2.3cqi, 7.5px);
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+.cv__isbn span:first-child { letter-spacing: 0.3em; opacity: 0.7; }
+/* the barcode is printed on its own white patch, the way it is on a
+   real back board — never in the cover's ink */
+.cv__ean {
+  flex: 0 1 44%;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15em;
+  padding: 5% 5% 3%;
+  background: #f4f1e8;
+  border-radius: 1px;
+}
+.cv__bars { inline-size: 100%; block-size: clamp(9px, 7cqi, 22px); display: block; }
+.cv__ean .num {
+  font-size: clamp(3.4px, 2cqi, 6.5px);
+  letter-spacing: 0.1em;
+  color: #17212e;
+  opacity: 0.75;
+}
+/* too small to read: the back keeps its imprint and its barcode, and
+   drops the lines nobody could make out at this size */
+@container (max-width: 132px) {
+  .cv--back .cv__blurb { display: none; }
+  .cv--back .cv__rule { margin-block-start: auto; }
+}
+
+/* ---------- artwork supplied as a picture ---------- */
+.cv--photo { padding: 0; }
+.cv--photo img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+}
+.book__back:has(img) { background: none; }
+.book__back img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+.book__back { backface-visibility: hidden; overflow: hidden; }
+
+/* ---------- the studio preview: free rotation, no hover behaviour ---------- */
+.book--studio .book__body { transform: rotateY(var(--turn-rest)) rotateX(var(--turn-x, 1.4deg)); }
+.book--studio.is-dragging .book__body,
+.book--studio.is-dragging .book__cover { transition: none; }
+.book--studio .book__trigger { display: none; }

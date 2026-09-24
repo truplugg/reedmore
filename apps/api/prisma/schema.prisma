@@ -1,0 +1,758 @@
+// Ridmore — data model
+//
+// Two rules run through this schema:
+//   1. Money is never a float. Every amount is an integer of minor units
+//      (cents / kopiyky) and every book carries EUR and UAH independently,
+//      because the shop never converts — it picks a column.
+//   2. A gift donor must not be able to reach the recipient's address. That
+//      is enforced by relation shape here and by response schemas in the API,
+//      not by remembering to leave a field out of a template.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+//  IDENTITY
+// ============================================================
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  emailVerifiedAt DateTime?
+  passwordHash   String
+  status         UserStatus @default(ACTIVE)
+
+  // Set when the account is deleted (§26). Orders survive; the person does not.
+  anonymizedAt   DateTime?
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  lastLoginAt    DateTime?
+
+  profile        UserProfile?
+  roles          UserRole[]
+  sessions       Session[]
+  tokens         AuthToken[]
+  wishlists      Wishlist[]
+  addresses      ShippingAddress[]
+  orders         Order[]           @relation("OrderCustomer")
+  giftsSent      GiftOrderData[]   @relation("GiftDonor")
+  giftsReceived  GiftOrderData[]   @relation("GiftRecipient")
+  articles       Article[]
+  auditEntries   AuditLog[]
+
+  @@index([status])
+  @@map("users")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+/// Everything a user may choose to show. Real name lives here and is never
+/// public; nickname and avatar are the only fields a public query selects.
+model UserProfile {
+  id         String  @id @default(cuid())
+  userId     String  @unique
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  nickname   String  @unique
+  avatarUrl  String?
+  avatarMediaId String?
+  avatarMedia   Media? @relation(fields: [avatarMediaId], references: [id], onDelete: SetNull)
+
+  // private unless the user puts them in the nickname themselves
+  firstName  String?
+  lastName   String?
+  phone      String?
+
+  locale     Locale   @default(EN)
+  currency   Currency @default(EUR)
+  bio        String?  @db.VarChar(280)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("user_profiles")
+}
+
+enum Locale {
+  DE
+  UK
+  EN
+}
+
+/// The shop trades in exactly these two, and never converts between them.
+enum Currency {
+  EUR
+  UAH
+}
+
+/// Shipping is offered to exactly these two countries (§4).
+enum Country {
+  DE
+  UA
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String   @unique
+  userAgent  String?
+  ip         String?
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model AuthToken {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      AuthTokenKind
+  tokenHash String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+
+  @@index([userId, kind])
+  @@map("auth_tokens")
+}
+
+enum AuthTokenKind {
+  PASSWORD_RESET
+  EMAIL_VERIFY
+}
+
+// ============================================================
+//  ROLES AND PERMISSIONS  (§11)
+// ============================================================
+
+model Role {
+  id          String   @id @default(cuid())
+  key         RoleKey  @unique
+  name        String
+  description String?
+  system      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+enum RoleKey {
+  SUPER_ADMIN
+  MANAGER
+  CATALOG_MANAGER
+  CONTENT_EDITOR
+  CUSTOMER
+}
+
+/// Permissions are rows, not an enum, so the set can grow without a migration
+/// of every role that holds one.
+model Permission {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  group       String
+  description String?
+
+  roles       RolePermission[]
+
+  @@index([group])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  userId    String
+  roleId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  grantedAt DateTime @default(now())
+  grantedBy String?
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+// ============================================================
+//  CATALOGUE
+// ============================================================
+
+model Book {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  status        PublishStatus @default(DRAFT)
+  featured      Boolean  @default(false)
+
+  title         String
+  titleEn       String?
+  titleDe       String?
+  author        String
+  authorEn      String?
+  publisher     String?
+  year          Int?
+  isbn          String?
+  language      String?  @default("uk")
+  pages         Int?
+  binding       Binding  @default(HARD)
+  sizeLabel     String?
+  paperLabel    String?
+  weightGrams   Int?
+
+  blurb         String?  @db.Text
+  blurbEn       String?  @db.Text
+  blurbDe       String?  @db.Text
+  about         String?  @db.Text
+  aboutEn       String?  @db.Text
+  aboutDe       String?  @db.Text
+
+  // Two independent prices, entered by hand. No conversion anywhere. (§4)
+  priceEurCents Int
+  priceUahCents Int
+  salePriceEurCents Int?
+  salePriceUahCents Int?
+
+  // Artwork. Either uploaded images, or the generated typographic cover the
+  // existing covers.js builds from style + palette + motif.
+  frontCoverMediaId String?
+  frontCoverMedia   Media?  @relation("BookFront", fields: [frontCoverMediaId], references: [id], onDelete: SetNull)
+  backCoverMediaId  String?
+  backCoverMedia    Media?  @relation("BookBack", fields: [backCoverMediaId], references: [id], onDelete: SetNull)
+  coverStyle    String?  @default("stack")
+  coverMotif    String?  @default("bars")
+  endpaper      String?  @default("star")
+  paperColor    String?
+  inkColor      String?
+  accentColor   String?
+  spineColor    String?
+  depthMm       Int?
+
+  seoTitle       String?
+  seoDescription String? @db.VarChar(320)
+
+  categoryId    String?
+  category      BookCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags          BookTagOnBook[]
+  inventory     Inventory?
+  orderItems    OrderItem[]
+  wishlistItems WishlistItem[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  publishedAt   DateTime?
+
+  @@index([status, featured])
+  @@index([categoryId])
+  @@index([publishedAt])
+  @@map("books")
+}
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+
+enum Binding {
+  HARD
+  SOFT
+}
+
+model BookCategory {
+  id        String @id @default(cuid())
+  slug      String @unique
+  nameUk    String
+  nameEn    String
+  nameDe    String
+  position  Int    @default(0)
+  books     Book[]
+
+  @@map("book_categories")
+}
+
+model BookTag {
+  id    String @id @default(cuid())
+  slug  String @unique
+  label String
+  books BookTagOnBook[]
+
+  @@map("book_tags")
+}
+
+model BookTagOnBook {
+  bookId String
+  tagId  String
+  book   Book    @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  tag    BookTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, tagId])
+  @@map("book_tags_on_books")
+}
+
+model Inventory {
+  bookId    String   @id
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  onHand    Int      @default(0)
+  reserved  Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@map("inventory")
+}
+
+// ============================================================
+//  WISHLISTS  (§17)
+// ============================================================
+
+model Wishlist {
+  id          String          @id @default(cuid())
+  ownerId     String
+  owner       User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title       String
+  visibility  WishlistVisibility @default(PRIVATE)
+  /// Only set for UNLISTED lists; the whole secret of a share link.
+  shareToken  String?         @unique
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  items       WishlistItem[]
+
+  /// At most one PUBLIC list per owner. Postgres treats NULLs as distinct, so
+  /// a partial unique index is added by migration instead; see
+  /// `wishlists_one_public_per_owner`.
+  @@index([ownerId])
+  @@index([visibility])
+  @@map("wishlists")
+}
+
+enum WishlistVisibility {
+  PUBLIC
+  PRIVATE
+  UNLISTED
+}
+
+/// Quantity is always one (§17), so it is not a column. A row is either
+/// available, reserved by a gift order, or fulfilled.
+model WishlistItem {
+  id           String   @id @default(cuid())
+  wishlistId   String
+  wishlist     Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  bookId       String
+  book         Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  note         String?  @db.VarChar(280)
+  position     Int      @default(0)
+
+  status       WishlistItemStatus @default(AVAILABLE)
+  /// The gift order holding this item. Unique, so two donors cannot claim one
+  /// row — the database refuses the second write rather than the app hoping.
+  reservedByGiftId String? @unique
+  reservedAt   DateTime?
+  fulfilledAt  DateTime?
+
+  createdAt    DateTime @default(now())
+
+  @@unique([wishlistId, bookId])
+  @@index([status])
+  @@map("wishlist_items")
+}
+
+enum WishlistItemStatus {
+  AVAILABLE
+  RESERVED
+  FULFILLED
+}
+
+// ============================================================
+//  ORDERS  (§22, §23, §25)
+// ============================================================
+
+model Order {
+  id           String      @id @default(cuid())
+  number       String      @unique
+  type         OrderType   @default(REGULAR)
+  status       OrderStatus @default(PENDING)
+
+  customerId   String?
+  customer     User?       @relation("OrderCustomer", fields: [customerId], references: [id], onDelete: SetNull)
+  /// Kept after the account is deleted so the record still balances (§26).
+  customerEmailSnapshot String?
+  customerNameSnapshot  String?
+
+  currency     Currency
+  subtotal     Int
+  shippingCost Int
+  discount     Int         @default(0)
+  total        Int
+
+  shippingCountry Country?
+  shippingAddressId String?
+  shippingAddress   ShippingAddress? @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
+
+  // Payment is a separate concern from the order (§22). Stripe fills these in
+  // later without touching anything above. (§23)
+  paymentProvider PaymentProvider @default(NONE)
+  paymentStatus   PaymentStatus   @default(UNPAID)
+  paymentIntentId String?
+  paymentCurrency Currency?
+  paymentAmount   Int?
+  paidAt          DateTime?
+
+  notes        String?   @db.Text
+  items        OrderItem[]
+  gift         GiftOrderData?
+  history      OrderStatusHistory[]
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@index([customerId])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+enum OrderType {
+  REGULAR
+  GIFT
+}
+
+/// Regular orders walk the first branch; gift orders walk the long one (§20).
+enum OrderStatus {
+  PENDING
+  AWAITING_RECIPIENT_CONTACT
+  RECIPIENT_CONTACTED
+  AWAITING_ADDRESS
+  READY_FOR_PROCESSING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentProvider {
+  NONE
+  STRIPE
+  MANUAL
+}
+
+enum PaymentStatus {
+  UNPAID
+  AUTHORIZED
+  PAID
+  REFUNDED
+  FAILED
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookId    String?
+  book      Book?   @relation(fields: [bookId], references: [id], onDelete: SetNull)
+
+  // Frozen at purchase: a later price edit must not rewrite history.
+  titleSnapshot  String
+  authorSnapshot String?
+  unitPrice      Int
+  quantity       Int     @default(1)
+  lineTotal      Int
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+/// Everything that makes a gift a gift. The donor relation and the recipient
+/// relation are separate, and no query path leads from donorId to the
+/// recipient's ShippingAddress.
+model GiftOrderData {
+  id            String   @id @default(cuid())
+  orderId       String   @unique
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  donorId       String?
+  donor         User?    @relation("GiftDonor", fields: [donorId], references: [id], onDelete: SetNull)
+  recipientId   String?
+  recipient     User?    @relation("GiftRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
+
+  wishlistItemId String?
+
+  /// When true the recipient never learns who sent it (§21).
+  anonymous     Boolean  @default(false)
+  message       String?  @db.VarChar(500)
+
+  /// Manager's private workflow state (§20). Nothing here is ever serialised
+  /// into a donor-facing response.
+  recipientContactedAt DateTime?
+  addressReceivedAt    DateTime?
+  managerNotes         String?  @db.Text
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([donorId])
+  @@index([recipientId])
+  @@map("gift_order_data")
+}
+
+model ShippingAddress {
+  id         String  @id @default(cuid())
+  userId     String?
+  user       User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  fullName   String
+  phone      String?
+  country    Country
+  city       String
+  postalCode String
+  line1      String
+  line2      String?
+  /// Nova Poshta branch / Packstation, which both countries use heavily.
+  pickupPoint String?
+  label      String?
+  isDefault  Boolean @default(false)
+
+  orders     Order[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@map("shipping_addresses")
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(cuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  from      OrderStatus?
+  to        OrderStatus
+  note      String?
+  actorId   String?
+  createdAt DateTime    @default(now())
+
+  @@index([orderId])
+  @@map("order_status_history")
+}
+
+// ============================================================
+//  JOURNAL  (§13)
+// ============================================================
+
+model Article {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  status      PublishStatus @default(DRAFT)
+
+  title       String
+  titleEn     String?
+  titleDe     String?
+  excerpt     String?       @db.VarChar(400)
+  excerptEn   String?       @db.VarChar(400)
+  excerptDe   String?       @db.VarChar(400)
+
+  /// Block document from the editor: an array of typed blocks, never raw HTML.
+  content     Json          @default("{\"blocks\":[]}")
+  contentEn   Json?
+  contentDe   Json?
+
+  coverMediaId String?
+  coverMedia   Media?       @relation("ArticleCover", fields: [coverMediaId], references: [id], onDelete: SetNull)
+
+  authorId    String?
+  author      User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  categoryId  String?
+  category    ArticleCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags        ArticleTagOnArticle[]
+
+  seoTitle       String?
+  seoDescription String?     @db.VarChar(320)
+
+  readingMinutes Int?
+  publishedAt    DateTime?
+  /// Set in the future to publish on a schedule.
+  scheduledFor   DateTime?
+  deletedAt      DateTime?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([status, publishedAt])
+  @@index([scheduledFor])
+  @@map("articles")
+}
+
+model ArticleCategory {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  nameUk   String
+  nameEn   String
+  nameDe   String
+  articles Article[]
+
+  @@map("article_categories")
+}
+
+model ArticleTag {
+  id       String @id @default(cuid())
+  slug     String @unique
+  label    String
+  articles ArticleTagOnArticle[]
+
+  @@map("article_tags")
+}
+
+model ArticleTagOnArticle {
+  articleId String
+  tagId     String
+  article   Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       ArticleTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@map("article_tags_on_articles")
+}
+
+// ============================================================
+//  MEDIA  (§14)
+// ============================================================
+
+/// Bytes live in object storage; only the pointer lives here.
+model Media {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  url       String
+  mimeType  String
+  bytes     Int
+  width     Int?
+  height    Int?
+  alt       String?
+  caption   String?
+  folder    MediaFolder @default(GENERAL)
+  checksum  String?
+  uploadedById String?
+  createdAt DateTime @default(now())
+
+  bookFronts     Book[]    @relation("BookFront")
+  bookBacks      Book[]    @relation("BookBack")
+  articleCovers  Article[] @relation("ArticleCover")
+  avatars        UserProfile[]
+
+  @@index([folder])
+  @@map("media")
+}
+
+enum MediaFolder {
+  GENERAL
+  BOOK_COVER
+  ARTICLE
+  AVATAR
+  THEME
+}
+
+// ============================================================
+//  THEMES  (§5, §6, §34)
+// ============================================================
+
+model Theme {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  description String?
+  season      ThemeSeason @default(NONE)
+  system      Boolean  @default(false)
+  /// The version users are served. Null means the theme has never shipped.
+  publishedVersionId String? @unique
+  publishedVersion   ThemeVersion? @relation("Published", fields: [publishedVersionId], references: [id], onDelete: SetNull)
+
+  versions    ThemeVersion[] @relation("ThemeVersions")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("themes")
+}
+
+enum ThemeSeason {
+  NONE
+  SPRING
+  SUMMER
+  AUTUMN
+  WINTER
+}
+
+/// Structured tokens only — never CSS text, never markup (§34). The server
+/// compiles this into a :root block; nothing here can carry script.
+model ThemeVersion {
+  id        String   @id @default(cuid())
+  themeId   String
+  theme     Theme    @relation("ThemeVersions", fields: [themeId], references: [id], onDelete: Cascade)
+  version   Int
+  label     String?
+  tokens    Json
+  createdAt DateTime @default(now())
+  createdById String?
+
+  publishedFor Theme? @relation("Published")
+
+  @@unique([themeId, version])
+  @@map("theme_versions")
+}
+
+// ============================================================
+//  SETTINGS AND AUDIT
+// ============================================================
+
+model SiteSettings {
+  id             Int      @id @default(1)
+  activeThemeId  String?
+  siteName       String   @default("Ridmore")
+  defaultLocale  Locale   @default(EN)
+  defaultCurrency Currency @default(EUR)
+  freeShippingEurCents Int @default(5000)
+  freeShippingUahCents Int @default(250000)
+  shippingFlatEurCents Int @default(590)
+  shippingFlatUahCents Int @default(9900)
+  contactEmail   String?
+  updatedAt      DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  meta      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
