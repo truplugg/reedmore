@@ -74,13 +74,13 @@ Following §42. Each phase ends green — migrations apply, tests pass, the site
 |---|---|---|
 | 1 | Audit | **done** — `docs/AUDIT.md` |
 | 2 | Architecture plan | **done** — this file |
-| 3 | Reorganise into workspaces, rebrand to Ridmore | |
-| 4 | Database, migrations, seed | |
-| 5 | Auth, users, RBAC | |
-| 6 | Books / catalogue admin | |
+| 3 | Reorganise into workspaces, rebrand to Ridmore | **done** — commit `fef474b` |
+| 4 | Database, migrations, seed | **done** — `fef474b` |
+| 5 | Auth, users, RBAC | **done** — `fef474b` |
+| 6 | Books / catalogue admin | **done** — `ce8fde6` |
 | 7 | Journal CMS | |
-| 8 | Wishlists | |
-| 9 | Gift flow + manager workflow | |
+| 8 | Wishlists | **done** — `2b51082` |
+| 9 | Gift flow + manager workflow | **done** — `2b51082` |
 | 10 | Checkout + orders | |
 | 11 | Theme engine + seasonal themes | |
 | 12 | Hero book animation | |
