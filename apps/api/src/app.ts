@@ -17,6 +17,9 @@ import authRoutes from './modules/auth/routes.js';
 import publicBookRoutes from './modules/books/public.js';
 import adminBookRoutes from './modules/books/admin.js';
 import mediaRoutes from './modules/media/routes.js';
+import wishlistRoutes from './modules/wishlists/routes.js';
+import giftRoutes from './modules/gifts/routes.js';
+import adminOrderRoutes from './modules/orders/admin.js';
 import { loadAvatars } from './modules/auth/avatars.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -106,6 +109,9 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(publicBookRoutes, { prefix: '/api/books' });
   await app.register(adminBookRoutes, { prefix: '/api/admin/books' });
   await app.register(mediaRoutes, { prefix: '/api/admin/media' });
+  await app.register(wishlistRoutes, { prefix: '/api/wishlists' });
+  await app.register(giftRoutes, { prefix: '/api/gifts' });
+  await app.register(adminOrderRoutes, { prefix: '/api/admin/orders' });
 
   /* Two static roots, each in its own scope.
      @fastify/static registers its wildcard into the enclosing context, so two
