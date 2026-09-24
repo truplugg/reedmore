@@ -121,7 +121,10 @@
   --cover-ratio: 0.655;       /* 130×200 mm, format 84×108/32 */
   --book-open-angle: -162deg; /* cover swing, hero and record only */
   --turn-rest: -30deg;        /* how a book stands on the shelf */
-  --turn-focus: -3deg;        /* how far it turns toward the reader */
+  --turn-focus: -3deg;        /* how far a solo book turns toward the reader */
+  --turn-shelf-focus: -16deg; /* the shelf turns less: a glance, not a performance */
+  --tilt-shelf-y: 13;         /* degrees the cursor may steer it, either way */
+  --tilt-shelf-x: 6;
   --depth: 26px;              /* board thickness, overridden per context */
 }
 

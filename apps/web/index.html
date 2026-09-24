@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>RIDMORE — українська книгарня з доставкою по ЄС</title>
-<meta name="description" content="Оригінальні наклади українських видавництв із доставкою в 27 країн Євросоюзу та по Україні. Сучасна проза, класика, поезія, нонфікшн і дитячі книжки.">
+<title>RIDMORE — українська книгарня з доставкою в Німеччину та Україну</title>
+<meta name="description" content="Оригінальні наклади українських видавництв із доставкою в Німеччину та по Україні. Сучасна проза, класика, поезія, нонфікшн і дитячі книжки.">
 <meta name="theme-color" content="#e8e5da" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121822" media="(prefers-color-scheme: dark)">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="RIDMORE — українська книгарня з доставкою по ЄС">
-<meta property="og:description" content="Книжки, які перетинають кордон. Оригінальні наклади українських видавництв — у 27 країн ЄС.">
+<meta property="og:title" content="RIDMORE — українська книгарня з доставкою в Німеччину та Україну">
+<meta property="og:description" content="Книжки, які перетинають кордон. Оригінальні наклади українських видавництв — у Німеччину та по Україні.">
 <meta property="og:locale" content="uk_UA">
 <meta name="twitter:card" content="summary_large_image">
 
@@ -57,9 +57,30 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
       </button>
 
-      <button class="iconbtn" id="theme-toggle" data-mode="light" aria-pressed="false" aria-label="Змінити тему">
+      <div class="themepick">
+      <button class="iconbtn" id="theme-toggle" data-mode="light" aria-pressed="false" aria-expanded="false" aria-haspopup="true" aria-controls="theme-menu" aria-label="Змінити тему">
         <svg class="ico ico--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 14.2A8.4 8.4 0 0 1 9.8 4 8.5 8.5 0 1 0 20 14.2Z"/></svg><svg class="ico ico--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 12H2M22 12h-2.2M6.3 6.3 4.8 4.8M19.2 19.2l-1.5-1.5M17.7 6.3l1.5-1.5M4.8 19.2l1.5-1.5"/></svg>
       </button>
+      <button class="themepick__more" id="theme-more" type="button" aria-label="Усі теми" title="Усі теми">
+        <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m2.5 4.5 3.5 3.5 3.5-3.5"/></svg>
+      </button>
+      <div class="thememenu" id="theme-menu" role="menu" aria-label="Теми" hidden>
+        <p class="thememenu__head" data-i18n="theme.title">Оформлення</p>
+        <button class="themeopt" role="menuitemradio" aria-checked="true" data-theme-key="paper" type="button">
+          <span class="themeopt__chip" data-chip="paper" aria-hidden="true"></span><span class="themeopt__name">Папір</span></button>
+        <button class="themeopt" role="menuitemradio" aria-checked="false" data-theme-key="midnight" type="button">
+          <span class="themeopt__chip" data-chip="midnight" aria-hidden="true"></span><span class="themeopt__name">Північ</span></button>
+        <p class="thememenu__head" data-i18n="theme.seasons">Пори року</p>
+        <button class="themeopt" role="menuitemradio" aria-checked="false" data-theme-key="spring" type="button">
+          <span class="themeopt__chip" data-chip="spring" aria-hidden="true"></span><span class="themeopt__name">Весна</span></button>
+        <button class="themeopt" role="menuitemradio" aria-checked="false" data-theme-key="summer" type="button">
+          <span class="themeopt__chip" data-chip="summer" aria-hidden="true"></span><span class="themeopt__name">Літо</span></button>
+        <button class="themeopt" role="menuitemradio" aria-checked="false" data-theme-key="autumn" type="button">
+          <span class="themeopt__chip" data-chip="autumn" aria-hidden="true"></span><span class="themeopt__name">Осінь</span></button>
+        <button class="themeopt" role="menuitemradio" aria-checked="false" data-theme-key="winter" type="button">
+          <span class="themeopt__chip" data-chip="winter" aria-hidden="true"></span><span class="themeopt__name">Зима</span></button>
+      </div>
+      </div>
 
       <button class="iconbtn" data-act="wishlist" data-i18n-attr="aria-label:a11y.wishlist;title:a11y.wishlist" aria-label="Бажане">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 20s-7-4.6-7-9.4A4 4 0 0 1 12 7a4 4 0 0 1 7 3.6C19 15.4 12 20 12 20Z"/></svg>
@@ -98,7 +119,7 @@
 <section class="hero">
   <div class="wrap hero__grid">
     <div class="hero__copy">
-      <p class="eyebrow" data-enter style="--enter-i:0" data-i18n="hero.eyebrow">Українська книгарня · доставка в 27 країн ЄС</p>
+      <p class="eyebrow" data-enter style="--enter-i:0" data-i18n="hero.eyebrow">Українська книгарня · доставка в Німеччину та Україну</p>
       <h1 class="hero__title" data-enter style="--enter-i:1">
         <span data-i18n="hero.title1">Книжки, які</span><br>
         <em data-i18n="hero.title2">перетинають</em><br>
@@ -113,7 +134,7 @@
 
       <dl class="figures" data-enter style="--enter-i:4">
         <div><dt class="figure__n num">2 486</dt><dd class="figure__l" data-i18n="fig.titles">назв у наявності</dd></div>
-        <div><dt class="figure__n num">27</dt><dd class="figure__l" data-i18n="fig.countries">країни ЄС</dd></div>
+        <div><dt class="figure__n num">2</dt><dd class="figure__l" data-i18n="fig.countries">країни доставки</dd></div>
         <div><dt class="figure__n num">3–7</dt><dd class="figure__l" data-i18n="fig.days">дні доставки</dd></div>
         <div><dt class="figure__n num">50 €</dt><dd class="figure__l" data-i18n="fig.free">безкоштовно від</dd></div>
       </dl>
@@ -137,9 +158,9 @@
     <div class="band__track">
       <div class="band__group">
         <span class="band__item" data-i18n="band.1">Оригінальні наклади</span>
-        <span class="band__item" data-i18n="band.2">Відправка з Києва та Варшави</span>
+        <span class="band__item" data-i18n="band.2">Відправка з Києва та Берліна</span>
         <span class="band__item" data-i18n="band.3">Пакування в жорсткий бокс</span>
-        <span class="band__item" data-i18n="band.4">Оплата в євро, злотих, кронах</span>
+        <span class="band__item" data-i18n="band.4">Оплата в євро або гривні</span>
         <span class="band__item" data-i18n="band.5">Повернення 30 днів</span>
       </div>
     </div>
@@ -304,7 +325,7 @@
     <div class="reveal">
       <p class="eyebrow" data-i18n="del.eyebrow">Доставка</p>
       <h2 class="section-head__title wipe" style="margin-block:1rem 1.2rem" data-i18n="del.title">Як книжка доїжджає до вас</h2>
-      <p class="lede" data-i18n="del.lede">Два склади — Київ і Варшава. Для адрес у ЄС посилка йде з Варшави, тож без митних декларацій і несподіваних зборів на порозі.</p>
+      <p class="lede" data-i18n="del.lede">Два склади — Київ і Берлін. Для німецьких адрес посилка йде з Берліна, тож без митних декларацій і несподіваних зборів на порозі.</p>
 
       <ol class="steps">
         <li class="step"><span class="step__n">01</span><div>
@@ -312,7 +333,7 @@
           <p data-i18n="del.step1.d">Збираємо в день оплати. Кожна книжка — у крафтовий конверт, стос — у жорсткий бокс із кутовим захистом.</p></div></li>
         <li class="step"><span class="step__n">02</span><div>
           <h4 data-i18n="del.step2.t">Відправка зі складу</h4>
-          <p data-i18n="del.step2.d">ЄС — з Варшави (InPost, DPD). Україна — Нова пошта з Києва. Трек-номер приходить того ж дня.</p></div></li>
+          <p data-i18n="del.step2.d">Німеччина — DHL із Берліна. Україна — Нова пошта з Києва. Трек-номер приходить того ж дня.</p></div></li>
         <li class="step"><span class="step__n">03</span><div>
           <h4 data-i18n="del.step3.t">Отримання</h4>
           <p data-i18n="del.step3.d">Пачкомат, кур’єр або відділення. Якщо книжка приїхала пошкодженою — надсилаємо нову без повернення старої.</p></div></li>
@@ -388,7 +409,7 @@
         <p class="lede" data-i18n="club.lede">Підписка для тих, хто хоче читати українською регулярно, але не має часу шукати. Ми обираємо, пакуємо й відправляємо — ви лише читаєте.</p>
         <ul class="club__perks">
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg><span data-i18n="club.p1">Книжка місяця з листом редакції — чому саме вона</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg><span data-i18n="club.p2">Безкоштовна доставка в будь-яку країну ЄС</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg><span data-i18n="club.p2">Безкоштовна доставка в Німеччину та по Україні</span></li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg><span data-i18n="club.p3">Знижка 15% на решту каталогу</span></li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg><span data-i18n="club.p4">Онлайн-зустріч з автором раз на квартал</span></li>
         </ul>
@@ -528,11 +549,11 @@
   "@context": "https://schema.org",
   "@type": "BookStore",
   "name": "RIDMORE",
-  "description": "Українська книгарня з доставкою в 27 країн Євросоюзу та по Україні.",
-  "currenciesAccepted": "EUR, UAH, PLN, CZK, GBP",
+  "description": "Українська книгарня з доставкою в Німеччину та по Україні.",
+  "currenciesAccepted": "EUR, UAH",
   "paymentAccepted": "Visa, Mastercard, Apple Pay, Google Pay, BLIK, Klarna",
-  "areaServed": ["UA", "EU"],
-  "knowsLanguage": ["uk", "en"]
+  "areaServed": ["DE", "UA"],
+  "knowsLanguage": ["uk", "de", "en"]
 }
 </script>
 

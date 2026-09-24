@@ -1,13 +1,16 @@
 /* ============================================================
-   RIDMORE — interface copy, UA first
-   Add a language by adding a key block; everything driven by
-   data-i18n attributes picks it up with no further wiring.
+   RIDMORE — interface copy
+   Three languages, no more (§3). Everything driven by data-i18n
+   attributes picks a new one up with no further wiring.
    ============================================================ */
 
-export const LANGS = { uk: 'Укр', en: 'Eng' };
+/* Exactly three (§3). A browser asking for anything else gets English. */
+export const LANGS = { de: 'Deutsch', uk: 'Українська', en: 'English' };
 
 const DICT = {
   uk: {
+    'theme.title': 'Оформлення',
+    'theme.seasons': 'Пори року',
     'nav.catalog': 'Каталог',
     'nav.collections': 'Добірки',
     'nav.delivery': 'Доставка',
@@ -25,11 +28,11 @@ const DICT = {
     'a11y.close': 'Закрити',
     'skip': 'До основного вмісту',
 
-    'hero.eyebrow': 'Українська книгарня · доставка в 27 країн ЄС',
+    'hero.eyebrow': 'Українська книгарня · доставка в Німеччину та Україну',
     'hero.title1': 'Книжки, які',
     'hero.title2': 'перетинають',
     'hero.title3': 'кордон',
-    'hero.lede': 'Ми відправляємо українські видання туди, де тепер живуть українці. Оригінальні наклади від українських видавництв — у Берлін, Варшаву, Прагу, Мадрид і ще двадцять три столиці.',
+    'hero.lede': 'Ми відправляємо українські видання туди, де тепер живуть українці. Оригінальні наклади від українських видавництв — у Берлін, Мюнхен, Гамбург і по всій Україні.',
     'hero.cta': 'Відкрити каталог',
     'hero.cta2': 'Порахувати доставку',
     'hero.hint': 'Наведіть курсор на будь-яку обкладинку',
@@ -42,14 +45,14 @@ const DICT = {
     'book.hintOneTouch': 'Торкніться обкладинки',
 
     'fig.titles': 'назв у наявності',
-    'fig.countries': 'країни ЄС',
+    'fig.countries': 'країни доставки',
     'fig.days': 'дні доставки',
     'fig.free': 'безкоштовно від',
 
     'band.1': 'Оригінальні наклади',
-    'band.2': 'Відправка з Києва та Варшави',
+    'band.2': 'Відправка з Києва та Берліна',
     'band.3': 'Пакування в жорсткий бокс',
-    'band.4': 'Оплата в євро, злотих, кронах',
+    'band.4': 'Оплата в євро або гривні',
     'band.5': 'Повернення 30 днів',
 
     'new.eyebrow': 'Нове на полиці',
@@ -125,11 +128,11 @@ const DICT = {
 
     'del.eyebrow': 'Доставка',
     'del.title': 'Як книжка доїжджає до вас',
-    'del.lede': 'Два склади — Київ і Варшава. Для адрес у ЄС посилка йде з Варшави, тож без митних декларацій і несподіваних зборів на порозі.',
+    'del.lede': 'Два склади — Київ і Берлін. Для німецьких адрес посилка йде з Берліна, тож без митних декларацій і несподіваних зборів на порозі.',
     'del.step1.t': 'Замовлення та комплектація',
     'del.step1.d': 'Збираємо в день оплати. Кожна книжка — у крафтовий конверт, стос — у жорсткий бокс із кутовим захистом.',
     'del.step2.t': 'Відправка зі складу',
-    'del.step2.d': 'ЄС — з Варшави (InPost, DPD). Україна — Нова пошта з Києва. Трек-номер приходить того ж дня.',
+    'del.step2.d': 'Німеччина — DHL із Берліна. Україна — Нова пошта з Києва. Трек-номер приходить того ж дня.',
     'del.step3.t': 'Отримання',
     'del.step3.d': 'Пачкомат, кур’єр або відділення. Якщо книжка приїхала пошкодженою — надсилаємо нову без повернення старої.',
     'del.calcTitle': 'Порахувати доставку',
@@ -162,7 +165,7 @@ const DICT = {
     'club.title': 'Одна книжка на місяць, обрана вручну',
     'club.lede': 'Підписка для тих, хто хоче читати українською регулярно, але не має часу шукати. Ми обираємо, пакуємо й відправляємо — ви лише читаєте.',
     'club.p1': 'Книжка місяця з листом редакції — чому саме вона',
-    'club.p2': 'Безкоштовна доставка в будь-яку країну ЄС',
+    'club.p2': 'Безкоштовна доставка в Німеччину та по Україні',
     'club.p3': 'Знижка 15% на решту каталогу',
     'club.p4': 'Онлайн-зустріч з автором раз на квартал',
     'club.email': 'Ваш email',
@@ -181,7 +184,7 @@ const DICT = {
     'cart.checkout': 'Оформити замовлення',
     'cart.remove': 'Прибрати',
     'cart.goal': 'До безкоштовної доставки —',
-    'cart.goalDone': 'Доставка по ЄС безкоштовна',
+    'cart.goalDone': 'Доставка безкоштовна',
     'cart.added': 'додано в кошик',
     'cart.wishAdd': 'у списку бажаного',
     'cart.wishRemove': 'прибрано з бажаного',
@@ -218,6 +221,8 @@ const DICT = {
   },
 
   en: {
+    'theme.title': 'Appearance',
+    'theme.seasons': 'Seasons',
     'nav.catalog': 'Catalogue',
     'nav.collections': 'Collections',
     'nav.delivery': 'Delivery',
@@ -235,11 +240,11 @@ const DICT = {
     'a11y.close': 'Close',
     'skip': 'Skip to content',
 
-    'hero.eyebrow': 'Ukrainian bookshop · shipping to 27 EU countries',
+    'hero.eyebrow': 'Ukrainian bookshop · shipping to Germany and Ukraine',
     'hero.title1': 'Books that',
     'hero.title2': 'cross the',
     'hero.title3': 'border',
-    'hero.lede': 'We ship Ukrainian editions to where Ukrainians now live. Original print runs from Ukrainian publishers — to Berlin, Warsaw, Prague, Madrid and twenty-three more capitals.',
+    'hero.lede': 'We ship Ukrainian editions to where Ukrainians now live. Original print runs from Ukrainian publishers — to Berlin, Munich, Hamburg and everywhere in Ukraine.',
     'hero.cta': 'Open the catalogue',
     'hero.cta2': 'Estimate delivery',
     'hero.hint': 'Hover any cover to open it',
@@ -252,14 +257,14 @@ const DICT = {
     'book.hintOneTouch': 'Tap the cover to open it',
 
     'fig.titles': 'titles in stock',
-    'fig.countries': 'EU countries',
+    'fig.countries': 'countries served',
     'fig.days': 'days in transit',
     'fig.free': 'free shipping from',
 
     'band.1': 'Original print runs',
-    'band.2': 'Dispatched from Kyiv and Warsaw',
+    'band.2': 'Dispatched from Kyiv and Berlin',
     'band.3': 'Packed in a rigid book box',
-    'band.4': 'Pay in euro, złoty or koruna',
+    'band.4': 'Pay in euro or hryvnia',
     'band.5': '30-day returns',
 
     'new.eyebrow': 'New on the shelf',
@@ -335,11 +340,11 @@ const DICT = {
 
     'del.eyebrow': 'Delivery',
     'del.title': 'How a book reaches you',
-    'del.lede': 'Two warehouses: Kyiv and Warsaw. EU addresses are served from Warsaw, so there are no customs declarations and no surprise charges at your door.',
+    'del.lede': 'Two warehouses: Kyiv and Berlin. German addresses are served from Berlin, so there are no customs declarations and no surprise charges at your door.',
     'del.step1.t': 'Order and picking',
     'del.step1.d': 'Picked the day you pay. Each book goes in a kraft sleeve, the stack into a rigid box with corner protection.',
     'del.step2.t': 'Dispatch',
-    'del.step2.d': 'EU from Warsaw (InPost, DPD). Ukraine via Nova Poshta from Kyiv. Tracking number the same day.',
+    'del.step2.d': 'Germany with DHL from Berlin. Ukraine via Nova Poshta from Kyiv. Tracking number the same day.',
     'del.step3.t': 'Handover',
     'del.step3.d': 'Locker, courier or branch. If a book arrives damaged we send a new one and you keep the old.',
     'del.calcTitle': 'Estimate delivery',
@@ -372,7 +377,7 @@ const DICT = {
     'club.title': 'One book a month, chosen by hand',
     'club.lede': 'A subscription for people who want to read in Ukrainian regularly but have no time to choose. We pick, pack and ship — you just read.',
     'club.p1': 'Book of the month with an editors’ letter explaining the pick',
-    'club.p2': 'Free delivery to any EU country',
+    'club.p2': 'Free delivery to Germany and within Ukraine',
     'club.p3': '15% off the rest of the catalogue',
     'club.p4': 'A quarterly online meeting with an author',
     'club.email': 'Your email',
@@ -391,7 +396,7 @@ const DICT = {
     'cart.checkout': 'Checkout',
     'cart.remove': 'Remove',
     'cart.goal': 'To free shipping —',
-    'cart.goalDone': 'EU shipping is free',
+    'cart.goalDone': 'Shipping is free',
     'cart.added': 'added to cart',
     'cart.wishAdd': 'saved',
     'cart.wishRemove': 'removed from saved',
@@ -425,14 +430,230 @@ const DICT = {
     'foot.privacy': 'Privacy',
     'foot.cookies': 'Cookies',
     'foot.demo': 'Demo build. Book titles, authors and publishers are real; prices, stock, ISBNs and reviews are placeholder data. Covers are original typographic designs, not reproductions of the publishers’ artwork.'
+  },
+
+  de: {
+    'theme.title': 'Erscheinungsbild',
+    'theme.seasons': 'Jahreszeiten',
+    'nav.catalog': 'Katalog',
+    'nav.collections': 'Sammlungen',
+    'nav.delivery': 'Versand',
+    'nav.journal': 'Journal',
+    'nav.club': 'Klub',
+    'a11y.search': 'Katalog durchsuchen',
+    'a11y.wishlist': 'Wunschliste',
+    'a11y.cart': 'Warenkorb',
+    'a11y.menu': 'Menü',
+    'a11y.theme': 'Design wechseln',
+    'a11y.themeDark': 'Auf Dunkel umschalten',
+    'a11y.themeLight': 'Auf Hell umschalten',
+    'a11y.top': 'Nach oben',
+    'a11y.close': 'Schließen',
+    'skip': 'Zum Inhalt springen',
+    'hero.eyebrow': 'Ukrainische Buchhandlung · Versand nach Deutschland und in die Ukraine',
+    'hero.title1': 'Bücher, die',
+    'hero.title2': 'Grenzen',
+    'hero.title3': 'überqueren',
+    'hero.lede': 'Wir schicken ukrainische Ausgaben dorthin, wo Ukrainerinnen und Ukrainer heute leben. Originalauflagen ukrainischer Verlage — nach Berlin, München, Hamburg und in die ganze Ukraine.',
+    'hero.cta': 'Zum Katalog',
+    'hero.cta2': 'Versand berechnen',
+    'hero.hint': 'Fahren Sie über einen Einband',
+    'hero.hintTouch': 'Tippen Sie auf einen Einband',
+    'view.label': 'Ansicht des Buches',
+    'view.front': 'Vorderseite',
+    'view.spread': 'Doppelseite',
+    'view.back': 'Rückseite',
+    'book.hintOne': 'Fahren Sie über den Einband',
+    'book.hintOneTouch': 'Tippen Sie auf den Einband',
+    'fig.titles': 'Titel vorrätig',
+    'fig.countries': 'Lieferländer',
+    'fig.days': 'Tage Laufzeit',
+    'fig.free': 'Versandfrei ab',
+    'band.1': 'Originalauflagen',
+    'band.2': 'Versand aus Kyjiw und Berlin',
+    'band.3': 'Verpackt im festen Buchkarton',
+    'band.4': 'Zahlung in Euro oder Hrywnja',
+    'band.5': '30 Tage Rückgaberecht',
+    'new.eyebrow': 'Neu im Regal',
+    'new.title': 'Frisch aus der Presse',
+    'new.note': 'Auflagen, die diese Woche eingetroffen sind',
+    'new.all': 'Alle Neuheiten',
+    'cat.eyebrow': 'Katalog',
+    'cat.title': 'Das ganze Regal',
+    'cat.search': 'Titel, Autor, ISBN…',
+    'cat.sort': 'Sortierung',
+    'cat.sort.pop': 'Beliebteste',
+    'cat.sort.new': 'Neueste zuerst',
+    'cat.sort.priceUp': 'Preis: aufsteigend',
+    'cat.sort.priceDown': 'Preis: absteigend',
+    'cat.sort.title': 'Nach Titel',
+    'cat.all': 'Alle',
+    'cat.genre': 'Genre',
+    'cat.format': 'Ausgabe',
+    'cat.found': 'Gefunden',
+    'cat.of': 'von',
+    'cat.clear': 'Filter zurücksetzen',
+    'cat.grid': 'Raster',
+    'cat.list': 'Liste',
+    'cat.empty': 'Nichts gefunden',
+    'cat.emptyNote': 'Versuchen Sie einen anderen Titel oder setzen Sie die Filter zurück — jede Woche kommen neue Auflagen dazu.',
+    'cat.more': 'Mehr anzeigen',
+    'book.add': 'In den Warenkorb',
+    'book.added': 'Hinzugefügt',
+    'book.details': 'Details',
+    'book.wish': 'Merken',
+    'book.annotation': 'Klappentext',
+    'book.pages': 'S.',
+    'book.inStock': 'Auf Lager',
+    'book.low': 'Nur noch',
+    'book.out': 'Vergriffen',
+    'book.preorder': 'Vorbestellen',
+    'book.related': 'Oft zusammen gekauft',
+    'spec.publisher': 'Verlag',
+    'spec.year': 'Jahr',
+    'spec.pages': 'Seiten',
+    'spec.size': 'Format',
+    'spec.paper': 'Papier',
+    'spec.binding': 'Einband',
+    'spec.lang': 'Sprache',
+    'spec.weight': 'Gewicht',
+    'spec.translator': 'Übersetzung',
+    'spec.langUk': 'Ukrainisch',
+    'badge.new': 'Neu',
+    'badge.best': 'Bestseller',
+    'badge.preorder': 'Vorbestellung',
+    'badge.last': 'Letzte Exemplare',
+    'badge.sale': 'Reduziert',
+    'coll.eyebrow': 'Sammlungen',
+    'coll.title': 'Von der Redaktion zusammengestellt',
+    'coll.note': 'Kein Algorithmus — Menschen, die das gelesen haben',
+    'coll.1.kicker': '12 Bücher',
+    'coll.1.title': 'Die Erschossene Renaissance',
+    'coll.1.note': 'Eine Generation, die in zehn Jahren verschwand, und die Texte, die sie überlebten.',
+    'coll.2.kicker': '9 Bücher',
+    'coll.2.title': 'Womit man wieder anfängt',
+    'coll.2.note': 'Wenn es das erste ukrainische Buch seit Langem ist.',
+    'coll.3.kicker': '7 Bücher',
+    'coll.3.title': 'Kindern vorlesen',
+    'coll.3.note': 'Damit die Sprache zu Hause bleibt, auch wenn das Zuhause vorläufig ist.',
+    'coll.go': 'Sammlung ansehen',
+    'quote.text': 'Ich habe den Kobsar nach Berlin bestellt und auf der Post geweint. Nicht wegen der Gedichte — weil das Paket aus Kyjiw kam.',
+    'quote.by': 'Olena, Berlin · Bestellung #10482',
+    'del.eyebrow': 'Versand',
+    'del.title': 'Wie ein Buch zu Ihnen kommt',
+    'del.lede': 'Zwei Lager: Kyjiw und Berlin. Deutsche Adressen werden aus Berlin beliefert — keine Zollerklärung, keine Überraschung an der Tür.',
+    'del.step1.t': 'Bestellung und Kommissionierung',
+    'del.step1.d': 'Am Tag der Zahlung gepackt. Jedes Buch in eine Kraftpapierhülle, der Stapel in einen festen Karton mit Eckenschutz.',
+    'del.step2.t': 'Versand',
+    'del.step2.d': 'Deutschland mit DHL aus Berlin. Ukraine mit Nova Poshta aus Kyjiw. Sendungsnummer noch am selben Tag.',
+    'del.step3.t': 'Zustellung',
+    'del.step3.d': 'Packstation, Kurier oder Filiale. Kommt ein Buch beschädigt an, schicken wir ein neues — das alte dürfen Sie behalten.',
+    'del.calcTitle': 'Versand berechnen',
+    'del.country': 'Land',
+    'del.books': 'Bücher',
+    'del.cost': 'Versand',
+    'del.eta': 'Voraussichtliche Laufzeit',
+    'del.carrier': 'Versanddienst',
+    'del.total': 'Gesamt mit Versand',
+    'del.free': 'Versandfrei ab',
+    'del.freeNow': 'Ihr Versand ist kostenlos',
+    'del.days': 'Tage',
+    'del.note': 'Eine Schätzung: der Endpreis hängt vom tatsächlichen Gewicht des Pakets und vom Tarif des Versanddienstes am Versandtag ab.',
+    'del.toCart': 'Aus meinem Warenkorb',
+    'jour.eyebrow': 'Journal',
+    'jour.title': 'Was lesen, und warum',
+    'jour.min': 'Min.',
+    'jour.1.cat': 'Listen',
+    'jour.1.t': 'Zehn ukrainische Bücher, die es schon auf Deutsch gibt',
+    'jour.1.d': 'Damit Sie eines weitergeben können, statt den Inhalt nachzuerzählen.',
+    'jour.2.cat': 'Verlage',
+    'jour.2.t': 'Wie während des Blackouts gedruckt wird',
+    'jour.2.d': 'Eine Reportage aus einer Druckerei in Charkiw, die seit 2022 am Generator läuft.',
+    'jour.3.cat': 'Gespräch',
+    'jour.3.t': 'Ostap Slywynskyj: „Das Wörterbuch des Krieges haben vierzig Menschen geschrieben, nicht ich“',
+    'jour.3.d': 'Über Zeugnisse, gesammelt am Bahnhof, und Wörter, die ihre Bedeutung geändert haben.',
+    'club.eyebrow': 'Leseklub',
+    'club.title': 'Ein Buch im Monat, von Hand ausgewählt',
+    'club.lede': 'Ein Abo für alle, die regelmäßig auf Ukrainisch lesen wollen, aber keine Zeit zum Suchen haben. Wir wählen aus, packen und verschicken — Sie lesen.',
+    'club.p1': 'Buch des Monats mit einem Brief der Redaktion, warum gerade dieses',
+    'club.p2': 'Kostenloser Versand nach Deutschland und in die Ukraine',
+    'club.p3': '15 % Rabatt auf den übrigen Katalog',
+    'club.p4': 'Einmal im Quartal ein Online-Treffen mit einer Autorin oder einem Autor',
+    'club.email': 'Ihre E-Mail',
+    'club.join': 'Beitreten',
+    'club.fine': 'Ab 18 € im Monat. Jederzeit kündbar, ohne Erklärung und ohne Anruf.',
+    'club.done': 'Danke — die Details sind auf dem Weg in Ihr Postfach.',
+    'cart.title': 'Warenkorb',
+    'cart.empty': 'Noch nichts hier',
+    'cart.emptyNote': 'Öffnen Sie ein Buch im Regal — der Einband klappt auf.',
+    'cart.emptyCta': 'Zum Katalog',
+    'cart.sub': 'Artikel',
+    'cart.ship': 'Versand',
+    'cart.shipCalc': 'wird an der Kasse berechnet',
+    'cart.total': 'Gesamt',
+    'cart.checkout': 'Zur Kasse',
+    'cart.remove': 'Entfernen',
+    'cart.goal': 'Bis zum Gratisversand —',
+    'cart.goalDone': 'Versand ist kostenlos',
+    'cart.added': 'in den Warenkorb gelegt',
+    'cart.wishAdd': 'gemerkt',
+    'cart.wishRemove': 'aus den Merkungen entfernt',
+    'cart.checkoutSoon': 'Demo-Version: die Zahlung ist noch nicht angebunden.',
+    'pal.placeholder': 'Titel, Autor oder Genre suchen…',
+    'pal.hint1': 'navigieren',
+    'pal.hint2': 'öffnen',
+    'pal.hint3': 'schließen',
+    'pal.empty': 'Nichts gefunden',
+    'foot.about': 'Eine unabhängige ukrainische Buchhandlung. Wir arbeiten direkt mit den Verlagen: jede Auflage ist original, und jede Hrywnja erreicht die Autorin oder den Autor.',
+    'foot.shop': 'Laden',
+    'foot.help': 'Hilfe',
+    'foot.company': 'Unternehmen',
+    'foot.newBooks': 'Neuheiten',
+    'foot.best': 'Bestseller',
+    'foot.gift': 'Geschenkgutscheine',
+    'foot.clubLink': 'Leseklub',
+    'foot.shipping': 'Versand & Zahlung',
+    'foot.returns': 'Rückgabe',
+    'foot.faq': 'Häufige Fragen',
+    'foot.contact': 'Kontakt',
+    'foot.aboutUs': 'Über uns',
+    'foot.publishers': 'Für Verlage',
+    'foot.jobs': 'Jobs',
+    'foot.press': 'Presse',
+    'foot.rights': 'Alle Rechte vorbehalten',
+    'foot.admin': 'Admin',
+    'foot.terms': 'AGB',
+    'foot.privacy': 'Datenschutz',
+    'foot.cookies': 'Cookies',
+    'foot.demo': 'Demo-Version. Buchtitel, Autorinnen und Verlage sind echt; Preise, Verfügbarkeit, ISBN und Bewertungen sind Testdaten. Die Einbände sind eigenständige typografische Entwürfe, keine Reproduktionen der Verlagsgestaltung.'
   }
+
 };
 
-let current = 'uk';
+export const DEFAULT_LANG = 'en';
 
-export function setLang(lang) { current = DICT[lang] ? lang : 'uk'; }
+/**
+ * What the browser is asking for, in the shop's own terms.
+ *
+ * Quality values are honoured and the region subtag is ignored, so de-AT is
+ * still German. Anything the shop does not speak falls through to English
+ * rather than to whatever happened to be listed first.
+ */
+export function detectLang(languages = navigator.languages ?? [navigator.language]) {
+  for (const tag of languages) {
+    const base = String(tag || '').toLowerCase().split('-')[0];
+    if (DICT[base]) return base;
+  }
+  return DEFAULT_LANG;
+}
+
+let current = DEFAULT_LANG;
+
+export function setLang(lang) { current = DICT[lang] ? lang : DEFAULT_LANG; }
 export function getLang() { return current; }
-export function t(key) { return (DICT[current] && DICT[current][key]) ?? DICT.uk[key] ?? key; }
+export function t(key) {
+  return DICT[current]?.[key] ?? DICT[DEFAULT_LANG][key] ?? DICT.uk[key] ?? key;
+}
 
 /* Swap every marked node. data-i18n fills text, data-i18n-attr fills
    an attribute as "attr:key" pairs, e.g. "aria-label:a11y.cart". */

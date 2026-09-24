@@ -408,3 +408,96 @@
 #theme-toggle .ico--sun { display: none; }
 #theme-toggle[data-mode="dark"] .ico--moon { display: none; }
 #theme-toggle[data-mode="dark"] .ico--sun { display: block; }
+
+/* ---------- the theme picker ----------
+   One tap swaps light for dark, which is what a single button should do.
+   The caret beside it opens all six, seasons included. (§5, §6) */
+.themepick { position: relative; display: inline-flex; align-items: center; }
+.themepick__more {
+  display: grid;
+  place-items: center;
+  inline-size: 15px;
+  block-size: 26px;
+  margin-inline-start: -5px;
+  color: var(--text-mute);
+  border-radius: var(--r-xs);
+  transition: color var(--t-fast) var(--ease-out);
+}
+.themepick__more:hover { color: var(--text); }
+.themepick__more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.thememenu {
+  position: absolute;
+  inset-block-start: calc(100% + 10px);
+  inset-inline-end: 0;
+  z-index: 60;
+  inline-size: 190px;
+  padding: 0.45rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md, 10px);
+  box-shadow: var(--sh-3);
+  animation: thememenu-in 180ms var(--ease-out);
+}
+.thememenu[hidden] { display: none; }
+@keyframes thememenu-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+.thememenu__head {
+  margin: 0.4rem 0.5rem 0.3rem;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.thememenu__head:first-child { margin-block-start: 0.15rem; }
+
+.themeopt {
+  inline-size: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.42rem 0.5rem;
+  border-radius: var(--r-sm);
+  font-size: var(--step--1);
+  color: var(--text-dim);
+  text-align: start;
+  transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+.themeopt:hover { background: var(--bg-sunk); color: var(--text); }
+.themeopt:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.themeopt[aria-checked="true"] { color: var(--text); font-weight: 600; }
+.themeopt[aria-checked="true"] .themeopt__chip { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--accent); }
+
+/* Each swatch is the theme's own ground, block and accent, in that order,
+   so the menu previews the palette rather than naming it. */
+.themeopt__chip {
+  flex: none;
+  inline-size: 26px;
+  block-size: 16px;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  background-repeat: no-repeat;
+  /* The first image in the list paints on top, so the ground goes last. */
+  background-size: 26% 100%, 34% 100%, 100% 100%;
+  background-position: 40% 0, 100% 0, 0 0;
+}
+.themeopt__chip[data-chip="paper"]{ background-image: linear-gradient(#b23a24,#b23a24), linear-gradient(#1c3a5e,#1c3a5e), linear-gradient(#f0ece1,#f0ece1); }
+.themeopt__chip[data-chip="midnight"]{ background-image: linear-gradient(#e0563c,#e0563c), linear-gradient(#f0ece1,#f0ece1), linear-gradient(#152234,#152234); }
+.themeopt__chip[data-chip="spring"]{ background-image: linear-gradient(#3f7d5e,#3f7d5e), linear-gradient(#2f5d52,#2f5d52), linear-gradient(#f2f1e6,#f2f1e6); }
+.themeopt__chip[data-chip="summer"]{ background-image: linear-gradient(#c9663a,#c9663a), linear-gradient(#24557a,#24557a), linear-gradient(#f8f3e4,#f8f3e4); }
+.themeopt__chip[data-chip="autumn"]{ background-image: linear-gradient(#b4551f,#b4551f), linear-gradient(#6d3a1c,#6d3a1c), linear-gradient(#f7f1e4,#f7f1e4); }
+.themeopt__chip[data-chip="winter"]{ background-image: linear-gradient(#6d9fd0,#6d9fd0), linear-gradient(#e8eef4,#e8eef4), linear-gradient(#111c2b,#111c2b); }
+
+/* Every colour is a custom property, so a theme change can be eased rather
+   than snapped — but only for readers who asked for motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html { transition: background-color 420ms var(--ease-out); }
+  body, .header, .footer, .section, .card, .dialog__panel, .drawer {
+    transition: background-color 420ms var(--ease-out), color 420ms var(--ease-out),
+                border-color 420ms var(--ease-out);
+  }
+}

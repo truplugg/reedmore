@@ -2,7 +2,7 @@
    RIDMORE — cart drawer and wishlist
    ============================================================ */
 
-import { cartEntries, cartCount, setQty, money, get, FREE_FROM_UAH, toggleWish, inWish, subscribe } from './store.js';
+import { cartEntries, cartCount, setQty, money, price, get, freeFrom, toggleWish, inWish, subscribe } from './store.js';
 import { thumbHTML, esc } from './covers.js';
 import { findBook } from './catalog.js';
 import { t } from './i18n.js';
@@ -14,7 +14,7 @@ let drawer, scrim, body, foot, goal;
 export function cartSubtotal() {
   return cartEntries().reduce((sum, [id, q]) => {
     const b = findBook(id);
-    return b ? sum + b.price * q : sum;
+    return b ? sum + price(b).amount * q : sum;
   }, 0);
 }
 
@@ -34,7 +34,7 @@ function lineHTML(book, qty) {
           <button type="button" class="line__remove" data-act="drop">${esc(t('cart.remove'))}</button>
         </div>
       </div>
-      <div class="line__price num">${money(book.price * qty)}</div>
+      <div class="line__price num">${money(price(book).amount * qty)}</div>
     </div>`;
 }
 
@@ -52,12 +52,14 @@ export function renderCart() {
          <button class="btn btn--ghost" data-act="close-cart">${esc(t('cart.emptyCta'))}</button>
        </div>`;
 
-  const left = Math.max(0, FREE_FROM_UAH - sub);
+  /* named for what it is, so it cannot shadow the #cart-goal element */
+  const freeAt = freeFrom();
+  const left = Math.max(0, freeAt - sub);
   goal.innerHTML = entries.length ? `
     <div class="ship-goal__txt">${left > 0
       ? `${esc(t('cart.goal'))} <b>${money(left)}</b>`
       : `<b>${esc(t('cart.goalDone'))}</b>`}</div>
-    <div class="ship-goal__bar"><div class="ship-goal__fill" style="inline-size:${Math.min(100, (sub / FREE_FROM_UAH) * 100).toFixed(1)}%"></div></div>` : '';
+    <div class="ship-goal__bar"><div class="ship-goal__fill" style="inline-size:${Math.min(100, (sub / freeAt) * 100).toFixed(1)}%"></div></div>` : '';
 
   stagger(body, '.line');
   foot.querySelector('#cart-sub').textContent = money(sub);

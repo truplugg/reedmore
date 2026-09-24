@@ -10,7 +10,7 @@
    ============================================================ */
 
 import { coverHTML, backHTML, endpaperSVG, deviceSVG, esc } from './covers.js';
-import { money, inWish } from './store.js';
+import { money, price, inWish } from './store.js';
 import { t } from './i18n.js';
 
 export const fine = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -19,7 +19,7 @@ export const calm = () => window.matchMedia('(prefers-reduced-motion: reduce)').
 function badges(book) {
   const out = [];
   if (book.badge) out.push(`<span class="badge badge--${book.badge}">${esc(t('badge.' + book.badge))}</span>`);
-  if (book.oldPrice) out.push(`<span class="badge badge--sale">${esc(t('badge.sale'))}</span>`);
+  if (book.salePriceEUR != null || book.salePriceUAH != null) out.push(`<span class="badge badge--sale">${esc(t('badge.sale'))}</span>`);
   if (book.stock > 0 && book.stock <= 6 && book.badge !== 'last') {
     out.push(`<span class="badge badge--last">${esc(t('badge.last'))} ${book.stock}</span>`);
   }
@@ -79,7 +79,7 @@ export function bookHTML(book, { mode = 'turn' } = {}) {
       <h3 class="book__title">${esc(book.title)}</h3>
       <p class="book__author">${esc(book.author)}</p>
       <div class="book__line">
-        <span class="book__price">${book.oldPrice ? `<s>${money(book.oldPrice)}</s>` : ''}<span class="${book.oldPrice ? 'is-now' : ''}">${money(book.price)}</span></span>
+        <span class="book__price">${(() => { const p = price(book); return `${p.was ? `<s>${money(p.was)}</s>` : ''}<span class="${p.was ? 'is-now' : ''}">${money(p.amount)}</span>`; })()}</span>
         ${stars(book.rating)}
       </div>
       <div class="book__actions">
@@ -202,18 +202,36 @@ export function setBookView(book, view) {
   active = book;
 }
 
-/* Only a book standing on its own — the hero, the record — follows the
-   cursor. On the shelf it would fight the turn and unsettle the grid. */
+/**
+ * The cursor steers the book a little.
+ *
+ * A book standing on its own — the hero, the record — gets the full range.
+ * On the shelf the range is small on purpose (§8): enough to feel the
+ * thickness and catch the spine, not enough to make a grid of covers move
+ * about while someone is trying to read it.
+ */
 function tilt(book, e) {
   if (calm() || !fine()) return;
-  if (!book.classList.contains('book--solo')) return;
   const stage = book.querySelector('.book__stage');
   if (!stage) return;
+
+  const solo = book.classList.contains('book--solo');
+  const onShelf = !solo && !!book.closest('.shelf, .rail');
+  if (!solo && !onShelf) return;
+
+  const styles = getComputedStyle(book);
+  const range = solo
+    ? { y: 17, x: 10 }
+    : {
+        y: Number(styles.getPropertyValue('--tilt-shelf-y')) || 13,
+        x: Number(styles.getPropertyValue('--tilt-shelf-x')) || 6
+      };
+
   const r = stage.getBoundingClientRect();
   const x = (e.clientX - r.left) / r.width - 0.5;
   const y = (e.clientY - r.top) / r.height - 0.5;
-  stage.style.setProperty('--ty', `${(x * 17).toFixed(2)}deg`);
-  stage.style.setProperty('--tx', `${(-y * 10).toFixed(2)}deg`);
+  stage.style.setProperty('--ty', `${(x * range.y).toFixed(2)}deg`);
+  stage.style.setProperty('--tx', `${(-y * range.x).toFixed(2)}deg`);
 }
 
 function untilt(book) {

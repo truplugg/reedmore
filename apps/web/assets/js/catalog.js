@@ -8,7 +8,7 @@ import { BOOKS, GENRES, FORMATS } from './data/books.js';
 import { bookHTML, mountBooks, closeOpenBook } from './book3d.js';
 import { t, getLang } from './i18n.js';
 import { esc } from './covers.js';
-import { get, set, inWish, subscribe } from './store.js';
+import { get, set, inWish, subscribe, price } from './store.js';
 
 const PAGE = 12;
 
@@ -43,8 +43,8 @@ function matches(book) {
 const SORTS = {
   pop: (a, b) => (b.rating * Math.log(b.reviews + 2)) - (a.rating * Math.log(a.reviews + 2)),
   new: (a, b) => b.year - a.year,
-  priceUp: (a, b) => a.price - b.price,
-  priceDown: (a, b) => b.price - a.price,
+  priceUp: (a, b) => price(a).amount - price(b).amount,
+  priceDown: (a, b) => price(b).amount - price(a).amount,
   title: (a, b) => a.title.localeCompare(b.title, 'uk')
 };
 

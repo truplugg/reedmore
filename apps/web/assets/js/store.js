@@ -9,17 +9,21 @@ const KEY = 'ridmore.v1';
 
 /* UAH is the base. Rates are editorial placeholders — wire them
    to your payment provider's daily feed before launch. */
+/**
+ * Two currencies, and the shop never converts between them (§4).
+ *
+ * Each book carries a price in each, set by hand, so there is no rate here
+ * and there should never be one: the switch picks a column, it does not do
+ * arithmetic. A reader in Berlin may pay in hryvnia and one in Kyiv in euro.
+ */
 export const CURRENCIES = {
-  UAH: { sign: '₴', rate: 1,    locale: 'uk-UA', step: 5,    after: true  },
-  EUR: { sign: '€', rate: 48,   locale: 'de-DE', step: 0.05, after: true  },
-  PLN: { sign: 'zł', rate: 11.3, locale: 'pl-PL', step: 0.5,  after: true },
-  CZK: { sign: 'Kč', rate: 1.92, locale: 'cs-CZ', step: 1,    after: true },
-  GBP: { sign: '£', rate: 56,   locale: 'en-GB', step: 0.05, after: false }
+  EUR: { sign: '€', locale: 'de-DE', minor: 100, digits: 2, after: true },
+  UAH: { sign: '₴', locale: 'uk-UA', minor: 100, digits: 0, after: true }
 };
-
 const DEFAULTS = {
-  lang: 'uk',
-  currency: 'EUR',
+  lang: null,        /* null means "not chosen yet" — detect from the browser */
+  currency: null,
+  country: null,
   theme: 'system',
   view: 'grid',
   cart: {},        /* id -> qty */
@@ -91,26 +95,31 @@ export function toggleWish(id) {
 }
 export function inWish(id) { return state.wish.includes(id); }
 
-/* ---------- money ---------- */
-export function convert(uah, code = state.currency) {
-  const c = CURRENCIES[code] || CURRENCIES.UAH;
-  const raw = uah / c.rate;
-  return Math.round(raw / c.step) * c.step;
+/* ---------- money ----------
+   Amounts are integers of minor units — cents and kopiyky — so nothing here
+   ever meets a floating-point rounding error. `price(book)` reads the column
+   for the current currency; there is deliberately no conversion function. */
+
+/** The price a book is actually sold at, and the one it was struck from. */
+export function price(book, code = state.currency) {
+  const cur = CURRENCIES[code] ? code : 'EUR';
+  const list = cur === 'EUR' ? book.priceEUR : book.priceUAH;
+  const sale = cur === 'EUR' ? book.salePriceEUR : book.salePriceUAH;
+  return (sale != null && sale < list) ? { amount: sale, was: list } : { amount: list, was: null };
 }
 
-export function money(uah, code = state.currency) {
-  const c = CURRENCIES[code] || CURRENCIES.UAH;
-  const value = convert(uah, code);
-  const decimals = c.step < 1 ? 2 : 0;
+export function money(minor, code = state.currency) {
+  const c = CURRENCIES[code] || CURRENCIES.EUR;
+  const value = (minor ?? 0) / c.minor;
   let n;
   try {
     n = new Intl.NumberFormat(c.locale, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
+      minimumFractionDigits: c.digits, maximumFractionDigits: c.digits
     }).format(value);
-  } catch { n = value.toFixed(decimals); }
-  return c.after ? `${n} ${c.sign}` : `${c.sign}${n}`;
+  } catch { n = value.toFixed(c.digits); }
+  return c.after ? `${n}\u00a0${c.sign}` : `${c.sign}${n}`;
 }
 
-/* free shipping threshold, held in the base currency */
-export const FREE_FROM_UAH = 2400;
+/* Free shipping threshold, set per currency rather than converted. */
+export const FREE_FROM = { EUR: 5000, UAH: 250000 };
+export const freeFrom = (code = state.currency) => FREE_FROM[code] ?? FREE_FROM.EUR;

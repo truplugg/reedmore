@@ -31,6 +31,21 @@
 }
 .book.is-active .book__head { transform: translateY(-16px) scale(1.015); }
 
+/* ---------- the shelf's own interaction ----------
+   On the shelf a book is not opened and not thrown forward — §8. It settles
+   a few degrees toward the reader and follows the cursor within a small
+   range, far enough to show the thickness and a glimpse of the spine, and
+   comes back when the pointer leaves. Nothing lifts, nothing scales, and the
+   books either side are left alone: a grid that rearranges itself under the
+   cursor is tiring to read. */
+.shelf .book.is-active .book__head,
+.rail .book.is-active .book__head { transform: translateY(-4px) scale(1); }
+
+.shelf .book.is-active .book__body,
+.rail .book.is-active .book__body {
+  transform: translateZ(14px) rotateY(var(--turn-shelf-focus)) rotateX(0.8deg);
+}
+
 
 /* ---------- stage ---------- */
 .book__stage {
@@ -105,6 +120,26 @@
   transition: opacity var(--t-book) var(--ease-out);
 }
 .book.is-active .book__face--front::after { opacity: 0.72; }
+
+/* light travelling across the board as the book turns under the cursor */
+.shelf .book__face--front::before,
+.rail .book__face--front::before {
+  content: "";
+  position: absolute;
+  inset: -20% -60%;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(105deg,
+    rgb(255 253 246 / 0) 38%, rgb(255 253 246 / .16) 50%, rgb(255 253 246 / 0) 62%);
+  transform: translateX(-38%);
+  opacity: 0;
+  transition: transform 900ms var(--ease-out), opacity 420ms var(--ease-out);
+}
+.shelf .book.is-active .book__face--front::before,
+.rail .book.is-active .book__face--front::before {
+  transform: translateX(34%);
+  opacity: 1;
+}
 
 /* back board */
 .book__back {
@@ -247,11 +282,13 @@
 
 /* ---------- colour focus: one book in colour, the rest in grey ---------- */
 .cv, .book__card { transition: filter 420ms var(--ease-out), background 260ms var(--ease-out); }
+/* The shelf used to grey out every book but one. That reads as a demo, not
+   a shop: a reader scanning a grid wants to see all of it. (§8) */
 .shelf.is-browsing .book:not(.is-active) .cv,
 .shelf.is-browsing .book:not(.is-active) .book__card,
 .rail.is-browsing .book:not(.is-active) .cv,
 .rail.is-browsing .book:not(.is-active) .book__card {
-  filter: grayscale(1);
+  filter: saturate(0.88) brightness(0.985);
 }
 .book.is-active .cv { filter: saturate(1.07) contrast(1.02); }
 .shelf .book.is-active, .rail .book.is-active { z-index: 20; }
@@ -346,8 +383,15 @@
 }
 .book.is-active:not(.book--solo) .book__hint,
 .book--open.is-open:not(.book--solo) .book__hint {
-  opacity: 0.94;
+  opacity: 0.82;
   transform: none;
+}
+/* smaller and quieter, now that the book itself no longer performs */
+.shelf .book__hint, .rail .book__hint {
+  font-size: 8px;
+  padding: 0.3em 0.62em;
+  background: rgb(var(--sh-color) / .78);
+  backdrop-filter: blur(3px);
 }
 
 .book__trigger {
