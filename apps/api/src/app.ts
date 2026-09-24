@@ -7,11 +7,16 @@ import { ZodError } from 'zod';
 import { Prisma } from '@prisma/client';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { mkdir } from 'node:fs/promises';
 
 import { env, isProd, isTest } from './lib/env.js';
 import { ApiError } from './lib/errors.js';
 import authPlugin from './plugins/auth.js';
+import multipart from '@fastify/multipart';
 import authRoutes from './modules/auth/routes.js';
+import publicBookRoutes from './modules/books/public.js';
+import adminBookRoutes from './modules/books/admin.js';
+import mediaRoutes from './modules/media/routes.js';
 import { loadAvatars } from './modules/auth/avatars.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -53,6 +58,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     keyGenerator: (req) => req.ip
   });
 
+  await app.register(multipart, { limits: { fileSize: 12 * 1024 * 1024, files: 1, fields: 12 } });
   await app.register(authPlugin);
 
   // ---------- one error shape for everything ----------
@@ -97,9 +103,32 @@ export async function buildApp(): Promise<FastifyInstance> {
   // ---------- api ----------
   app.get('/api/health', async () => ({ ok: true, at: new Date().toISOString() }));
   await app.register(authRoutes, { prefix: '/api/auth' });
+  await app.register(publicBookRoutes, { prefix: '/api/books' });
+  await app.register(adminBookRoutes, { prefix: '/api/admin/books' });
+  await app.register(mediaRoutes, { prefix: '/api/admin/media' });
 
-  // ---------- the site ----------
-  await app.register(staticPlugin, { root: WEB_ROOT, prefix: '/', index: ['index.html'], wildcard: false });
+  /* Two static roots, each in its own scope.
+     @fastify/static registers its wildcard into the enclosing context, so two
+     registrations side by side collide and the second silently wins — which is
+     how /media/* went missing while every request for it quietly returned the
+     shop's index.html. Encapsulating each keeps them apart. */
+  if (env.STORAGE_DRIVER === 'local') {
+    const dir = path.resolve(env.STORAGE_LOCAL_DIR);
+    await mkdir(dir, { recursive: true });
+    await app.register(async (scope) => {
+      await scope.register(staticPlugin, {
+        root: dir,
+        prefix: `${env.STORAGE_PUBLIC_PATH}/`,
+        decorateReply: false,
+        // filenames are content hashes, so these can be cached for good
+        cacheControl: true, maxAge: '365d', immutable: true
+      });
+    });
+  }
+
+  await app.register(async (scope) => {
+    await scope.register(staticPlugin, { root: WEB_ROOT, prefix: '/', index: ['index.html'] });
+  });
 
   await loadAvatars();
   return app;

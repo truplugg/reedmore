@@ -1,4 +1,18 @@
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
+
+/* Load .env here, explicitly. It used to arrive only because @prisma/client
+   happens to read it on import, which meant the whole configuration depended
+   on one import sitting above another in app.ts — a reordering away from
+   silently falling back to defaults. */
+for (const candidate of [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../.env')
+]) {
+  if (existsSync(candidate)) { process.loadEnvFile(candidate); break; }
+}
 
 /** Parsed once, at boot. A missing secret should stop the process, not surface
  *  as an undefined three requests later. */

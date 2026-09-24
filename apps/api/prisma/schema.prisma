@@ -217,6 +217,9 @@ model Book {
   publisher     String?
   year          Int?
   isbn          String?
+  /// Digits only, so a search matches however the ISBN was hyphenated.
+  /// Written by the API on every save; never edited by hand.
+  isbnDigits    String?
   language      String?  @default("uk")
   pages         Int?
   binding       Binding  @default(HARD)
@@ -269,6 +272,7 @@ model Book {
   @@index([status, featured])
   @@index([categoryId])
   @@index([publishedAt])
+  @@index([isbnDigits])
   @@map("books")
 }
 
