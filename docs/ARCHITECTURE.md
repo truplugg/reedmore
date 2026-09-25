@@ -78,14 +78,15 @@ Following §42. Each phase ends green — migrations apply, tests pass, the site
 | 4 | Database, migrations, seed | **done** — `fef474b` |
 | 5 | Auth, users, RBAC | **done** — `fef474b` |
 | 6 | Books / catalogue admin | **done** — `ce8fde6` |
-| 7 | Journal CMS | |
+| 6b | Admin desk: overview, orders, people, roles, media, settings, audit | **done** — `64ce12b`, `d4c0c55` |
+| 7 | Journal CMS | **done** — `64ce12b`, `d4c0c55` (block editor, no HTML anywhere) |
 | 8 | Wishlists | **done** — `2b51082` |
 | 9 | Gift flow + manager workflow | **done** — `2b51082` |
-| 10 | Checkout + orders | |
-| 11 | Theme engine + seasonal themes | |
-| 12 | Hero book animation | |
-| 13 | Catalogue 3D interaction | |
-| 14 | Locales, currencies, geography | |
+| 10 | Checkout + orders | next |
+| 11 | Theme engine + seasonal themes | **done** — `64ce12b`, `d4c0c55` (versions, publish, rollback) |
+| 12 | Hero book animation | **done** — `c316ba8` |
+| 13 | Catalogue 3D interaction | **done** — `d57a29a`, `5b8af99` |
+| 14 | Locales, currencies, geography | **done** — `2dde3b7` |
 | 15 | Responsive polish | |
 | 16 | Security / privacy audit | |
 | 17 | Testing | |
