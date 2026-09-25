@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="assets/css/components.css">
 <link rel="stylesheet" href="assets/css/book.css">
 <link rel="stylesheet" href="assets/css/admin.css">
+<link rel="stylesheet" href="assets/css/admin-shell.css">
 </head>
 <body class="adm-body">
 
@@ -34,6 +35,32 @@
   </div>
 </header>
 
+
+<div class="adm-shell">
+
+<nav class="adm-nav" id="adm-nav" aria-label="Розділи адмінки">
+  <button class="adm-nav__burger" type="button" id="nav-burger" aria-expanded="false" aria-controls="nav-list">
+    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    <span>Розділи</span>
+  </button>
+  <ul class="adm-nav__list" id="nav-list">
+    <li><a class="adm-nav__link" href="#dashboard" data-needs="book.read,order.read,article.read,user.read"><span class="adm-nav__ico" aria-hidden="true">▤</span>Огляд</a></li>
+    <li><a class="adm-nav__link" href="#books" data-needs="book.read"><span class="adm-nav__ico" aria-hidden="true">▣</span>Книжки</a></li>
+    <li><a class="adm-nav__link" href="#orders" data-needs="order.read,gift.read"><span class="adm-nav__ico" aria-hidden="true">▧</span>Замовлення</a></li>
+    <li><a class="adm-nav__link" href="#journal" data-needs="article.read"><span class="adm-nav__ico" aria-hidden="true">▥</span>Журнал</a></li>
+    <li><a class="adm-nav__link" href="#media" data-needs="media.read"><span class="adm-nav__ico" aria-hidden="true">▨</span>Медіа</a></li>
+    <li><a class="adm-nav__link" href="#themes" data-needs="theme.read"><span class="adm-nav__ico" aria-hidden="true">◍</span>Теми</a></li>
+    <li><a class="adm-nav__link" href="#people" data-needs="user.read"><span class="adm-nav__ico" aria-hidden="true">◎</span>Люди та ролі</a></li>
+    <li><a class="adm-nav__link" href="#settings" data-needs="settings.write"><span class="adm-nav__ico" aria-hidden="true">⚙</span>Налаштування</a></li>
+  </ul>
+  <p class="adm-nav__who" id="nav-who"></p>
+</nav>
+
+<div class="adm-panels" id="adm-panels">
+
+<section class="adm-panel" data-panel="dashboard" hidden><div class="adm-pane" id="pane-dashboard"></div></section>
+
+<section class="adm-panel" data-panel="books" hidden>
 <main class="adm">
 
   <!-- ============ live preview ============ -->
@@ -226,8 +253,30 @@
   <div class="adm__cards" id="saved"></div>
 </section>
 
+</section>
+
+<section class="adm-panel" data-panel="orders" hidden><div class="adm-pane" id="pane-orders"></div></section>
+<section class="adm-panel" data-panel="journal" hidden><div class="adm-pane" id="pane-journal"></div></section>
+<section class="adm-panel" data-panel="media" hidden><div class="adm-pane" id="pane-media"></div></section>
+<section class="adm-panel" data-panel="themes" hidden><div class="adm-pane" id="pane-themes"></div></section>
+<section class="adm-panel" data-panel="people" hidden><div class="adm-pane" id="pane-people"></div></section>
+<section class="adm-panel" data-panel="settings" hidden><div class="adm-pane" id="pane-settings"></div></section>
+
+</div><!-- /adm-panels -->
+</div><!-- /adm-shell -->
+
+<div class="adm-gate" id="adm-gate" hidden>
+  <div class="adm-gate__card">
+    <p class="eyebrow eyebrow--plain">Адмінка</p>
+    <h1 class="adm-gate__title">Потрібен вхід</h1>
+    <p class="adm-gate__lede" id="gate-lede">Увійдіть обліковим записом, що має доступ до адміністрування.</p>
+    <a class="btn btn--primary" href="index.html#account">Увійти</a>
+  </div>
+</div>
+
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
 <script type="module" src="assets/js/admin.js"></script>
+<script type="module" src="assets/js/admin-shell.js"></script>
 </body>
 </html>

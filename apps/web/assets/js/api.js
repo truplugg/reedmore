@@ -129,7 +129,55 @@ export const api = {
   giftsReceived:   () => request('/gifts/received'),
   cancelGift:      (id) => request(`/gifts/${encodeURIComponent(id)}/cancel`, { method: 'POST' }),
   randomPerson:    () => request(withContext('/gifts/random/person')),
-  randomBook:      () => request(withContext('/gifts/random/book'))
+  randomBook:      () => request(withContext('/gifts/random/book')),
+
+  /* --- the admin desk (§10-13) ---
+     Everything under /admin is refused by the server for an account without
+     the permission, whatever the panel decides to draw. The panel hides a
+     section to save a reader a pointless click, never as the protection. */
+  dashboard:       (days = 30) => request(`/admin/dashboard?days=${days}`),
+
+  adminBooks:      (q = '') => request(`/admin/books${q}`),
+  adminBook:       (id) => request(`/admin/books/${encodeURIComponent(id)}`),
+  createBook:      (body) => request('/admin/books', { method: 'POST', body }),
+  updateBook:      (id, body) => request(`/admin/books/${encodeURIComponent(id)}`, { method: 'PATCH', body }),
+  deleteBook:      (id) => request(`/admin/books/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  bookCategories:  () => request('/admin/books/meta/categories'),
+
+  adminOrders:     (q = '') => request(`/admin/orders${q}`),
+  adminOrder:      (id) => request(`/admin/orders/${encodeURIComponent(id)}`),
+  orderStatus:     (id, body) => request(`/admin/orders/${encodeURIComponent(id)}/status`, { method: 'POST', body }),
+  orderNotes:      (id, notes) => request(`/admin/orders/${encodeURIComponent(id)}/notes`, { method: 'POST', body: { notes } }),
+
+  adminUsers:      (q = '') => request(`/admin/users${q}`),
+  adminUser:       (id) => request(`/admin/users/${encodeURIComponent(id)}`),
+  userStatus:      (id, status) => request(`/admin/users/${encodeURIComponent(id)}/status`, { method: 'POST', body: { status } }),
+  setUserRoles:    (id, roles) => request(`/admin/users/${encodeURIComponent(id)}/roles`, { method: 'PUT', body: { roles } }),
+  adminRoles:      () => request('/admin/roles'),
+  setRolePerms:    (key, permissions) =>
+    request(`/admin/roles/${encodeURIComponent(key)}/permissions`, { method: 'PUT', body: { permissions } }),
+
+  adminThemes:     () => request('/admin/themes'),
+  adminTheme:      (id) => request(`/admin/themes/${encodeURIComponent(id)}`),
+  createTheme:     (body) => request('/admin/themes', { method: 'POST', body }),
+  saveThemeDraft:  (id, body) => request(`/admin/themes/${encodeURIComponent(id)}/draft`, { method: 'POST', body }),
+  publishTheme:    (id, body = {}) => request(`/admin/themes/${encodeURIComponent(id)}/publish`, { method: 'POST', body }),
+  deleteTheme:     (id) => request(`/admin/themes/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  adminArticles:   (q = '') => request(`/admin/articles${q}`),
+  adminArticle:    (id) => request(`/admin/articles/${encodeURIComponent(id)}`),
+  createArticle:   (body) => request('/admin/articles', { method: 'POST', body }),
+  updateArticle:   (id, body) => request(`/admin/articles/${encodeURIComponent(id)}`, { method: 'PATCH', body }),
+  articleStatus:   (id, body) => request(`/admin/articles/${encodeURIComponent(id)}/status`, { method: 'POST', body }),
+  deleteArticle:   (id) => request(`/admin/articles/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  articleTaxonomy: () => request('/admin/articles/meta/taxonomy'),
+
+  adminMedia:      (q = '') => request(`/admin/media${q}`),
+  deleteMedia:     (id) => request(`/admin/media/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  settings:        () => request('/admin/settings'),
+  saveSettings:    (body) => request('/admin/settings', { method: 'PATCH', body }),
+  auditLog:        (q = '') => request(`/admin/settings/audit${q}`)
 };
 
 /* ---------- the signed-in viewer, held once ---------- */

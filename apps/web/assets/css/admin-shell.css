@@ -1,0 +1,359 @@
+/* ============================================================
+   RIDMORE — the admin shell
+   A rail of sections down the side and one panel at a time in
+   the middle. The book desk keeps its own stylesheet; this one
+   only builds the room around it.
+   ============================================================ */
+
+.adm-shell {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: clamp(1rem, 2vw, 2rem);
+  max-inline-size: 1500px;
+  margin-inline: auto;
+  padding: 0 var(--gutter);
+  align-items: start;
+}
+
+/* ---------- the rail of sections ---------- */
+.adm-nav {
+  position: sticky;
+  inset-block-start: calc(64px + env(safe-area-inset-top, 0px) + 1rem);
+  padding-block: 1.5rem;
+}
+.adm-nav__burger { display: none; }
+
+.adm-nav__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.adm-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.62em 0.8em;
+  border-radius: var(--r-md);
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: var(--step--1);
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: background 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+.adm-nav__link:hover { background: var(--surface); color: var(--text); }
+.adm-nav__link[aria-current="page"] {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--text);
+  font-weight: 600;
+}
+.adm-nav__ico {
+  inline-size: 1.2em;
+  text-align: center;
+  color: var(--accent);
+  font-size: 0.95em;
+}
+/* A section the account cannot reach is not shown as a locked door. */
+.adm-nav__link[hidden] { display: none; }
+
+.adm-nav__who {
+  margin: 1.2rem 0 0;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--line-soft);
+  font-size: var(--step--2);
+  color: var(--text-mute);
+  line-height: 1.5;
+}
+.adm-nav__who b { color: var(--text); font-weight: 600; display: block; }
+
+/* ---------- panels ---------- */
+.adm-panels { min-inline-size: 0; }
+.adm-panel[hidden] { display: none; }
+.adm-pane { padding-block: 1.5rem 4rem; }
+
+/* The book desk was written as a whole page; inside a panel it keeps its
+   own grid but gives up the page's outer gutter, which the shell now owns. */
+.adm-panel[data-panel="books"] .adm,
+.adm-panel[data-panel="books"] .adm__saved { padding-inline: 0; max-inline-size: none; }
+
+/* ---------- a section's head ---------- */
+.pane__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-4);
+  margin-block-end: 1.6rem;
+}
+.pane__title {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 700;
+  margin: 0.1em 0 0;
+  line-height: 1.1;
+}
+.pane__tools { margin-inline-start: auto; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+/* ---------- figures ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 0.9rem;
+  margin-block-end: 2rem;
+}
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 1.1rem 1.2rem;
+}
+.stat__n {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat__k {
+  display: block;
+  margin-block-start: 0.45em;
+  font-size: var(--step--2);
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.stat--warn .stat__n { color: var(--warn); }
+.stat--accent .stat__n { color: var(--accent); }
+
+/* ---------- tables ---------- */
+.tbl-wrap {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: auto;              /* a narrow screen scrolls the table, not the page */
+  -webkit-overflow-scrolling: touch;
+}
+.tbl { inline-size: 100%; border-collapse: collapse; font-size: var(--step--1); }
+.tbl th, .tbl td {
+  text-align: start;
+  padding: 0.7em 0.9em;
+  border-block-end: 1px solid var(--line-soft);
+  white-space: nowrap;
+}
+.tbl th {
+  font-size: var(--step--2);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-mute);
+  font-weight: 600;
+  background: var(--bg-sunk);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+}
+.tbl tr:last-child td { border-block-end: 0; }
+.tbl td.wrap { white-space: normal; min-inline-size: 16ch; }
+/* An address long enough to push the roles off the screen is truncated
+   rather than allowed to widen the table past the desk. */
+.tbl td.ell { max-inline-size: 26ch; overflow: hidden; text-overflow: ellipsis; }
+.tbl tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+.tbl__empty { padding: 2.4rem; text-align: center; color: var(--text-mute); }
+
+/* ---------- pills ---------- */
+.pill {
+  display: inline-block;
+  padding: 0.22em 0.62em;
+  border-radius: var(--r-pill);
+  font-size: var(--step--2);
+  font-weight: 600;
+  border: 1px solid var(--line);
+  background: var(--bg-sunk);
+  color: var(--text-dim);
+}
+.pill--ok     { color: var(--ok);     border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+.pill--warn   { color: var(--warn);   border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+.pill--danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
+.pill--accent { color: var(--accent); border-color: var(--accent-line); }
+
+/* ---------- forms inside a pane ---------- */
+.pane-form {
+  display: grid;
+  gap: 1.1rem;
+  max-inline-size: 720px;
+}
+.pane-form__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.9rem;
+}
+.pane-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 1.3rem;
+}
+.pane-card + .pane-card { margin-block-start: 1rem; }
+.pane-card__h {
+  font-family: var(--font-display);
+  font-size: var(--step-0);
+  font-weight: 700;
+  margin: 0 0 0.9rem;
+}
+.pane-note {
+  font-size: var(--step--2);
+  color: var(--text-mute);
+  line-height: 1.55;
+  margin: 0.4em 0 0;
+}
+
+/* ---------- roles: a grid of permissions ---------- */
+.perms { display: grid; gap: 1.2rem; }
+.perms__group { }
+.perms__legend {
+  font-size: var(--step--2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  font-weight: 600;
+  margin-block-end: 0.5rem;
+}
+.perms__list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.35rem 1rem; }
+.perm {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55em;
+  font-size: var(--step--1);
+  padding: 0.3em 0;
+  cursor: pointer;
+}
+.perm input { margin-block-start: 0.25em; flex: none; }
+.perm span { line-height: 1.4; }
+.perm small { display: block; color: var(--text-mute); font-size: var(--step--2); }
+.perm.is-locked { opacity: 0.55; cursor: not-allowed; }
+
+/* ---------- themes ---------- */
+.themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
+.theme-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+  text-align: start;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+.theme-card:hover { transform: translateY(-2px); border-color: var(--accent-line); }
+.theme-card.is-active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.theme-card__swatches { display: flex; block-size: 76px; }
+.theme-card__sw { flex: 1; }
+.theme-card__body { padding: 0.8rem 0.95rem 1rem; }
+.theme-card__name { font-weight: 600; font-size: var(--step--1); }
+.theme-card__meta { margin: 0.3em 0 0; font-size: var(--step--2); color: var(--text-mute); }
+
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.5rem 1rem; }
+.slot { display: flex; align-items: center; gap: 0.55em; font-size: var(--step--2); }
+.slot input[type="color"] {
+  inline-size: 34px; block-size: 26px; padding: 0; flex: none;
+  border: 1px solid var(--line); border-radius: var(--r-sm); background: none; cursor: pointer;
+}
+.slot code { color: var(--text-mute); font-size: 0.92em; }
+
+/* ---------- the block editor ---------- */
+.blocks { display: grid; gap: 0.7rem; }
+.block {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: 0.7rem 0.8rem;
+  display: grid;
+  gap: 0.5rem;
+}
+.block__bar { display: flex; align-items: center; gap: 0.4rem; }
+.block__kind {
+  font-size: var(--step--2); text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--accent); font-weight: 600; margin-inline-end: auto;
+}
+.block__btn {
+  border: 1px solid var(--line); background: var(--bg); color: var(--text-dim);
+  inline-size: 28px; block-size: 26px; border-radius: var(--r-sm); cursor: pointer; line-height: 1;
+}
+.block__btn:hover { color: var(--text); border-color: var(--accent-line); }
+.block textarea, .block input[type="text"] {
+  inline-size: 100%; font: inherit; font-size: var(--step--1);
+  padding: 0.5em 0.6em; border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: var(--bg); color: var(--text); resize: vertical;
+}
+.blocks__add { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-block-start: 0.8rem; }
+
+/* ---------- media ---------- */
+.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 0.8rem; }
+.media-item {
+  border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden;
+  background: var(--surface); aspect-ratio: 1; position: relative;
+}
+.media-item img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+.media-item__f {
+  position: absolute; inset-block-end: 0; inset-inline: 0;
+  background: color-mix(in srgb, var(--surface-ink) 72%, transparent);
+  color: var(--text-on-ink); font-size: var(--step--2); padding: 0.3em 0.5em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ---------- the sign-in gate ---------- */
+/* An author's `display` beats the browser's own [hidden] rule, so anything
+   given one here has to say what hidden means for itself. The gate is
+   fixed and opaque: when that goes wrong it covers the whole desk, which
+   is exactly what it did. */
+.adm-gate[hidden], .adm-shell[hidden] { display: none; }
+
+.adm-gate {
+  position: fixed; inset: 0; z-index: 80;
+  display: grid; place-items: center;
+  background: var(--bg-sunk);
+  padding: var(--gutter);
+}
+.adm-gate__card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); padding: clamp(1.6rem, 4vw, 2.6rem);
+  max-inline-size: 420px; text-align: center;
+}
+.adm-gate__title { font-family: var(--font-display); font-size: var(--step-2); margin: 0.2em 0 0.4em; }
+.adm-gate__lede { color: var(--text-dim); font-size: var(--step--1); margin: 0 0 1.4rem; line-height: 1.55; }
+
+/* ---------- phone and tablet ---------- */
+@media (max-width: 1000px) {
+  .adm-shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .adm-nav {
+    position: sticky;
+    inset-block-start: calc(64px + env(safe-area-inset-top, 0px));
+    z-index: 50;
+    padding-block: 0.6rem;
+    background: color-mix(in srgb, var(--bg-sunk) 94%, transparent);
+    backdrop-filter: blur(10px);
+    border-block-end: 1px solid var(--line);
+  }
+  .adm-nav__burger {
+    display: flex; align-items: center; gap: 0.6em;
+    inline-size: 100%; padding: 0.7em 0.2em;
+    background: none; border: 0; color: var(--text);
+    font: inherit; font-weight: 600; font-size: var(--step--1); cursor: pointer;
+  }
+  /* An svg with no intrinsic size is a flex item that will happily take the
+     whole row; the three rules of the burger became three black bars. */
+  .adm-nav__burger .ico { inline-size: 22px; block-size: 22px; flex: none; }
+  /* Closed by default on a phone: the sections are a menu, not a wall. */
+  .adm-nav__list { display: none; padding-block-end: 0.6rem; }
+  .adm-nav.is-open .adm-nav__list { display: grid; }
+  .adm-nav__who { display: none; }
+  .pane__head { margin-block-end: 1.1rem; }
+  .pane__tools { inline-size: 100%; margin-inline-start: 0; }
+}
+
+@media (max-width: 560px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat { padding: 0.85rem 0.9rem; }
+  .perms__list, .slots { grid-template-columns: minmax(0, 1fr); }
+}
