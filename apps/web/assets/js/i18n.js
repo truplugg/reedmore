@@ -9,6 +9,7 @@ export const LANGS = { de: 'Deutsch', uk: 'Українська', en: 'English' 
 
 const DICT = {
   uk: {
+    'acct.previewNote': 'Це демонстраційна збірка без сервера: акаунт і списки зберігаються лише у вашому браузері.',
     'acct.account': 'Кабінет',
     'acct.signIn': 'Увійти',
     'acct.signOut': 'Вийти',
@@ -321,6 +322,7 @@ const DICT = {
   },
 
   en: {
+    'acct.previewNote': 'This is a preview with no server: the account and the lists live only in your browser.',
     'acct.account': 'Account',
     'acct.signIn': 'Sign in',
     'acct.signOut': 'Sign out',
@@ -633,6 +635,7 @@ const DICT = {
   },
 
   de: {
+    'acct.previewNote': 'Dies ist eine Vorschau ohne Server: Konto und Listen leben nur in Ihrem Browser.',
     'acct.account': 'Konto',
     'acct.signIn': 'Anmelden',
     'acct.signOut': 'Abmelden',

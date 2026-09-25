@@ -283,3 +283,13 @@
   .wishgrid { grid-template-columns: 1fr; }
   .acct__stats { gap: 1.1rem; }
 }
+
+/* A preview says where its data lives, rather than pretending to be a shop. */
+.acct__preview {
+  margin: 0 0 1.1rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-sm);
+  font-size: var(--step--2);
+  color: var(--text-mute);
+}

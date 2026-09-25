@@ -6,7 +6,7 @@
    needed rather than at the door.
    ============================================================ */
 
-import { api, ApiError, currentViewer, onViewer, setApiContext, isOffline } from './api.js';
+import { api, ApiError, currentViewer, setApiContext, loadViewer } from './api.js';
 import { t } from './i18n.js';
 import { esc } from './covers.js';
 import { bookHTML } from './book3d.js';
@@ -245,10 +245,7 @@ async function refresh() {
     /* The cards arrive after the reveal observer has already walked the page,
        so they would sit at opacity 0 for ever. Hand them to it now. */
     initReveals();
-  } catch (err) {
-    /* No API behind this page — a static preview. Take the section away
-       rather than leaving three grey boxes pulsing for ever. */
-    if (isOffline() || err?.code === 'offline') { section.hidden = true; return; }
+  } catch {
     grid.innerHTML = `<p class="acct__empty">${esc(t('acct.genericError'))}</p>`;
   }
 }
@@ -289,8 +286,10 @@ export function initWishlists() {
   /* a currency or language change picks a different column and a different
      title, so the block is asked again rather than re-rendered from stale data */
   document.addEventListener('ridmore:refresh', refresh);
-  onViewer(() => { if (sheet && !sheet.hidden) return; });
-  refresh();
+  /* Wait for the viewer probe to settle before asking for lists: it is the
+     call that decides whether there is a server, and going first would mean
+     two failed requests on a preview instead of one. */
+  loadViewer().then(refresh);
 }
 
 export { refresh as refreshWishlists };

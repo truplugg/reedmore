@@ -108,6 +108,7 @@ function signInView() {
   return `
     <h2 id="acct-title">${esc(t('acct.signInTitle'))}</h2>
     <p class="acct__why" hidden></p>
+    ${previewNote()}
     <form class="acct__form" data-form="signin" novalidate>
       ${field('email', t('acct.email'), 'email', 'autocomplete="email" required')}
       ${field('password', t('acct.password'), 'password', 'autocomplete="current-password" required')}
@@ -120,10 +121,17 @@ function signInView() {
     </div>`;
 }
 
+function previewNote() {
+  return isOffline()
+    ? `<p class="acct__preview">${esc(t('acct.previewNote'))}</p>`
+    : '';
+}
+
 function signUpView() {
   return `
     <h2 id="acct-title">${esc(t('acct.signUpTitle'))}</h2>
     <p class="acct__lede">${esc(t('acct.signUpLede'))}</p>
+    ${previewNote()}
     <form class="acct__form" data-form="signup" novalidate>
       ${field('nickname', t('acct.nickname'), 'text', 'autocomplete="nickname" required minlength="2" maxlength="24"')}
       <p class="field__hint">${esc(t('acct.nicknameHint'))}</p>
@@ -480,12 +488,7 @@ export function initAccount() {
 
   btn.addEventListener('click', () => openAccount());
   onViewer(paint);
-  loadViewer().then((v) => {
-    /* Nothing to sign in to on a static preview — better no button than one
-       that opens a form which cannot work. */
-    if (isOffline()) { btn.hidden = true; return; }
-    paint(v);
-  });
+  loadViewer().then(paint);
 
   /* Deep link: a share token in the address opens that list. */
   const token = new URLSearchParams(location.search).get('wishlist');

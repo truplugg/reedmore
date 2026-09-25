@@ -34,11 +34,30 @@ export class ApiError extends Error {
   }
 }
 
-/** True when the API is not there at all — a static preview, say. */
+/**
+ * True when there is no server behind this page — a published preview.
+ *
+ * Rather than taking the features away, the same API runs in the browser
+ * from that point on, so everything can be tried. It is loaded only if it
+ * is needed, so a real deployment never ships it.
+ */
 export let offline = false;
 export const isOffline = () => offline;
 
+let demo = null;
+async function viaDemo(method, path, body) {
+  if (!demo) demo = await import('./demo.js');
+  try {
+    return demo.handle(method, path, body);
+  } catch (e) {
+    if (e?.api) throw new ApiError(e.status, e.code, e.message, e.details);
+    throw new ApiError(500, 'error', e?.message ?? 'Something went wrong.');
+  }
+}
+
 async function request(path, { method = 'GET', body, signal } = {}) {
+  if (offline) return viaDemo(method, path, body);
+
   let res;
   try {
     res = await fetch(BASE + path, {
@@ -48,9 +67,9 @@ async function request(path, { method = 'GET', body, signal } = {}) {
       body: body ? JSON.stringify(body) : undefined,
       signal
     });
-  } catch (err) {
+  } catch {
     offline = true;
-    throw new ApiError(0, 'offline', 'Cannot reach the shop just now.', null);
+    return viaDemo(method, path, body);
   }
 
   if (res.status === 204) return null;
@@ -62,7 +81,7 @@ async function request(path, { method = 'GET', body, signal } = {}) {
   const type = res.headers.get('content-type') ?? '';
   if (!type.includes('json')) {
     offline = true;
-    throw new ApiError(0, 'offline', 'The shop is not reachable from this page.', null);
+    return viaDemo(method, path, body);
   }
 
   let payload = null;
@@ -116,6 +135,7 @@ export const api = {
 /* ---------- the signed-in viewer, held once ---------- */
 let viewer = null;
 let loaded = false;
+let inFlight = null;
 const listeners = new Set();
 
 export function onViewer(fn) { listeners.add(fn); return () => listeners.delete(fn); }
@@ -128,16 +148,30 @@ export function isStaff() { return (viewer?.permissions?.length ?? 0) > 0; }
 
 export function setViewer(next) { viewer = next; loaded = true; emit(); }
 
-/** Ask once; every later caller gets the answer already in hand. */
+/**
+ * Ask once; every later caller gets the answer already in hand.
+ *
+ * The first call also settles whether there is a server at all, so the rest
+ * of the session never hits the network on a preview — one failed request
+ * in the console instead of one per call.
+ */
 export async function loadViewer({ force = false } = {}) {
   if (loaded && !force) return viewer;
-  try {
-    const res = await api.me();
-    viewer = res?.user ?? null;
-  } catch {
-    viewer = null;          /* signed out, or no API behind this page */
-  }
-  loaded = true;
-  emit();
-  return viewer;
+  /* Two callers at boot would otherwise each send the request. Share the
+     one in flight so the probe happens exactly once. */
+  if (inFlight && !force) return inFlight;
+
+  inFlight = (async () => {
+    try {
+      const res = await api.me();
+      viewer = res?.user ?? null;
+    } catch {
+      viewer = null;        /* signed out, or no API behind this page */
+    }
+    loaded = true;
+    inFlight = null;
+    emit();
+    return viewer;
+  })();
+  return inFlight;
 }
