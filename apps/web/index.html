@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="assets/css/sections.css">
 <link rel="stylesheet" href="assets/css/overlays.css">
 <link rel="stylesheet" href="assets/css/account.css">
+<link rel="stylesheet" href="assets/css/checkout.css">
 </head>
 <body>
 
@@ -532,6 +533,18 @@
     <button class="btn btn--primary btn--lg btn--block" id="cart-checkout" data-i18n="cart.checkout">Оформити замовлення</button>
   </div>
 </aside>
+
+<!-- ============ checkout ============ -->
+<div class="dialog dialog--sheet" id="checkout-dialog" role="dialog" aria-modal="true" aria-labelledby="co-title" hidden>
+  <div class="dialog__panel co">
+    <button class="dialog__close" data-act="close" data-i18n-attr="aria-label:a11y.close" aria-label="Закрити">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+    <ol class="co__steps" id="co-steps" aria-label="Кроки оформлення"></ol>
+    <h2 class="co__title" id="co-title" data-i18n="co.title">Оформлення</h2>
+    <div class="co__body" id="co-body"></div>
+  </div>
+</div>
 
 <div class="dialog" id="book-dialog" role="dialog" aria-modal="true" aria-label="Книжка" hidden>
   <div class="dialog__panel">

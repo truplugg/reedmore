@@ -139,8 +139,10 @@ export function initCart() {
     if (btn.dataset.act === 'drop') setQty(id, 0);
   });
 
-  document.getElementById('cart-checkout')?.addEventListener('click', () => {
-    toast(t('cart.checkoutSoon'));
+  document.getElementById('cart-checkout')?.addEventListener('click', async () => {
+    const { openCheckout } = await import('./checkout.js');
+    closeCart();
+    openCheckout();
   });
 
   scrim.addEventListener('click', closeCart);

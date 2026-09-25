@@ -189,6 +189,7 @@ function homeView(account) {
     </div>
 
     <nav class="acct__nav">
+      <button class="acct__link" data-go="orders" type="button">${esc(t('acct.myOrders'))}</button>
       <button class="acct__link" data-go="lists" type="button">${esc(t('acct.myLists'))}</button>
       <button class="acct__link" data-go="gifts" type="button">${esc(t('acct.myGifts'))}</button>
       <button class="acct__link" data-go="profile" type="button">${esc(t('acct.editProfile'))}</button>
@@ -304,11 +305,38 @@ function giftsView(sent, received) {
     <button class="btn btn--ghost btn--block" data-go="home" type="button">${esc(t('acct.back'))}</button>`;
 }
 
+
+/**
+ * A customer's own orders (§22).
+ *
+ * The figures are the ones the order was written with, not today's prices —
+ * an order is a record of what somebody was charged, so it never re-prices
+ * itself when the catalogue changes.
+ */
+function ordersView(orders) {
+  if (!orders) return loading();
+  const sum = (o) => new Intl.NumberFormat(o.currency === 'UAH' ? 'uk-UA' : 'de-DE',
+    { style: 'currency', currency: o.currency, minimumFractionDigits: o.currency === 'UAH' ? 0 : 2 })
+    .format(o.total / 100);
+  return `
+    <h2 id="acct-title">${esc(t('acct.myOrders'))}</h2>
+    ${orders.length ? `<ul class="acct__gifts">${orders.map((o) => `
+      <li class="acct__gift">
+        <div>
+          <b>${esc(o.number)}</b>
+          <small>${esc(o.items.map((i) => `${i.quantity} × ${i.title}`).join(', '))}</small>
+        </div>
+        <span class="chip">${esc(t('status.' + o.status) || o.status)} · ${esc(sum(o))}</span>
+      </li>`).join('')}</ul>`
+      : `<p class="acct__empty">${esc(t('acct.noOrders'))}</p>`}
+    <button class="btn btn--ghost btn--block" data-go="home" type="button">${esc(t('acct.back'))}</button>`;
+}
+
 const loading = () => `<p class="acct__empty" aria-live="polite">${esc(t('acct.loading'))}</p>`;
 
 /* ---------------------------------------------------------- render */
 
-let cache = { account: null, avatars: null, wishlists: null, sent: null, received: null };
+let cache = { account: null, avatars: null, wishlists: null, sent: null, received: null, orders: null };
 
 function render() {
   if (!body) return;
@@ -321,6 +349,7 @@ function render() {
   else if (view === 'security') body.innerHTML = securityView();
   else if (view === 'lists')    body.innerHTML = listsView(cache.wishlists);
   else if (view === 'gifts')    body.innerHTML = giftsView(cache.sent, cache.received);
+  else if (view === 'orders')   body.innerHTML = ordersView(cache.orders);
   else body.innerHTML = homeView(cache.account);
   panel.scrollTop = 0;
 }
@@ -336,6 +365,7 @@ async function go(next) {
       render();
     }
     if (next === 'lists') { cache.wishlists = (await api.myWishlists()).wishlists; render(); }
+    if (next === 'orders') { cache.orders = (await api.myOrders()).items; render(); }
     if (next === 'gifts') {
       const [a, b] = await Promise.all([api.giftsSent(), api.giftsReceived()]);
       cache.sent = a.gifts; cache.received = b.gifts; render();

@@ -26,6 +26,7 @@ import peopleRoutes from './modules/admin/people.js';
 import themeRoutes from './modules/admin/themes.js';
 import settingsRoutes from './modules/admin/settings.js';
 import adminJournalRoutes from './modules/journal/admin.js';
+import checkoutRoutes from './modules/checkout/routes.js';
 import { loadAvatars } from './modules/auth/avatars.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -124,6 +125,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(themeRoutes, { prefix: '/api/admin/themes' });
   await app.register(adminJournalRoutes, { prefix: '/api/admin/articles' });
   await app.register(settingsRoutes, { prefix: '/api/admin/settings' });
+  await app.register(checkoutRoutes, { prefix: '/api/checkout' });
 
   /* Two static roots, each in its own scope.
      @fastify/static registers its wildcard into the enclosing context, so two

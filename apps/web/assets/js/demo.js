@@ -28,7 +28,8 @@ function err(status, code, message, details) {
 
 function blank() {
   return { users: [], sessions: null, wishlists: [], gifts: [],
-           articles: [], themes: [], settings: null, audit: [], seeded: false };
+           articles: [], themes: [], settings: null, audit: [],
+           orders: [], addresses: [], seeded: false };
 }
 
 function read() {
@@ -781,6 +782,123 @@ function countMinutes(doc) {
   return Math.max(1, Math.round(words / 200));
 }
 
+
+/* ==================================================================
+   Checkout, in the browser (§22, §23)
+
+   The same division of labour as the server: the basket arrives as ids and
+   quantities, and every figure is worked out here from the catalogue. A
+   price the page sent would be a price the page could choose, so none is
+   read. And there is no card field to fill, because no provider is
+   connected — the preview says so in the same words the shop does.
+   ================================================================== */
+
+const FREE_FROM_MINOR = { EUR: 5000, UAH: 250000 };
+const FLAT_SHIPPING = { EUR: 590, UAH: 9900 };
+
+function priceDemoCart(items, currency) {
+  const wanted = new Map();
+  for (const i of items ?? []) wanted.set(i.bookId, (wanted.get(i.bookId) ?? 0) + i.quantity);
+  if (!wanted.size) err(400, 'validation_failed', 'Some of that is not right.');
+
+  const lines = [];
+  const missing = [];
+  for (const [bookId, quantity] of wanted) {
+    const b = bookBySlug(bookId) ?? BOOKS.find((x) => x.id === bookId);
+    if (!b) { missing.push(bookId); continue; }
+    const unitPrice = currency === 'UAH' ? b.priceUAH : b.priceEUR;
+    lines.push({ bookId: b.id, slug: b.id, title: b.title, author: b.author,
+                 unitPrice, quantity, lineTotal: unitPrice * quantity });
+  }
+  if (missing.length) err(400, 'book_unavailable', 'One of those books is no longer for sale.', { bookIds: missing });
+
+  const subtotal = lines.reduce((sum, l) => sum + l.lineTotal, 0);
+  return { lines, subtotal };
+}
+
+function quoteDemo(items, currency, country) {
+  const { lines, subtotal } = priceDemoCart(items, currency);
+  const freeFrom = FREE_FROM_MINOR[currency] ?? FREE_FROM_MINOR.EUR;
+  const shippingCost = subtotal === 0 || subtotal >= freeFrom ? 0 : (FLAT_SHIPPING[currency] ?? FLAT_SHIPPING.EUR);
+  return { currency, country, subtotal, shippingCost, freeFrom, total: subtotal + shippingCost, lines };
+}
+
+const orderNo = () => 'RM-' + new Date().getFullYear().toString().slice(2) + '-' +
+  Math.random().toString(36).slice(2, 8).toUpperCase();
+
+const checkoutRoutes = {
+  'POST /checkout/quote': (body, q) => {
+    const currency = q.currency === 'UAH' ? 'UAH' : 'EUR';
+    return quoteDemo(body.items, currency, body.country ?? (currency === 'UAH' ? 'UA' : 'DE'));
+  },
+
+  'POST /checkout/orders': (body, q) => {
+    const currency = q.currency === 'UAH' ? 'UAH' : 'EUR';
+    const me = viewer();
+    const email = me?.email ?? body.email;
+    if (!email) err(400, 'email_required', 'We need an email address to send the confirmation to.');
+
+    const a = body.address ?? {};
+    for (const k of ['fullName', 'city', 'postalCode', 'line1', 'country']) {
+      if (!String(a[k] ?? '').trim()) {
+        err(400, 'validation_failed', 'Some of that is not right.', [{ path: `address.${k}`, message: 'Обовʼязкове поле' }]);
+      }
+    }
+
+    const quote = quoteDemo(body.items, currency, a.country);
+    const order = {
+      id: id('o'), number: orderNo(), type: 'REGULAR', status: 'PENDING',
+      customerId: me?.id ?? null, customerEmailSnapshot: email,
+      currency, subtotal: quote.subtotal, shippingCost: quote.shippingCost,
+      discount: 0, total: quote.total,
+      /* The columns a provider will fill, honest about today (§23). */
+      payment: { provider: 'NONE', status: 'UNPAID', currency, amount: quote.total, paidAt: null },
+      items: quote.lines.map((l) => ({ id: id('oi'), bookId: l.bookId, title: l.title,
+        author: l.author, unitPrice: l.unitPrice, quantity: l.quantity, lineTotal: l.lineTotal })),
+      shipTo: { fullName: a.fullName, country: a.country, city: a.city,
+                postalCode: a.postalCode, line1: a.line1, line2: a.line2 ?? null,
+                pickupPoint: a.pickupPoint ?? null },
+      placedAt: now()
+    };
+    db.orders.unshift(order);
+    if (me && a.save) db.addresses.unshift({ ...a, id: id('ad'), userId: me.id });
+    write(db);
+    return { order };
+  },
+
+  'GET /checkout/orders': () => {
+    const me = requireViewer();
+    return { items: db.orders.filter((o) => o.customerId === me.id) };
+  },
+
+  'GET /checkout/orders/:number': (body, q, [number]) => {
+    const me = viewer();
+    const o = db.orders.find((x) => x.number === number);
+    /* A wrong email and a missing order answer alike, so this cannot be
+       used to discover which order numbers exist. */
+    if (!o) err(404, 'not_found', 'No such order.');
+    const mine = me && o.customerId === me.id;
+    const quoted = q.email && o.customerEmailSnapshot &&
+      q.email.toLowerCase() === o.customerEmailSnapshot.toLowerCase();
+    if (!mine && !quoted) err(404, 'not_found', 'No such order.');
+    return { order: o };
+  },
+
+  'GET /checkout/addresses': () => {
+    const me = requireViewer();
+    return { items: db.addresses.filter((a) => a.userId === me.id) };
+  },
+
+  'GET /checkout/payment-methods': () => ({
+    countries: ['DE', 'UA'],
+    methods: [
+      { id: 'on_delivery', label: 'Оплата при отриманні', available: true, provider: 'NONE' },
+      { id: 'card', label: 'Картка', available: false, provider: 'STRIPE', note: 'Ще не підключено' }
+    ],
+    provider: null
+  })
+};
+
 /**
  * Match a path against the route table, pulling out :params. Kept
  * deliberately small: this is a preview, not a router.
@@ -794,7 +912,7 @@ export function handle(method, path, body) {
   const query = Object.fromEntries(new URLSearchParams(rawQuery ?? ''));
   const parts = rawPath.split('/').filter(Boolean);
 
-  const table = { ...routes, ...adminRoutes };
+  const table = { ...routes, ...adminRoutes, ...checkoutRoutes };
   for (const key of Object.keys(table)) {
     const [m, pattern] = key.split(' ');
     if (m !== method) continue;

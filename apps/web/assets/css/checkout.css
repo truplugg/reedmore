@@ -1,0 +1,156 @@
+/* ============================================================
+   RIDMORE — checkout
+   A sheet over the shop: three short steps, the basket always
+   in view, and the figures always the ones the server sent.
+   ============================================================ */
+
+.dialog--sheet .dialog__panel.co {
+  display: block;
+  inline-size: min(760px, 100%);
+  max-block-size: min(92dvh, 900px);
+  overflow: auto;
+  padding: clamp(1.4rem, 3.5vw, 2.6rem);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- the three steps ---------- */
+.co__steps {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0 0 1.2rem;
+  padding: 0;
+  font-size: var(--step--2);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+  color: var(--text-mute);
+  flex-wrap: wrap;
+}
+.co__step { display: flex; align-items: center; gap: 0.45em; }
+.co__step + .co__step::before { content: '→'; margin-inline-end: 0.45em; opacity: 0.5; }
+.co__step.is-now { color: var(--accent); }
+.co__step.is-done { color: var(--ok); }
+
+.co__title {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0 0 1.4rem;
+}
+
+/* ---------- form ---------- */
+.co__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.9rem;
+}
+.co__grid--wide { grid-template-columns: minmax(0, 1fr); }
+.co__field { display: grid; gap: 0.35em; }
+.co__label {
+  font-size: var(--step--2);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-mute);
+  font-weight: 600;
+}
+.co__input {
+  font: inherit;
+  font-size: var(--step--1);
+  padding: 0.66em 0.8em;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  color: var(--text);
+  inline-size: 100%;
+}
+.co__input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.co__input.is-bad { border-color: var(--danger); }
+.co__err { color: var(--danger); font-size: var(--step--2); }
+
+.co__country { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.co__country label {
+  display: flex; align-items: center; gap: 0.5em;
+  padding: 0.55em 0.9em;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  font-size: var(--step--1);
+}
+.co__country label:has(:checked) { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+/* ---------- the basket beside the form ---------- */
+.co__lines { display: grid; gap: 0.55rem; margin-block: 0.4rem 1rem; }
+.co__line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+  font-size: var(--step--1);
+  padding-block-end: 0.55rem;
+  border-block-end: 1px solid var(--line-soft);
+}
+.co__line b { font-weight: 600; }
+.co__line small { display: block; color: var(--text-mute); font-size: var(--step--2); }
+.co__sum { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.co__totals { display: grid; gap: 0.4rem; margin-block: 0.9rem; }
+.co__row { display: flex; justify-content: space-between; gap: 1rem; font-size: var(--step--1); }
+.co__row span:last-child { font-variant-numeric: tabular-nums; }
+.co__row--sum {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 700;
+  padding-block-start: 0.6rem;
+  border-block-start: 1px solid var(--line);
+}
+.co__free { color: var(--ok); font-weight: 600; }
+
+/* ---------- payment ---------- */
+.co__pay { display: grid; gap: 0.5rem; margin-block: 1rem; }
+.co__method {
+  display: flex; align-items: flex-start; gap: 0.7em;
+  padding: 0.8em 0.95em;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-size: var(--step--1);
+}
+.co__method:has(:checked) { border-color: var(--accent); }
+.co__method.is-off { opacity: 0.55; cursor: not-allowed; }
+.co__method small { display: block; color: var(--text-mute); font-size: var(--step--2); margin-block-start: 0.15em; }
+
+.co__actions { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-block-start: 1.4rem; }
+.co__actions .btn { flex: 1 1 auto; }
+
+/* ---------- the receipt ---------- */
+.co__done { text-align: center; padding-block: 1rem 0.4rem; }
+.co__mark {
+  inline-size: 56px; block-size: 56px;
+  margin-inline: auto;
+  color: var(--ok);
+}
+.co__number {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0.5em 0 0.2em;
+}
+.co__note {
+  color: var(--text-dim);
+  font-size: var(--step--1);
+  line-height: 1.6;
+  max-inline-size: 46ch;
+  margin-inline: auto;
+}
+/* Inside a step the note sits under its label, so it keeps the column's
+   edge; the auto margins are for the receipt, where it is centred. */
+.co__note--start { margin-inline: 0; text-align: start; }
+
+@media (max-width: 560px) {
+  .dialog--sheet .dialog__panel.co { max-block-size: 100dvh; border-radius: 0; }
+  .co__grid { grid-template-columns: minmax(0, 1fr); }
+  .co__actions { flex-direction: column-reverse; }
+  .co__actions .btn { inline-size: 100%; }
+}

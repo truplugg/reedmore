@@ -131,6 +131,18 @@ export const api = {
   randomPerson:    () => request(withContext('/gifts/random/person')),
   randomBook:      () => request(withContext('/gifts/random/book')),
 
+  /* --- checkout (§22) ---
+     The basket goes up as ids and quantities; every figure comes back.
+     Nothing here sends a price, because a price a client can send is a
+     price a client can choose. */
+  quoteCart:       (body) => request(withContext('/checkout/quote'), { method: 'POST', body }),
+  placeOrder:      (body) => request(withContext('/checkout/orders'), { method: 'POST', body }),
+  myOrders:        () => request('/checkout/orders'),
+  orderByNumber:   (number, email) => request(
+    `/checkout/orders/${encodeURIComponent(number)}${email ? `?email=${encodeURIComponent(email)}` : ''}`),
+  savedAddresses:  () => request('/checkout/addresses'),
+  paymentMethods:  () => request('/checkout/payment-methods'),
+
   /* --- the admin desk (§10-13) ---
      Everything under /admin is refused by the server for an account without
      the permission, whatever the panel decides to draw. The panel hides a

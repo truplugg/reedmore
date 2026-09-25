@@ -7,6 +7,7 @@ import { installCustomBooks } from './custom.js';
 import { bookHTML, mountBooks } from './book3d.js';
 import { initCatalog, render as renderShelf, findBook, applyFilter, showWishlist } from './catalog.js';
 import { initCart, renderCart, renderWishCount, openCart, wish } from './cart.js';
+import { initCheckout } from './checkout.js';
 import { initDialog, openDialog, closeDialog, dialogBookId } from './dialog.js';
 import { initDelivery } from './delivery.js';
 import { initPalette } from './palette.js';
@@ -115,6 +116,7 @@ function boot() {
   renderRail();
   initCatalog({ onDetails: openDialog });
   initCart();
+  initCheckout();
   initDialog();
   initDelivery();
   initPalette({ onPick: openDialog });
