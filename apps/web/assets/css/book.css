@@ -804,3 +804,167 @@
 .book--studio.is-dragging .book__body,
 .book--studio.is-dragging .book__cover { transition: none; }
 .book--studio .book__trigger { display: none; }
+
+/* ============================================================
+   THE HERO BOOK  (§7)
+   A book lying open in perspective, not a cover standing up.
+   It arrives closed, the board swings on its spine, a few
+   leaves turn over the gutter, and it stays open. The volume,
+   the faces, the covers and the endpaper are the same object
+   the shelf uses — only the angle and the leaves are new.
+   ============================================================ */
+.book--hero {
+  --hero-tilt: 44deg;        /* how far the book is laid back */
+  --hero-roll: -5deg;        /* a little off-square, so it reads as placed */
+  --leaf-ms: 1150ms;         /* one leaf, spine to spine */
+  --leaf-gap: 300ms;         /* between one leaf and the next */
+  --open-scale: 0.86;
+  --open-x: 42%;
+  --depth: 34px;
+  /* laid back already, so the cursor only nudges it */
+  --tilt-solo-y: 7;
+  --tilt-solo-x: 4;
+}
+
+.hero__book .book__stage { perspective: 1500px; perspective-origin: 50% 26%; }
+
+/* Closed, and slightly away: the state the animation starts from. */
+.book--hero .book__body {
+  transform: rotateY(var(--turn-rest)) rotateX(2deg);
+  transition: transform 1200ms cubic-bezier(0.22, 0.92, 0.18, 1);
+}
+
+/* Laid open. The tilt is what makes it horizontal — a spread seen from
+   above and a little to the side, the way a book actually sits. */
+.book--hero.is-open .book__body {
+  transform: translateX(var(--open-x)) scale(var(--open-scale))
+             rotateX(var(--hero-tilt)) rotateZ(var(--hero-roll)) rotateY(0deg);
+}
+.book--hero.is-open .book__cover {
+  transform: translateZ(calc(var(--depth) / 2)) rotateY(var(--book-open-angle));
+  transition: transform 1400ms cubic-bezier(0.30, 0.86, 0.22, 1);
+}
+
+/* ---------- the leaves ---------- */
+.book__leaves {
+  position: absolute;
+  inset: 1.2% 1.5% 1.2% 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+.book__leaf {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  /* On top of the page block, page one highest, each a hair below the last:
+     a stack of sheets waiting to be turned. Behind the block they would be
+     hidden by it, which is what made the first attempt look like one page
+     turning instead of five. */
+  transform: translateZ(calc(var(--depth) / 2 + 7px - var(--i) * 1.4px)) rotateY(0deg);
+  border-radius: 1px var(--r-sm) var(--r-sm) 1px;
+}
+.book__leafFace {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: inherit;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgb(24 20 13 / .18) 0%, rgb(24 20 13 / .04) 9%, rgb(0 0 0 / 0) 24%),
+    linear-gradient(180deg, #fdfaf1 0%, #f6f0e2 62%, #efe7d5 100%);
+  box-shadow: inset 0 0 0 1px rgb(24 20 13 / .07);
+}
+/* the back of a sheet is lit from the other side */
+.book__leafFace--verso {
+  transform: rotateY(180deg);
+  background:
+    linear-gradient(270deg, rgb(24 20 13 / .20) 0%, rgb(24 20 13 / .05) 9%, rgb(0 0 0 / 0) 26%),
+    linear-gradient(180deg, #fbf7ee 0%, #f3ecdd 62%, #eae2cf 100%);
+}
+
+/* ---------- the turn ----------
+   Each leaf lifts a little off the block as it goes over, which is what
+   stops five flat rectangles reading as a slideshow. */
+@keyframes leaf-turn {
+  0% {
+    transform: translateZ(calc(var(--depth) / 2 + 7px - var(--i) * 1.4px)) rotateY(0deg);
+    opacity: 1;
+  }
+  /* lifting off the stack as it goes over, so five flat rectangles do not
+     read as a slideshow */
+  45% {
+    transform: translateZ(calc(var(--depth) / 2 + 26px)) rotateY(-94deg) rotateX(-2deg);
+    opacity: 1;
+  }
+  /* The sheet comes down on the left and is gone by the time it lands.
+     Physically a turned page would cover the endpaper, but the endpaper is
+     the best-drawn thing in the book — so the riffle reads as the book
+     falling open TO this spread, and leaves it on show. */
+  86% {
+    transform: translateZ(calc(var(--depth) / 2 + 4px)) rotateY(-170deg);
+    opacity: 0.30;
+  }
+  100% {
+    transform: translateZ(calc(var(--depth) / 2 + 2px)) rotateY(-180deg);
+    opacity: 0;
+  }
+}
+
+.book--hero.is-turning .book__leaf {
+  animation: leaf-turn var(--leaf-ms) cubic-bezier(0.42, 0.02, 0.26, 1) forwards;
+  animation-delay: calc(var(--i) * var(--leaf-gap));
+  will-change: transform;
+}
+/* A sheet standing on edge catches the light and then loses it as it comes
+   down on the far side. One animated property, and it is what stops the
+   turn looking like a rectangle being rotated. */
+.book--hero.is-turning .book__leafFace {
+  animation: leaf-light var(--leaf-ms) cubic-bezier(0.42, 0.02, 0.26, 1) forwards;
+  animation-delay: calc(var(--i) * var(--leaf-gap));
+}
+@keyframes leaf-light {
+  0%   { filter: brightness(1); }
+  40%  { filter: brightness(1.07); }
+  70%  { filter: brightness(0.93); }
+  100% { filter: brightness(0.88); }
+}
+/* the cost is paid only while it runs */
+.book--hero:not(.is-turning) .book__leaf { will-change: auto; }
+
+/* Once the leaves have gone over they stay there, so the reader is left
+   looking at the endpaper and the first page — the book stays open (§7). */
+.book--hero.is-settled .book__leaf {
+  transform: translateZ(calc(var(--depth) / 2 + 2px)) rotateY(-180deg);
+  opacity: 0;
+  animation: none;
+}
+
+/* ---------- arrival ---------- */
+.book--hero .book__head {
+  opacity: 0;
+  transform: translateY(26px) scale(0.97);
+  transition: opacity 900ms var(--ease-out), transform 1100ms cubic-bezier(0.22, 0.92, 0.18, 1);
+}
+.book--hero.is-arrived .book__head { opacity: 1; transform: none; }
+
+/* The shadow spreads as the book opens out flat. */
+.book--hero.is-open .book__shadow {
+  transform: translateX(-18%) translateY(6%) scale(2.4, 1.35);
+  filter: blur(18px);
+  opacity: 0.7;
+}
+
+/* ---------- a phone does less work ---------- */
+@media (max-width: 900px) {
+  .book--hero { --hero-tilt: 34deg; --leaf-ms: 900ms; --leaf-gap: 130ms; }
+}
+
+/* ---------- reduced motion: the book is simply already open ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .book--hero .book__head { opacity: 1; transform: none; transition: none; }
+  .book--hero .book__body,
+  .book--hero .book__cover { transition: none; }
+  .book--hero .book__leaf,
+  .book--hero .book__leafFace { animation: none; }
+}

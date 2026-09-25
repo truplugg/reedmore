@@ -57,7 +57,9 @@ export function bookHTML(book, { mode = 'turn' } = {}) {
   const p = book.cover.pal;
   const vars = `--cv-paper:${p.paper};--cv-ink:${p.ink};--cv-accent:${p.accent}`;
   const label = `${book.title} — ${book.author}`;
-  const open = mode === 'open';
+  /* 'hero' is 'open' plus the leaves that turn on arrival (§7). */
+  const hero = mode === 'hero';
+  const open = hero || mode === 'open';
 
   const inside = open ? `
     <div class="book__face book__face--inside">
@@ -72,6 +74,19 @@ export function bookHTML(book, { mode = 'turn' } = {}) {
       ${deviceSVG()}
       ${colophon(book)}
     </div>` : '';
+
+  /* The leaves only exist where they are used. Each is a real sheet with two
+     faces, hinged on the spine, so a half-turned page shows its verso rather
+     than a mirror of its recto. Five is enough to read as a riffle and cheap
+     enough for a phone. */
+  const leaves = hero ? `
+    <div class="book__leaves" aria-hidden="true">${
+      Array.from({ length: 5 }, (_, i) => `
+        <div class="book__leaf" style="--i:${i}">
+          <div class="book__leafFace book__leafFace--recto"></div>
+          <div class="book__leafFace book__leafFace--verso"></div>
+        </div>`).join('')
+    }</div>` : '';
 
   const card = open ? '' : `
     <div class="book__card">
@@ -90,7 +105,7 @@ export function bookHTML(book, { mode = 'turn' } = {}) {
     </div>`;
 
   return `
-    <article class="book book--${open ? 'open' : 'turn'}" data-id="${esc(book.id)}" style="${vars}">
+    <article class="book book--${open ? 'open' : 'turn'}${hero ? ' book--hero' : ''}" data-id="${esc(book.id)}" style="${vars}">
       <div class="book__head">
       <div class="book__shadow" aria-hidden="true"></div>
       <div class="book__stage">
@@ -103,6 +118,7 @@ export function bookHTML(book, { mode = 'turn' } = {}) {
           <div class="book__spine" aria-hidden="true"></div>
           <div class="book__edge" aria-hidden="true"></div>
           <div class="book__block">${page}</div>
+          ${leaves}
           <div class="book__cover">
             <div class="book__face book__face--front">${coverHTML(book)}</div>
             ${inside}
@@ -220,8 +236,14 @@ function tilt(book, e) {
   if (!solo && !onShelf) return;
 
   const styles = getComputedStyle(book);
+  /* Both ranges come from custom properties, so the hero — which is
+     already laid back 44° — can ask for a gentler one without a second
+     code path. */
   const range = solo
-    ? { y: 17, x: 10 }
+    ? {
+        y: Number(styles.getPropertyValue('--tilt-solo-y')) || 17,
+        x: Number(styles.getPropertyValue('--tilt-solo-x')) || 10
+      }
     : {
         y: Number(styles.getPropertyValue('--tilt-shelf-y')) || 13,
         x: Number(styles.getPropertyValue('--tilt-shelf-x')) || 6

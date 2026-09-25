@@ -146,14 +146,82 @@ export function initBand() {
   requestAnimationFrame(tick);
 }
 
-/** Open the hero book once, so the reader sees what a cover does. */
+/* ------------------------------------------------------------------
+   The hero book (§7).
+
+   Closed, it arrives; the board swings on its spine; a few leaves go
+   over the gutter; it stays open. It runs on every visit, because that
+   performance is what the page is for — but it is also the heaviest
+   thing on the first screen, so it waits for the browser to have drawn
+   everything else, skips itself entirely when the reader has asked for
+   less motion, and drops the leaves on a device that cannot afford
+   them rather than dropping the book.
+   ------------------------------------------------------------------ */
+
+/** Roughly, can this device afford five animated leaves? */
+function canAffordLeaves() {
+  const cores = navigator.hardwareConcurrency ?? 4;
+  const memory = navigator.deviceMemory ?? 4;
+  const saveData = navigator.connection?.saveData === true;
+  return !saveData && cores >= 4 && memory >= 3;
+}
+
+/** Wait for the first idle moment after paint, so the animation never
+ *  competes with the page still laying itself out. */
+function whenIdle(fn, timeout = 900) {
+  if ('requestIdleCallback' in window) window.requestIdleCallback(fn, { timeout });
+  else setTimeout(fn, 180);
+}
+
 export function initHero() {
-  const hero = document.querySelector('.hero__book .book');
+  const book = document.querySelector('.hero__book .book');
   const caption = document.getElementById('hero-hint');
   if (caption) caption.textContent = fine() ? t('hero.hint') : t('hero.hintTouch');
-  if (!hero) return;
-  if (calm()) { openOne(hero); return; }
-  setTimeout(() => openOne(hero), 850);
+  if (!book) return;
+
+  const leaves = book.querySelectorAll('.book__leaf').length;
+
+  /* Asked for less motion: the book is simply already open. No arrival,
+     no swing, no leaves — but still the book, not a placeholder. */
+  if (calm()) {
+    book.classList.add('is-arrived', 'is-settled');
+    openOne(book);
+    return;
+  }
+
+  if (leaves && !canAffordLeaves()) book.classList.add('is-settled');
+
+  whenIdle(() => {
+    requestAnimationFrame(() => book.classList.add('is-arrived'));
+
+    /* The board swings once the book has arrived, and the leaves start
+       once the board is out of their way. */
+    const openAt = setTimeout(() => {
+      openOne(book);
+
+      if (!leaves || book.classList.contains('is-settled')) return;
+
+      const startAt = setTimeout(() => {
+        book.classList.add('is-turning');
+
+        /* Settle when the last leaf lands. Driven by animationend on that
+           leaf, with a timer behind it in case the tab was hidden through
+           the whole thing and the event never came. */
+        const last = book.querySelector('.book__leaf:last-child');
+        const settle = () => {
+          book.classList.remove('is-turning');
+          book.classList.add('is-settled');
+        };
+        last?.addEventListener('animationend', settle, { once: true });
+        const styles = getComputedStyle(book);
+        const ms = (n) => parseFloat(styles.getPropertyValue(n)) || 0;
+        setTimeout(settle, ms('--leaf-ms') + ms('--leaf-gap') * leaves + 400);
+      }, 780);   /* let the board get clear of the stack first */
+      book.addEventListener('ridmore:cancel-hero', () => clearTimeout(startAt), { once: true });
+    }, 420);
+
+    book.addEventListener('ridmore:cancel-hero', () => clearTimeout(openAt), { once: true });
+  });
 }
 
 /* ------------------------------------------------------------------
