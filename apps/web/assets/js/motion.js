@@ -39,92 +39,116 @@ export function initReveals() {
 }
 
 /* ------------------------------------------------------------------
-   The running band.
-   One number — offset, in pixels — is the whole mechanism. Every frame
-   it moves the words and the embroidered trim by exactly the same
-   amount, so the stitch can never drift out of step with the type: the
-   track takes offset modulo one copy of the group, the trim takes it
-   modulo one stitch, and both are written in the same paint.
+   A drifting rail.
 
-   It is not a native scroller. Handing the drift to scrollLeft means
-   fighting the platform's own momentum for the same number, and on a
-   phone the scroll event arrives late enough for the trim to visibly
-   lag. Dragging is ours instead: touch-action keeps vertical swipes
-   with the page, a drag moves the offset directly, and letting go
-   leaves a fling that decays back into the drift — so the band carries
-   on running the moment the finger stops.
+   Both the band of words and the shelf of new arrivals move the same
+   way, so they share one mechanism. One number — offset, in pixels —
+   is the whole thing. Every frame it advances, and everything the rail
+   draws is derived from it in the same paint, so nothing can fall out
+   of step with anything else.
+
+   It is deliberately not a native scroller. Handing the drift to
+   scrollLeft means fighting the platform for the same number, and on a
+   phone the scroll event lands late enough for a companion layer — the
+   band's embroidery — to visibly lag. Dragging is ours instead:
+   touch-action keeps vertical swipes with the page, a drag moves the
+   offset directly, and letting go leaves a fling that decays back into
+   the drift, so the rail carries on the moment the finger stops.
    ------------------------------------------------------------------ */
-const BAND_TILE = 16;    /* one stitch of the trim, in px */
-const BAND_SPEED = 34;   /* px a second, the band's resting drift */
 
-export function initBand() {
-  const band = document.querySelector('.band');
-  const rail = band?.querySelector('.band__rail');
-  const track = rail?.querySelector('.band__track');
-  const group = track?.querySelector('.band__group');
-  if (!band || !rail || !track || !group) return;
+export function initDriftRail({
+  root, track, group,
+  speed = 30,
+  /** Extra work per frame, given the raw offset — the band's trim uses it. */
+  paint = null,
+  /** Called when a drag was real, so a click can be swallowed. */
+  suppressClickAfter = 6,
+  pauseWhile = null
+} = {}) {
+  if (!root || !track || !group) return;
 
-  let span = 0;          /* width of one copy of the group */
-  let offset = 0;        /* how far the band has run, in px */
+  let span = 0;          /* width of one copy, including the gap after it */
+  let offset = 0;
   let fling = 0;         /* what a released drag left behind, px/s */
   let drag = null;
   let onScreen = true;
+  let dragged = 0;
 
   const mod = (n, m) => (m > 0 ? ((n % m) + m) % m : 0);
 
-  const paint = () => {
-    band.style.setProperty('--band-x', mod(offset, span).toFixed(2));
-    band.style.setProperty('--stitch-x', mod(offset, BAND_TILE).toFixed(2));
+  const apply = () => {
+    root.style.setProperty('--rail-x', mod(offset, span).toFixed(2));
+    paint?.(offset);
   };
 
-  /* enough copies that the window is never looking past the end */
+  /* Enough copies that the window never looks past the end. */
   const stock = () => {
-    const need = span ? Math.ceil(rail.clientWidth / span) + 2 : 3;
-    while (track.children.length < need) track.append(group.cloneNode(true));
+    if (!span) return;
+    const need = Math.ceil(root.clientWidth / span) + 2;
+    while (track.children.length < need) {
+      const copy = group.cloneNode(true);
+      copy.classList.add('is-echo');
+      copy.setAttribute('aria-hidden', 'true');
+      copy.querySelectorAll('button, a, input').forEach((el) => { el.tabIndex = -1; });
+      track.append(copy);
+    }
   };
 
   const measure = () => {
-    span = group.getBoundingClientRect().width;
+    const rect = group.getBoundingClientRect();
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    span = rect.width + gap;
     stock();
-    paint();
+    apply();
   };
 
   /* ---- dragging ---- */
-  rail.addEventListener('pointerdown', (e) => {
+  root.addEventListener('pointerdown', (e) => {
     if (e.button > 0) return;
     drag = { id: e.pointerId, x: e.clientX, from: offset, at: performance.now(), vx: 0 };
+    dragged = 0;
     fling = 0;
-    band.classList.add('is-dragging');
-    rail.setPointerCapture?.(e.pointerId);
+    root.classList.add('is-dragging');
   });
 
-  rail.addEventListener('pointermove', (e) => {
+  root.addEventListener('pointermove', (e) => {
     if (!drag || e.pointerId !== drag.id) return;
-    const next = drag.from - (e.clientX - drag.x);
-    const now = performance.now();
-    const dt = (now - drag.at) / 1000;
+    const dx = e.clientX - drag.x;
+    dragged = Math.max(dragged, Math.abs(dx));
+    /* Capture only once it is clearly a drag, so a tap on a book still
+       reaches the book. */
+    if (dragged > 3 && root.setPointerCapture) {
+      try { root.setPointerCapture(e.pointerId); } catch { /* already gone */ }
+    }
+    const next = drag.from - dx;
+    const t = performance.now();
+    const dt = (t - drag.at) / 1000;
     if (dt > 0) drag.vx = (next - offset) / dt;
-    drag.at = now;
+    drag.at = t;
     offset = next;
-    paint();
-    e.preventDefault();
+    apply();
+    if (dragged > 3) e.preventDefault();
   });
 
   const endDrag = (e) => {
     if (!drag || (e && e.pointerId !== drag.id)) return;
-    rail.releasePointerCapture?.(drag.id);
-    /* what was left of the gesture carries on, then dies into the drift */
+    try { root.releasePointerCapture?.(drag.id); } catch { /* already gone */ }
     fling = Math.max(-2600, Math.min(2600, drag.vx));
     drag = null;
-    band.classList.remove('is-dragging');
+    root.classList.remove('is-dragging');
   };
-  rail.addEventListener('pointerup', endDrag);
-  rail.addEventListener('pointercancel', endDrag);
+  root.addEventListener('pointerup', endDrag);
+  root.addEventListener('pointercancel', endDrag);
   window.addEventListener('blur', () => endDrag());
+
+  /* A drag that ends on a book must not also open it. */
+  root.addEventListener('click', (e) => {
+    if (dragged > suppressClickAfter) { e.stopPropagation(); e.preventDefault(); dragged = 0; }
+  }, true);
 
   if ('ResizeObserver' in window) new ResizeObserver(measure).observe(group);
   if ('IntersectionObserver' in window) {
-    new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; }).observe(band);
+    new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; }).observe(root);
   }
 
   measure();
@@ -133,17 +157,58 @@ export function initBand() {
   if (calm()) return;               /* still draggable, just never by itself */
 
   let last = 0;
-  const tick = (now) => {
+  const tick = (nowMs) => {
     requestAnimationFrame(tick);
-    const dt = last ? Math.min((now - last) / 1000, 0.064) : 0;
-    last = now;
+    const dt = last ? Math.min((nowMs - last) / 1000, 0.064) : 0;
+    last = nowMs;
     if (!dt || drag || !onScreen || document.hidden) return;
-    offset += (BAND_SPEED + fling) * dt;
+
+    /* A pause stops the steady drift but never a fling. Letting go of a drag
+       with the cursor still resting on the rail would otherwise freeze it
+       dead on release, which reads as the drag having broken something. */
+    const paused = pauseWhile?.() ?? false;
+    if (paused && fling === 0) return;
+
+    offset += ((paused ? 0 : speed) + fling) * dt;
     fling *= Math.exp(-4.2 * dt);
     if (Math.abs(fling) < 1) fling = 0;
-    paint();
+    apply();
   };
   requestAnimationFrame(tick);
+}
+
+const BAND_TILE = 16;    /* one stitch of the trim, in px */
+
+export function initBand() {
+  const band = document.querySelector('.band');
+  const rail = band?.querySelector('.band__rail');
+  const track = rail?.querySelector('.band__track');
+  const group = track?.querySelector('.band__group');
+  if (!band || !rail || !track || !group) return;
+
+  initDriftRail({
+    root: rail, track, group, speed: 34,
+    /* The embroidery takes the same offset modulo one stitch, written in
+       the same paint, so it cannot drift away from the words. */
+    paint: (offset) => {
+      const x = ((offset % BAND_TILE) + BAND_TILE) % BAND_TILE;
+      band.style.setProperty('--stitch-x', x.toFixed(2));
+    }
+  });
+}
+
+/** The shelf of new arrivals moves like the band, and can be dragged. */
+export function initRail() {
+  const rail = document.getElementById('rail');
+  const track = rail?.querySelector('.rail__track');
+  const group = track?.querySelector('.rail__group');
+  if (!rail || !track || !group) return;
+
+  initDriftRail({
+    root: rail, track, group, speed: 22,
+    /* A book turning under the cursor is being looked at; the shelf waits. */
+    pauseWhile: () => rail.matches(':hover, :focus-within') || rail.classList.contains('is-browsing')
+  });
 }
 
 /* ------------------------------------------------------------------

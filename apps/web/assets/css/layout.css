@@ -179,13 +179,22 @@
    the rail becomes an ordinary swipeable strip instead. */
 .rail {
   --rail-gap: clamp(1.1rem, 2.4vw, 2.2rem);
+  --rail-x: 0;
   overflow: hidden;
   padding-block: 2.25rem 1.75rem;
+  cursor: grab;
+  /* a sideways drag is the shelf's; an up-and-down swipe is the page's */
+  touch-action: pan-y;
 }
+.rail.is-dragging { cursor: grabbing; }
+.rail.is-dragging .book__card { user-select: none; }
+
 .rail__track {
   display: flex;
   gap: var(--rail-gap);
   inline-size: max-content;
+  transform: translate3d(calc(var(--rail-x, 0) * -1px), 0, 0);
+  will-change: transform;
 }
 .rail__group {
   display: flex;
@@ -196,30 +205,16 @@
   flex: none;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .rail__track {
-    animation: rail-drift 96s linear infinite;
-    will-change: transform;
-  }
-  .rail:hover .rail__track,
-  .rail:focus-within .rail__track,
-  .rail.is-browsing .rail__track { animation-play-state: paused; }
-}
-@keyframes rail-drift {
-  to { transform: translateX(calc(-50% - var(--rail-gap) / 2)); }
-}
-
-@media (hover: none), (pointer: coarse) {
-  .rail { overflow-x: auto; scrollbar-width: none; scroll-padding-inline-start: var(--gutter); }
+/* The shelf used to be a CSS animation on wide screens and a native
+   scroller on phones — two behaviours, and neither could be dragged. It is
+   one mechanism now, the same one the band above it uses, so it drifts and
+   takes a drag on every device. */
+@media (prefers-reduced-motion: reduce) {
+  .rail__track { transform: none; }
+  .rail { overflow-x: auto; scrollbar-width: none; }
   .rail::-webkit-scrollbar { display: none; }
   .rail__track { padding-inline: var(--gutter); }
-  .rail__group--echo { display: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rail { overflow-x: auto; }
-  .rail__track { animation: none; padding-inline: var(--gutter); }
-  .rail__group--echo { display: none; }
+  .rail__group.is-echo { display: none; }
 }
 
 /* ---------- footer ---------- */

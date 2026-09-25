@@ -10,7 +10,7 @@ import { initCart, renderCart, renderWishCount, openCart, wish } from './cart.js
 import { initDialog, openDialog, closeDialog, dialogBookId } from './dialog.js';
 import { initDelivery } from './delivery.js';
 import { initPalette } from './palette.js';
-import { initReveals, initBand, initHero, initCounters, initOrnaments, initParallax } from './motion.js';
+import { initReveals, initBand, initRail, initHero, initCounters, initOrnaments, initParallax } from './motion.js';
 import { initShell, initSectionSpy, toast } from './ui.js';
 import { initAccount } from './account.js';
 import { initWishlists } from './wishlists.js';
@@ -42,12 +42,9 @@ function renderRail() {
   const rail = document.getElementById('rail');
   if (!rail) return;
   const group = newestFirst().map((b) => bookHTML(b)).join('');
-  rail.innerHTML = `
-    <div class="rail__track">
-      <div class="rail__group">${group}</div>
-      <div class="rail__group rail__group--echo" aria-hidden="true">${group}</div>
-    </div>`;
-  rail.querySelectorAll('.rail__group--echo button').forEach((btn) => { btn.tabIndex = -1; });
+  /* One authored group; the rail clones as many as the viewport needs and
+     takes the copies out of the tab order itself. */
+  rail.innerHTML = `<div class="rail__track"><div class="rail__group">${group}</div></div>`;
   mountBooks(rail, { onDetails: openDialog });
 }
 
@@ -122,6 +119,7 @@ function boot() {
   initDelivery();
   initPalette({ onPick: openDialog });
   initBand();
+  initRail();
   initAccount();
   initWishlists();
   initSectionSpy();
