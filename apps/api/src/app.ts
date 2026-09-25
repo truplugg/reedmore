@@ -34,7 +34,23 @@ const WEB_ROOT = path.resolve(here, '../../web');
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
-    logger: isTest ? false : { level: isProd ? 'info' : 'debug' },
+    logger: isTest ? false : {
+      level: isProd ? 'info' : 'debug',
+      /* Nothing here is logged today — Fastify's default request serialiser
+         records the method, the url and the address, and not the headers.
+         The redaction is for the next person: the day somebody logs a whole
+         request to chase a bug, a session cookie must not land in a log file
+         where it would be a working key to somebody's account. */
+      redact: {
+        paths: [
+          'req.headers.cookie', 'req.headers.authorization',
+          'res.headers["set-cookie"]',
+          'req.body.password', 'req.body.newPassword', 'req.body.currentPassword',
+          'req.body.token'
+        ],
+        remove: true
+      }
+    },
     trustProxy: isProd,
     bodyLimit: 2 * 1024 * 1024
   });
@@ -55,6 +71,10 @@ export async function buildApp(): Promise<FastifyInstance> {
         baseUri: ["'self'"]
       }
     } : false,
+    /* The policy says frame-ancestors 'none'; the legacy header said
+       SAMEORIGIN. An old browser reading only the header would have allowed
+       a frame the policy forbids, so the two agree now. */
+    frameguard: { action: 'deny' },
     crossOriginEmbedderPolicy: false
   });
 

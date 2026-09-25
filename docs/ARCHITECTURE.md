@@ -88,7 +88,7 @@ Following §42. Each phase ends green — migrations apply, tests pass, the site
 | 13 | Catalogue 3D interaction | **done** — `d57a29a`, `5b8af99` |
 | 14 | Locales, currencies, geography | **done** — `2dde3b7` |
 | 15 | Responsive polish | |
-| 16 | Security / privacy audit | |
+| 16 | Security / privacy audit | **done** — `docs/SECURITY.md`, 26 probes |
 | 17 | Testing | |
 | 18 | Production build verification | |
 
