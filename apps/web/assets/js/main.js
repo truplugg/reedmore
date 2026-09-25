@@ -12,6 +12,8 @@ import { initDelivery } from './delivery.js';
 import { initPalette } from './palette.js';
 import { initReveals, initBand, initHero, initCounters, initOrnaments, initParallax } from './motion.js';
 import { initShell, initSectionSpy, toast } from './ui.js';
+import { initAccount } from './account.js';
+import { initWishlists } from './wishlists.js';
 import { addToCart, subscribe, get } from './store.js';
 import { t } from './i18n.js';
 
@@ -120,6 +122,8 @@ function boot() {
   initDelivery();
   initPalette({ onPick: openDialog });
   initBand();
+  initAccount();
+  initWishlists();
   initSectionSpy();
   initReveals();
   initOrnaments();

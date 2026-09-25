@@ -1,0 +1,285 @@
+/* ============================================================
+   RIDMORE — accounts, wishlists and the gift flow
+   ============================================================ */
+
+/* ---------- the header's account button ---------- */
+.iconbtn--account { position: relative; }
+.iconbtn--account.is-in svg { opacity: 0; }
+.iconbtn__avatar {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px var(--accent);
+  object-fit: cover;
+}
+
+/* ---------- the account dialog ---------- */
+.acct__panel {
+  inline-size: min(440px, 100%);
+  max-block-size: min(88vh, 720px);
+  display: block;
+  overflow-y: auto;
+  padding: clamp(1.6rem, 4vw, 2.4rem);
+  background: var(--modal-bg, var(--surface));
+}
+.acct__body > h2 { font-size: var(--step-2); margin: 0 0 0.3rem; }
+.acct__lede { color: var(--text-dim); font-size: var(--step--1); margin: 0 0 1.2rem; }
+.acct__why {
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.85rem;
+  border-inline-start: 2px solid var(--accent);
+  background: var(--accent-soft);
+  font-size: var(--step--1);
+  color: var(--text-dim);
+}
+
+.acct__form { display: flex; flex-direction: column; gap: 0.9rem; margin-block: 1.2rem 0; }
+.acct__form .field { display: flex; flex-direction: column; gap: 0.3rem; }
+.field__hint { margin: -0.5rem 0 0; font-size: var(--step--2); color: var(--text-mute); }
+.field__err, .acct__error {
+  margin: 0;
+  font-size: var(--step--2);
+  color: var(--crit);
+}
+.acct__error {
+  padding: 0.6rem 0.75rem;
+  background: color-mix(in srgb, var(--crit) 10%, transparent);
+  border-radius: var(--r-sm);
+}
+.acct__alt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  margin-block-start: 1.3rem;
+  padding-block-start: 1.1rem;
+  border-block-start: 1px solid var(--line);
+  font-size: var(--step--1);
+  color: var(--text-dim);
+  text-align: center;
+}
+.link--strong { font-weight: 600; color: var(--accent); }
+.acct__row { display: flex; gap: 0.6rem; }
+.acct__row .btn { flex: 1; }
+.acct__sub { font-size: var(--step-0); margin: 1.6rem 0 0.2rem; }
+.acct__empty { color: var(--text-mute); font-size: var(--step--1); padding-block: 1.4rem; text-align: center; }
+
+/* ---------- the account's own screen ---------- */
+.acct__head { display: flex; align-items: center; gap: 0.9rem; margin-block-end: 1.2rem; }
+.acct__avatar { border-radius: 50%; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--accent); }
+.acct__email { margin: 0.1rem 0 0; font-size: var(--step--2); color: var(--text-mute); }
+.acct__role {
+  margin: 0.35rem 0 0;
+  display: inline-block;
+  padding: 0.12em 0.55em;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.acct__admin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  margin-block-end: 1.1rem;
+  border-radius: var(--r-sm);
+  background: var(--block-bg);
+  color: var(--block-text);
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.acct__admin:hover { transform: translateY(-1px); }
+.acct__admin strong { display: block; font-size: var(--step--1); }
+.acct__admin small { color: var(--block-dim); font-size: var(--step--2); }
+
+.acct__stats { display: flex; gap: 1.6rem; padding-block: 0.9rem 1.1rem; border-block: 1px solid var(--line); }
+.acct__stats div { display: flex; flex-direction: column; }
+.acct__stats b { font-family: var(--font-display); font-size: var(--step-2); line-height: 1; }
+.acct__stats span { font-size: var(--step--2); color: var(--text-mute); }
+
+.acct__nav { display: grid; gap: 1px; margin-block: 1.1rem; background: var(--line); border-radius: var(--r-sm); overflow: hidden; }
+.acct__link {
+  padding: 0.8rem 0.9rem;
+  background: var(--surface);
+  text-align: start;
+  font-size: var(--step--1);
+  transition: background var(--t-fast) var(--ease-out);
+}
+.acct__link:hover { background: var(--bg-sunk); }
+
+.acct__avatars { border: 0; padding: 0; margin: 0; }
+.acct__avatarGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 0.5rem; margin-block-start: 0.4rem; }
+.acct__avatarOpt { cursor: pointer; }
+.acct__avatarOpt input { position: absolute; opacity: 0; pointer-events: none; }
+.acct__avatarOpt img { inline-size: 100%; block-size: auto; border-radius: 50%; transition: box-shadow var(--t-fast) var(--ease-out); }
+.acct__avatarOpt input:checked + img { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.acct__avatarOpt input:focus-visible + img { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.acct__danger { margin-block-start: 2rem; padding-block-start: 1.2rem; border-block-start: 1px solid var(--line); }
+.btn--danger { --btn-bg: var(--crit); --btn-bd: var(--crit); --btn-fg: #fff; }
+
+.acct__inline { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-block: 1rem; }
+.acct__inline .input { flex: 1 1 150px; min-inline-size: 0; }
+.acct__lists, .acct__gifts, .acct__items { list-style: none; margin: 0; padding: 0; }
+.acct__list { padding: 0.85rem 0; border-block-end: 1px solid var(--line-soft); }
+.acct__listHead { display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; }
+.acct__listMeta { margin: 0.2rem 0 0; font-size: var(--step--2); color: var(--text-mute); }
+.acct__items { margin-block-start: 0.5rem; font-size: var(--step--1); }
+.acct__items li { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding-block: 0.22rem; }
+.acct__items li.is-taken { color: var(--text-mute); }
+.acct__items em { font-size: var(--step--2); font-style: normal; color: var(--ok); }
+.acct__x { color: var(--text-mute); font-size: 17px; line-height: 1; padding-inline: 0.3rem; }
+.acct__x:hover { color: var(--crit); }
+.acct__gift { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding-block: 0.6rem; border-block-end: 1px solid var(--line-soft); }
+.acct__gift small { display: block; font-size: var(--step--2); color: var(--text-mute); }
+
+.chip--public { background: var(--ok); color: #fff; }
+.chip--unlisted { background: var(--wheat); color: #fff; }
+
+/* ============================================================
+   PUBLIC WISHLISTS
+   ============================================================ */
+.wishgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--s-5);
+}
+.wcard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.1rem;
+  background: var(--card-bg, var(--surface));
+  border: 1px solid var(--card-line, var(--line));
+  border-radius: var(--r-md, 10px);
+  transition: transform var(--t-mid) var(--ease-out), box-shadow var(--t-mid) var(--ease-out);
+}
+.wcard:hover { transform: translateY(-3px); box-shadow: var(--sh-2); }
+.wcard__head { display: flex; align-items: center; gap: 0.7rem; }
+.wcard__avatar { border-radius: 50%; flex: none; }
+.wcard__name { font-size: var(--step-0); }
+.wcard__meta { margin: 0.1rem 0 0; font-size: var(--step--2); color: var(--text-mute); }
+
+/* Four spines standing together, which is what a wishlist looks like. */
+.wcard__covers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  perspective: 700px;
+}
+.wcard__cover {
+  aspect-ratio: 0.66;
+  border-radius: 1px 3px 3px 1px;
+  background: var(--paper, var(--navy-800));
+  color: var(--ink, #efe9db);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  box-shadow: inset -2px 0 4px rgb(0 0 0 / .18), var(--sh-1);
+  transform: rotateY(-9deg);
+  transform-origin: left center;
+  transition: transform var(--t-mid) var(--ease-out);
+}
+.wcard:hover .wcard__cover { transform: rotateY(-3deg); }
+.wcard__cover img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+.wcard__spine {
+  font-family: var(--font-display);
+  font-size: 6px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: center;
+  padding: 0.3em;
+  opacity: 0.85;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+.wcard__cover--ghost { background: var(--line-soft); box-shadow: none; opacity: 0.45; }
+.wcard__foot { display: flex; gap: 0.5rem; margin-block-start: auto; }
+.wcard__foot .btn { flex: 1; }
+
+.wish__invite { grid-column: 1 / -1; text-align: center; padding-block: 2rem; }
+.wish__invite p { color: var(--text-mute); margin-block-end: 0.9rem; }
+
+/* ---------- loading ---------- */
+.sk { display: block; background: var(--line-soft); border-radius: var(--r-sm); animation: sk 1.4s var(--ease-out) infinite; }
+.sk--avatar { inline-size: 44px; block-size: 44px; border-radius: 50%; flex: none; }
+.sk--line { block-size: 12px; inline-size: 60%; }
+.sk--cover { aspect-ratio: 0.66; }
+.sk--btn { block-size: 30px; flex: 1; border-radius: var(--r-pill); }
+@keyframes sk { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sk { animation: none; } }
+
+/* ---------- one wishlist ---------- */
+.wish__panel {
+  inline-size: min(520px, 100%);
+  max-block-size: min(88vh, 760px);
+  display: block;
+  overflow-y: auto;
+  padding: clamp(1.5rem, 4vw, 2.2rem);
+  background: var(--modal-bg, var(--surface));
+}
+.wish__head { display: flex; align-items: center; gap: 0.9rem; margin-block-end: 1rem; }
+.wish__avatar { border-radius: 50%; }
+.wish__head h2 { margin: 0; font-size: var(--step-1); }
+.wish__meta { margin: 0.15rem 0 0; font-size: var(--step--2); color: var(--text-mute); }
+.wish__gate {
+  margin: 0 0 1.1rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--bg-sunk);
+  border-radius: var(--r-sm);
+  font-size: var(--step--1);
+  color: var(--text-dim);
+}
+.wish__items { list-style: none; margin: 0; padding: 0; }
+.wish__item { display: flex; align-items: center; gap: 0.8rem; padding-block: 0.8rem; border-block-end: 1px solid var(--line-soft); }
+.wish__thumb {
+  flex: none;
+  inline-size: 42px;
+  aspect-ratio: 0.66;
+  border-radius: 1px 3px 3px 1px;
+  background: var(--paper, var(--navy-800));
+  color: var(--ink, #efe9db);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  box-shadow: inset -2px 0 4px rgb(0 0 0 / .18);
+  font-size: 5px;
+  text-align: center;
+  padding: 0.25em;
+}
+.wish__thumb img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+.wish__info { flex: 1; min-inline-size: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.wish__note { font-size: var(--step--2); color: var(--text-mute); font-style: italic; }
+
+.gift__book { padding: 0.9rem 1rem; background: var(--bg-sunk); border-radius: var(--r-sm); display: flex; flex-direction: column; gap: 0.15rem; }
+.check { display: flex; align-items: center; gap: 0.55rem; font-size: var(--step--1); cursor: pointer; }
+.gift__done { text-align: center; padding-block: 1.4rem; }
+.gift__done svg { inline-size: 42px; block-size: 42px; color: var(--ok); margin-block-end: 0.7rem; }
+.gift__done p { color: var(--text-dim); font-size: var(--step--1); max-inline-size: 36ch; margin-inline: auto; margin-block-end: 1.2rem; }
+
+/* ---------- phones ---------- */
+@media (max-width: 620px) {
+  .acct__panel, .wish__panel {
+    inline-size: 100%;
+    max-block-size: calc(100% - 3rem);
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+  }
+  .acct, .wish { place-items: end stretch; padding: 0; }
+  .wishgrid { grid-template-columns: 1fr; }
+  .acct__stats { gap: 1.1rem; }
+}

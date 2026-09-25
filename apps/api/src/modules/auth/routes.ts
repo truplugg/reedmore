@@ -8,6 +8,7 @@ import { sendMail } from '../../lib/mail.js';
 import { env } from '../../lib/env.js';
 import { localeFromAcceptLanguage, currencyForLocale } from '../../lib/locale.js';
 import { SEED_AVATARS_KEYS } from './avatars.js';
+import { audit } from '../../lib/audit.js';
 
 const RESET_TTL_MIN = 60;
 
@@ -57,23 +58,46 @@ export default async function authRoutes(app: FastifyInstance) {
     const currency = body.currency ?? currencyForLocale(locale);
     const avatarUrl = pickDefaultAvatar(body.nickname);
 
-    const customer = await prisma.role.findUnique({ where: { key: 'CUSTOMER' } });
+    /* The shop has to belong to somebody. Whoever opens the first account on
+       a fresh installation becomes the owner, so there is no chicken-and-egg
+       between "sign up" and "grant yourself admin". The check is for an
+       existing SUPER_ADMIN rather than for any user at all, so an install
+       that seeded an owner never hands the shop to a customer. */
+    const owned = await prisma.userRole.findFirst({
+      where: { role: { key: 'SUPER_ADMIN' } }, select: { userId: true }
+    });
+    const claimOwnership = !owned;
+
+    const roleKey = claimOwnership ? 'SUPER_ADMIN' : 'CUSTOMER';
+    const role = await prisma.role.findUnique({
+      where: { key: roleKey },
+      include: { permissions: { include: { permission: true } } }
+    });
+
     const user = await prisma.user.create({
       data: {
         email: body.email,
         passwordHash: await hashPassword(body.password),
+        emailVerifiedAt: claimOwnership ? new Date() : null,
         profile: { create: { nickname: body.nickname, locale, currency, avatarUrl } },
-        roles: customer ? { create: { roleId: customer.id } } : undefined
+        roles: role ? { create: { roleId: role.id } } : undefined
       }
     });
+
+    if (claimOwnership) {
+      await audit(user.id, 'user.claim_ownership', 'User', user.id, { email: body.email }, req.ip);
+      req.log.warn({ email: body.email }, 'first account created — granted SUPER_ADMIN');
+    }
 
     await startSession(reply, user.id, req);
     req.viewer = {
       id: user.id, email: user.email, nickname: body.nickname, locale, currency,
-      avatarUrl, roles: ['CUSTOMER'], permissions: new Set()
+      avatarUrl,
+      roles: [roleKey],
+      permissions: new Set(role?.permissions.map((rp) => rp.permission.key) ?? [])
     };
     reply.code(201);
-    return { user: meOf(req.viewer) };
+    return { user: meOf(req.viewer), owner: claimOwnership };
   });
 
   app.post('/login', strict, async (req, reply) => {

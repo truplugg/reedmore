@@ -103,8 +103,14 @@ describe('visibility', () => {
     expect((await app.inject({ url: `/api/wishlists/shared/${first}`, headers: { cookie: donorA.cookie } })).statusCode).toBe(404);
   });
 
-  it('shows public lists on the home block to signed-in visitors only', async () => {
-    expect((await app.inject({ url: '/api/wishlists/public' })).statusCode).toBe(401);
+  it('shows public lists to everyone, signed in or not', async () => {
+    /* The shop changed its mind about §18: a window nobody can see into is
+       not a window. Looking is open; giving still needs an account. */
+    const anonymous = await app.inject({ url: '/api/wishlists/public' });
+    expect(anonymous.statusCode).toBe(200);
+    expect(anonymous.json().wishlists.length).toBeGreaterThan(0);
+    expect(JSON.stringify(anonymous.json()), 'a signed-out visitor still sees no addresses').not.toContain('@');
+
     const res = await app.inject({ url: '/api/wishlists/public', headers: { cookie: donorA.cookie } });
     expect(res.statusCode).toBe(200);
     const card = res.json().wishlists.find((w: { id: string }) => w.id === publicList);
@@ -113,6 +119,33 @@ describe('visibility', () => {
     // A card carries a face and a name, and nothing else about the person.
     expect(Object.keys(card.owner).sort()).toEqual(['avatarUrl', 'nickname']);
     expect(JSON.stringify(card)).not.toContain('@');
+  });
+});
+
+describe('the gate is on giving, not on looking', () => {
+  it('lets a signed-out visitor open a public list', async () => {
+    const res = await app.inject({ url: `/api/wishlists/${publicList}` });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().wishlist.owner.nickname).toBeTruthy();
+    expect(res.json().mine).toBe(false);
+  });
+
+  it('still refuses a signed-out visitor a private list', async () => {
+    const made = await app.inject({
+      method: 'POST', url: '/api/wishlists', headers: { cookie: owner.cookie },
+      payload: { title: 'Secret', visibility: 'PRIVATE' }
+    });
+    expect((await app.inject({ url: `/api/wishlists/${made.json().wishlist.id}` })).statusCode).toBe(404);
+  });
+
+  it('refuses a signed-out visitor a reservation', async () => {
+    const list = await app.inject({ url: `/api/wishlists/${publicList}` });
+    const item = list.json().wishlist.items[0];
+    if (!item) return;
+    const res = await app.inject({
+      method: 'POST', url: '/api/gifts/reserve', payload: { wishlistItemId: item.id }
+    });
+    expect(res.statusCode).toBe(401);
   });
 });
 

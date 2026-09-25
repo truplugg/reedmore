@@ -17,6 +17,7 @@ import authRoutes from './modules/auth/routes.js';
 import publicBookRoutes from './modules/books/public.js';
 import adminBookRoutes from './modules/books/admin.js';
 import mediaRoutes from './modules/media/routes.js';
+import accountRoutes from './modules/account/routes.js';
 import wishlistRoutes from './modules/wishlists/routes.js';
 import giftRoutes from './modules/gifts/routes.js';
 import adminOrderRoutes from './modules/orders/admin.js';
@@ -109,6 +110,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(publicBookRoutes, { prefix: '/api/books' });
   await app.register(adminBookRoutes, { prefix: '/api/admin/books' });
   await app.register(mediaRoutes, { prefix: '/api/admin/media' });
+  await app.register(accountRoutes, { prefix: '/api/account' });
   await app.register(wishlistRoutes, { prefix: '/api/wishlists' });
   await app.register(giftRoutes, { prefix: '/api/gifts' });
   await app.register(adminOrderRoutes, { prefix: '/api/admin/orders' });

@@ -174,10 +174,18 @@ async function seedSettings() {
   console.log('  site settings: 1');
 }
 
-/** Only in development, and only if nobody has signed up yet. */
+/**
+ * An owner is only seeded when one is asked for.
+ *
+ * Left to itself the seed creates no SUPER_ADMIN, because the shop hands
+ * ownership to whoever opens the first account — that is what makes signing
+ * up on a fresh installation enough to get in. Set SEED_ADMIN_EMAIL when you
+ * want the owner to exist before anyone visits.
+ */
 async function seedDevAdmin() {
   if (process.env.NODE_ENV === 'production') return;
-  const email = process.env.SEED_ADMIN_EMAIL ?? 'admin@ridmore.local';
+  const email = process.env.SEED_ADMIN_EMAIL;
+  if (!email) { console.log('  owner: none — the first account to sign up becomes it'); return; }
   const password = process.env.SEED_ADMIN_PASSWORD ?? 'ridmore-dev-password';
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) { console.log(`  dev admin: ${email} (already there)`); return; }

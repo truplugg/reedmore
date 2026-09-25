@@ -150,9 +150,9 @@ export default async function wishlistRoutes(app: FastifyInstance) {
   });
 
   // ------------------------------------------------------------- browsing
-  /** The home page's block. Signed-in visitors only (§18). */
+  /** The home page's block. Open to everyone — a shop window nobody can see
+   *  into is not a shop window. Giving still needs an account. */
   app.get('/public', async (req) => {
-    req.requireViewer();
     const { locale, currency } = readContext(req);
     const q = z.object({ limit: z.coerce.number().int().min(1).max(24).default(6) }).parse(req.query);
 
@@ -164,14 +164,14 @@ export default async function wishlistRoutes(app: FastifyInstance) {
   });
 
   app.get('/:id', async (req) => {
-    const viewer = req.requireViewer();
+    const viewer = req.viewer;
     const { id } = z.object({ id: z.string().min(1) }).parse(req.params);
     const { locale, currency } = readContext(req);
 
     const list = await prisma.wishlist.findUnique({ where: { id }, include: WISHLIST_INCLUDE });
     if (!list) throw notFound('No such list.');
 
-    if (list.ownerId === viewer.id) return { wishlist: ownerWishlist(list, locale, currency), mine: true };
+    if (viewer && list.ownerId === viewer.id) return { wishlist: ownerWishlist(list, locale, currency), mine: true };
     // A private list is invisible, and an unlisted one is only reachable by
     // its token — so neither is found by guessing an id.
     if (list.visibility !== 'PUBLIC') throw notFound('No such list.');
@@ -181,13 +181,12 @@ export default async function wishlistRoutes(app: FastifyInstance) {
   /** The share link. The token is the whole secret, so it is matched on its
    *  own and the id is not part of the route. */
   app.get('/shared/:token', async (req) => {
-    req.requireViewer();
     const { token } = z.object({ token: z.string().min(8).max(100) }).parse(req.params);
     const { locale, currency } = readContext(req);
 
     const list = await prisma.wishlist.findUnique({ where: { shareToken: token }, include: WISHLIST_INCLUDE });
     if (!list || list.visibility !== 'UNLISTED') throw notFound('That link does not lead anywhere.');
-    return { wishlist: visitorWishlist(list, locale, currency), mine: list.ownerId === req.viewer!.id };
+    return { wishlist: visitorWishlist(list, locale, currency), mine: list.ownerId === req.viewer?.id };
   });
 }
 

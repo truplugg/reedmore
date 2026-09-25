@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="assets/css/book.css">
 <link rel="stylesheet" href="assets/css/sections.css">
 <link rel="stylesheet" href="assets/css/overlays.css">
+<link rel="stylesheet" href="assets/css/account.css">
 </head>
 <body>
 
@@ -85,6 +86,10 @@
       <button class="iconbtn" data-act="wishlist" data-i18n-attr="aria-label:a11y.wishlist;title:a11y.wishlist" aria-label="Бажане">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 20s-7-4.6-7-9.4A4 4 0 0 1 12 7a4 4 0 0 1 7 3.6C19 15.4 12 20 12 20Z"/></svg>
         <span class="iconbtn__count" data-count="wish" hidden>0</span>
+      </button>
+
+      <button class="iconbtn iconbtn--account" id="account-btn" data-i18n-attr="aria-label:acct.signIn;title:acct.signIn" aria-label="Увійти">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.8 20.2a7.4 7.4 0 0 1 14.4 0"/></svg>
       </button>
 
       <button class="iconbtn" data-act="cart" data-i18n-attr="aria-label:a11y.cart;title:a11y.cart" aria-label="Кошик">
@@ -301,6 +306,23 @@
         <a class="collection__link" href="#catalog" data-filter data-genre="dytiacha" aria-label="Читати дітям уголос"></a>
       </article>
     </div>
+  </div>
+</section>
+
+<!-- ============ public wishlists ============ -->
+<section class="section wishes" id="wishlists">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow" data-i18n="wish.eyebrow">Списки бажань</p>
+        <h2 class="section-head__title wipe" data-i18n="wish.title">Подаруйте книжку незнайомцю</h2>
+      </div>
+      <div class="section-head__side">
+        <span class="book__author" data-i18n="wish.note">Хтось склав список. Ви можете закрити один рядок у ньому.</span>
+        <button class="btn btn--ghost btn--sm" data-act="random" type="button" data-i18n="wish.random">Випадкова книжка</button>
+      </div>
+    </div>
+    <div class="wishgrid"></div>
   </div>
 </section>
 
