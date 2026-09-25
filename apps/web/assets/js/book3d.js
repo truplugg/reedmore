@@ -272,11 +272,18 @@ export function mountBooks(root, { onDetails } = {}) {
   if (!root || root.dataset.booksMounted) return;
   root.dataset.booksMounted = '1';
 
-  root.addEventListener('pointerover', (e) => {
-    if (e.pointerType !== 'mouse') return;
-    const book = e.target.closest('.book');
-    if (book && root.contains(book)) openOne(book);
-  });
+  /* A book opens when a reader points at it — which is not the same event
+     as a book drifting underneath a cursor that never moved.
+
+     pointerover fires for both: it fires whenever the element beneath the
+     pointer changes, and on a rail that drifts, that is every book in
+     turn. Each one opened itself, set .is-browsing, and stopped the rail;
+     the next one started it again. A cursor left anywhere over the shelf
+     turned the drift into a stutter, which is what a reader saw.
+
+     So opening is driven from real pointer movement instead, below. The
+     boundary events are still what CLOSE a book, because a book that has
+     slid out from under the pointer is genuinely no longer pointed at. */
 
   root.addEventListener('pointerout', (e) => {
     if (e.pointerType !== 'mouse') return;
@@ -286,10 +293,17 @@ export function mountBooks(root, { onDetails } = {}) {
     if (active === book) closeOpenBook();
   });
 
+  let seen = { x: null, y: null };
   root.addEventListener('pointermove', (e) => {
     if (e.pointerType !== 'mouse') return;
+    /* Chromium sends a pointermove at the old coordinates after a scroll.
+       Only a changed position means the reader moved. */
+    const moved = seen.x !== null && (e.clientX !== seen.x || e.clientY !== seen.y);
+    seen = { x: e.clientX, y: e.clientY };
     const book = e.target.closest('.book');
-    if (book) tilt(book, e);
+    if (!book || !root.contains(book)) return;
+    if (moved) openOne(book);
+    tilt(book, e);
   }, { passive: true });
 
   /* A finger behaves like a cursor, with one rule a cursor does not need:

@@ -179,7 +179,6 @@
    the rail becomes an ordinary swipeable strip instead. */
 .rail {
   --rail-gap: clamp(1.1rem, 2.4vw, 2.2rem);
-  --rail-x: 0;
   overflow: hidden;
   padding-block: 2.25rem 1.75rem;
   cursor: grab;
@@ -193,8 +192,11 @@
   display: flex;
   gap: var(--rail-gap);
   inline-size: max-content;
-  transform: translate3d(calc(var(--rail-x, 0) * -1px), 0, 0);
-  will-change: transform;
+  /* No will-change here. The drift is a compositor Animation already, and
+     the track is nearly seven thousand pixels wide: promising it as a layer
+     asks a phone to hold that whole strip rastered at device resolution —
+     tens of megabytes for a decoration. Measured against a 7000px strip
+     with and without the promise, it bought nothing. */
 }
 .rail__group {
   display: flex;
@@ -302,3 +304,9 @@
   .shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.2rem 1.1rem; }
   .footer__top { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
 }
+
+/* The books here were once skipped off-screen with content-visibility, on
+   the theory that compositing forty 3D scenes was the cost of the drift.
+   It was not: a rail of plain coloured boxes the same size measured exactly
+   the same, so the containment was paying rent on a frame budget it never
+   owned. Removed rather than kept as a charm. */

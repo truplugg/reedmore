@@ -126,8 +126,6 @@
   background: var(--bg-sunk);
   overflow: hidden;
   padding-block: 0.4rem;
-  --band-x: 0;
-  --stitch-x: 0;
 }
 .band__stitch {
   block-size: 10px;
@@ -142,9 +140,8 @@
   /* one tile wider than the frame, so sliding by up to a tile never
      uncovers the far edge */
   inline-size: calc(100% + 16px);
-  transform: translate3d(calc(var(--stitch-x) * -1px), 0, 0);
 }
-.band__stitch--bottom .band__stitch-svg { transform: translate3d(calc(var(--stitch-x) * -1px), 0, 0) scaleY(-1); }
+.band__stitch--bottom { transform: scaleY(-1); }
 
 .band__rail {
   overflow: hidden;
@@ -159,7 +156,6 @@
   display: flex;
   inline-size: max-content;
   gap: 0;
-  transform: translate3d(calc(var(--band-x, 0) * -1px), 0, 0);
   will-change: transform;
 }
 .band__group { display: flex; gap: 0; flex: none; }

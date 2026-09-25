@@ -59,32 +59,38 @@ export function initReveals() {
 export function initDriftRail({
   root, track, group,
   speed = 30,
-  /** Extra work per frame, given the raw offset — the band's trim uses it. */
-  paint = null,
-  /** Called when a drag was real, so a click can be swallowed. */
+  /** Layers that must move in lockstep, each with its own repeat length. */
+  companions = [],
   suppressClickAfter = 6,
   pauseWhile = null
 } = {}) {
   if (!root || !track || !group) return;
 
-  let span = 0;          /* width of one copy, including the gap after it */
-  let offset = 0;
-  let fling = 0;         /* what a released drag left behind, px/s */
+  /* The drift is a real Animation, not a transform written every frame.
+     A custom property or a style write goes through the main thread, and a
+     rail of forty 3D books cost half its frames that way — measured at 33ms
+     between frames, against 16.7 when it stood still. An Animation of a
+     transform runs on the compositor, so the drift costs the page nothing;
+     the main thread only gets involved while a finger is actually on it. */
+  let span = 0;
+  let anim = null;
+  const extra = [];        /* {el, anim, tile} */
   let drag = null;
-  let onScreen = true;
   let dragged = 0;
+  let hovered = false;
+  let fling = 0;
 
-  const mod = (n, m) => (m > 0 ? ((n % m) + m) % m : 0);
+  const build = () => {
+    const rect = group.getBoundingClientRect();
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    const next = rect.width + gap;
+    if (!next || Math.abs(next - span) < 0.5) return;
+    span = next;
 
-  const apply = () => {
-    root.style.setProperty('--rail-x', mod(offset, span).toFixed(2));
-    paint?.(offset);
-  };
-
-  /* Enough copies that the window never looks past the end. */
-  const stock = () => {
-    if (!span) return;
-    const need = Math.ceil(root.clientWidth / span) + 2;
+    /* Enough copies that the window never looks past the end, and not one
+       more: the loop resets every span, so the widest it can reach is span
+       plus the rail's own width. */
+    const need = Math.max(2, Math.ceil((root.clientWidth + span) / span));
     while (track.children.length < need) {
       const copy = group.cloneNode(true);
       copy.classList.add('is-echo');
@@ -92,20 +98,99 @@ export function initDriftRail({
       copy.querySelectorAll('button, a, input').forEach((el) => { el.tabIndex = -1; });
       track.append(copy);
     }
+
+    const was = anim?.currentTime ?? 0;
+    anim?.cancel();
+    extra.forEach((c) => c.anim?.cancel());
+    extra.length = 0;
+
+    const loop = (el, distance) => el.animate(
+      [{ transform: 'translate3d(0,0,0)' }, { transform: `translate3d(${-distance}px,0,0)` }],
+      { duration: (distance / speed) * 1000, iterations: Infinity, easing: 'linear' }
+    );
+
+    anim = loop(track, span);
+    anim.currentTime = was;
+
+    /* Every companion is a separate Animation, but they all run on one
+       clock at one rate and are scrubbed from one number, so the band's
+       embroidery cannot drift away from its words. */
+    for (const c of companions) {
+      const a = loop(c.el, c.tile);
+      a.currentTime = was % ((c.tile / speed) * 1000);
+      extra.push({ ...c, anim: a });
+    }
+    if (calm()) { anim.pause(); extra.forEach((c) => c.anim.pause()); }
   };
 
-  const measure = () => {
-    const rect = group.getBoundingClientRect();
-    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
-    span = rect.width + gap;
-    stock();
-    apply();
+  const allAnims = () => [anim, ...extra.map((c) => c.anim)].filter(Boolean);
+
+  /** Scrub every layer from one offset in pixels. */
+  const seek = (px) => {
+    if (!anim) return;
+    const ms = (px / speed) * 1000;
+    anim.currentTime = ((ms % anim.effect.getTiming().duration) + anim.effect.getTiming().duration)
+      % anim.effect.getTiming().duration;
+    for (const c of extra) {
+      const d = c.anim.effect.getTiming().duration;
+      c.anim.currentTime = ((ms % d) + d) % d;
+    }
   };
+
+  const offsetPx = () => (anim ? (Number(anim.currentTime) / 1000) * speed : 0);
+
+  const play = () => { if (!calm()) allAnims().forEach((a) => a.play()); };
+  const hold = () => allAnims().forEach((a) => a.pause());
+
+  /* ---- hover: a reader pointing at a book, which is not the same event
+     as a page scrolling under a cursor that never moved.
+
+     pointerenter fires for both. A reader who simply scrolled past the
+     shelf, pointer parked mid-screen as it always is on a laptop, had the
+     rail stop and start five times in one gesture and finish stopped —
+     measured. That stutter was the whole complaint.
+
+     So a hover has to be earned: the pointer must actually have moved,
+     and not while the page itself is moving. Entering counts for nothing.
+     Keyboard focus is deliberate by definition, so it still stops the
+     rail outright. ---- */
+  const point = { x: null, y: null };
+  let scrolling = false;
+  let scrollEnd = 0;
+
+  const pointOn = () => { if (!hovered) { hovered = true; hold(); } };
+  const pointOff = () => { if (hovered) { hovered = false; if (!drag) play(); } };
+
+  root.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse' || drag) return;
+    const moved = point.x !== null && (e.clientX !== point.x || e.clientY !== point.y);
+    point.x = e.clientX;
+    point.y = e.clientY;
+    if (moved && !scrolling) pointOn();
+  }, { passive: true });
+
+  root.addEventListener('pointerleave', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    point.x = null;
+    point.y = null;
+    pointOff();
+  });
+
+  window.addEventListener('scroll', () => {
+    scrolling = true;
+    pointOff();                 /* the page moved, the reader did not */
+    clearTimeout(scrollEnd);
+    scrollEnd = setTimeout(() => { scrolling = false; }, 160);
+  }, { passive: true });
+
+  root.addEventListener('focusin', () => { hovered = true; hold(); });
+  root.addEventListener('focusout', () => { hovered = false; if (!drag) play(); });
 
   /* ---- dragging ---- */
   root.addEventListener('pointerdown', (e) => {
-    if (e.button > 0) return;
-    drag = { id: e.pointerId, x: e.clientX, from: offset, at: performance.now(), vx: 0 };
+    if (e.button > 0 || !anim) return;
+    hold();
+    drag = { id: e.pointerId, x: e.clientX, from: offsetPx(), at: performance.now(), vx: 0 };
     dragged = 0;
     fling = 0;
     root.classList.add('is-dragging');
@@ -115,19 +200,16 @@ export function initDriftRail({
     if (!drag || e.pointerId !== drag.id) return;
     const dx = e.clientX - drag.x;
     dragged = Math.max(dragged, Math.abs(dx));
-    /* Capture only once it is clearly a drag, so a tap on a book still
-       reaches the book. */
-    if (dragged > 3 && root.setPointerCapture) {
+    if (dragged > 3) {
       try { root.setPointerCapture(e.pointerId); } catch { /* already gone */ }
+      e.preventDefault();
     }
     const next = drag.from - dx;
     const t = performance.now();
     const dt = (t - drag.at) / 1000;
-    if (dt > 0) drag.vx = (next - offset) / dt;
+    if (dt > 0) drag.vx = (next - offsetPx()) / dt;
     drag.at = t;
-    offset = next;
-    apply();
-    if (dragged > 3) e.preventDefault();
+    seek(next);
   });
 
   const endDrag = (e) => {
@@ -136,45 +218,63 @@ export function initDriftRail({
     fling = Math.max(-2600, Math.min(2600, drag.vx));
     drag = null;
     root.classList.remove('is-dragging');
+    coast();
   };
   root.addEventListener('pointerup', endDrag);
   root.addEventListener('pointercancel', endDrag);
   window.addEventListener('blur', () => endDrag());
+
+  /**
+   * What the finger left behind, spent as playback rate rather than as
+   * per-frame transforms: still the compositor's job, and it decays back
+   * to the resting drift. A fling always plays out, even while hovering —
+   * freezing dead on release reads as the drag having broken something.
+   */
+  function coast() {
+    if (calm() || !anim) return;
+    let rate = 1 + fling / speed;
+    if (!Number.isFinite(rate)) rate = 1;
+    let last = 0;
+
+    const step = (t) => {
+      const dt = last ? Math.min((t - last) / 1000, 0.064) : 0;
+      last = t;
+      if (drag) return;                       /* a new drag took over */
+      rate = 1 + (rate - 1) * Math.exp(-4.2 * dt);
+      const settled = Math.abs(rate - 1) < 0.05;
+      allAnims().forEach((a) => { a.playbackRate = settled ? 1 : rate; });
+      if (!settled) { play(); requestAnimationFrame(step); return; }
+      if (hovered || pauseWhile?.()) hold(); else play();
+    };
+    play();
+    requestAnimationFrame(step);
+  }
 
   /* A drag that ends on a book must not also open it. */
   root.addEventListener('click', (e) => {
     if (dragged > suppressClickAfter) { e.stopPropagation(); e.preventDefault(); dragged = 0; }
   }, true);
 
-  if ('ResizeObserver' in window) new ResizeObserver(measure).observe(group);
+  if ('ResizeObserver' in window) new ResizeObserver(build).observe(group);
   if ('IntersectionObserver' in window) {
-    new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; }).observe(root);
+    new IntersectionObserver(([entry]) => {
+      /* Off screen it costs nothing to stop, and nothing is missed. */
+      if (entry.isIntersecting) { if (!hovered && !drag && !pauseWhile?.()) play(); }
+      else hold();
+    }).observe(root);
   }
 
-  measure();
-  requestAnimationFrame(measure);   /* again once webfonts have settled */
+  /* The component may pause it too — a book open on the shelf, say. */
+  if (pauseWhile) {
+    const watch = new MutationObserver(() => {
+      if (drag) return;
+      if (pauseWhile()) hold(); else if (!hovered) play();
+    });
+    watch.observe(root, { attributes: true, attributeFilter: ['class'] });
+  }
 
-  if (calm()) return;               /* still draggable, just never by itself */
-
-  let last = 0;
-  const tick = (nowMs) => {
-    requestAnimationFrame(tick);
-    const dt = last ? Math.min((nowMs - last) / 1000, 0.064) : 0;
-    last = nowMs;
-    if (!dt || drag || !onScreen || document.hidden) return;
-
-    /* A pause stops the steady drift but never a fling. Letting go of a drag
-       with the cursor still resting on the rail would otherwise freeze it
-       dead on release, which reads as the drag having broken something. */
-    const paused = pauseWhile?.() ?? false;
-    if (paused && fling === 0) return;
-
-    offset += ((paused ? 0 : speed) + fling) * dt;
-    fling *= Math.exp(-4.2 * dt);
-    if (Math.abs(fling) < 1) fling = 0;
-    apply();
-  };
-  requestAnimationFrame(tick);
+  build();
+  requestAnimationFrame(build);   /* again once webfonts have settled */
 }
 
 const BAND_TILE = 16;    /* one stitch of the trim, in px */
@@ -186,15 +286,12 @@ export function initBand() {
   const group = track?.querySelector('.band__group');
   if (!band || !rail || !track || !group) return;
 
-  initDriftRail({
-    root: rail, track, group, speed: 34,
-    /* The embroidery takes the same offset modulo one stitch, written in
-       the same paint, so it cannot drift away from the words. */
-    paint: (offset) => {
-      const x = ((offset % BAND_TILE) + BAND_TILE) % BAND_TILE;
-      band.style.setProperty('--stitch-x', x.toFixed(2));
-    }
-  });
+  /* The trim repeats every stitch, the words every copy of the group. Two
+     lengths, one clock, one scrub — so they cannot part. */
+  const companions = [...band.querySelectorAll('.band__stitch-svg')]
+    .map((el) => ({ el, tile: BAND_TILE }));
+
+  initDriftRail({ root: rail, track, group, speed: 34, companions });
 }
 
 /** The shelf of new arrivals moves like the band, and can be dragged. */
@@ -206,8 +303,10 @@ export function initRail() {
 
   initDriftRail({
     root: rail, track, group, speed: 22,
-    /* A book turning under the cursor is being looked at; the shelf waits. */
-    pauseWhile: () => rail.matches(':hover, :focus-within') || rail.classList.contains('is-browsing')
+    /* A book turning under the cursor is being looked at; the shelf waits.
+       Hover is the rail's own business; this is the class the book
+       component sets while one is open. */
+    pauseWhile: () => rail.classList.contains('is-browsing')
   });
 }
 
