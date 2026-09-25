@@ -21,6 +21,11 @@ import accountRoutes from './modules/account/routes.js';
 import wishlistRoutes from './modules/wishlists/routes.js';
 import giftRoutes from './modules/gifts/routes.js';
 import adminOrderRoutes from './modules/orders/admin.js';
+import dashboardRoutes from './modules/admin/dashboard.js';
+import peopleRoutes from './modules/admin/people.js';
+import themeRoutes from './modules/admin/themes.js';
+import settingsRoutes from './modules/admin/settings.js';
+import adminJournalRoutes from './modules/journal/admin.js';
 import { loadAvatars } from './modules/auth/avatars.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -114,6 +119,11 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(wishlistRoutes, { prefix: '/api/wishlists' });
   await app.register(giftRoutes, { prefix: '/api/gifts' });
   await app.register(adminOrderRoutes, { prefix: '/api/admin/orders' });
+  await app.register(dashboardRoutes, { prefix: '/api/admin/dashboard' });
+  await app.register(peopleRoutes, { prefix: '/api/admin' });
+  await app.register(themeRoutes, { prefix: '/api/admin/themes' });
+  await app.register(adminJournalRoutes, { prefix: '/api/admin/articles' });
+  await app.register(settingsRoutes, { prefix: '/api/admin/settings' });
 
   /* Two static roots, each in its own scope.
      @fastify/static registers its wildcard into the enclosing context, so two
